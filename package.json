@@ -30,5 +30,11 @@
     "webpack-cli": "^3.3.6",
     "webpack-merge": "^4.2.1",
     "webpack-node-externals": "^1.7.2"
+    "cz-conventional-changelog": "^2.1.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }
