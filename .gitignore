@@ -65,3 +65,6 @@ typings/
 
 # dist directory (transpiled and compiled code is inside this directory)
 dist
+
+# postgre folder that we have in the repository
+postgre
