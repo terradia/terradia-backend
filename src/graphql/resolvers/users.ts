@@ -1,7 +1,11 @@
 export default {
     Query: {
-        testMessage: (): string => {
-            return 'Hello World!';
+        getUser: async (_parent, _args, { user }) => {
+            if (!user) {
+                return null;
+            }
+            // TODO : Analytics
+            return user;
         }
     }
 };
