@@ -1,0 +1,10 @@
+{
+  "dev": {
+    "driver": "pg",
+    "database": "terradia_dev",
+    "host": "localhost",
+    "user": "postgres",
+    "password": "postgres"
+  },
+  "prod": {"ENV": "SCALINGO_POSTGRESQL_URL"}
+}
