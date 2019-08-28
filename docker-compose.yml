@@ -12,7 +12,7 @@ services:
     env_file:
       - ./.env
     volumes:
-      - ./src:/app/src
+      - ./app:/app/app
       - ./node_modules:/app/node_modules # the docker will take the node modules you have in you repository to avoid duplicates.
     depends_on:
       - postgres
