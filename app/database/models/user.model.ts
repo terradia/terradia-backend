@@ -1,16 +1,20 @@
-import bcrypt from "bcrypt";
 import {
     AllowNull,
-    BeforeCreate, BeforeUpdate,
+    BeforeCreate,
+    BeforeUpdate,
     Column,
     DataType,
     Default,
     Is,
+    IsEmail,
     IsUUID,
     Model,
     PrimaryKey,
-    Table, Unique
+    Table,
+    Unique
 } from "sequelize-typescript";
+
+import bcrypt from "bcrypt";
 
 const NAME_REGEX = /^[a-zàâéèëêïîôùüçœ\'’ -]+$/i;
 
@@ -18,7 +22,7 @@ const NAME_REGEX = /^[a-zàâéèëêïîôùüçœ\'’ -]+$/i;
     tableName: "Users",
     timestamps: true
 })
-export default class User extends Model<User> {
+export default class UserModel extends Model<UserModel> {
     @IsUUID(4)
     @PrimaryKey
     @Default(DataType.UUIDV4)
@@ -34,28 +38,27 @@ export default class User extends Model<User> {
     public lastName: string;
 
     @AllowNull(false)
+    @IsEmail
+    @Column
+    public email: string;
+
+    @AllowNull(false)
     @Column
     public password: string;
 
     @Unique
-    @AllowNull(false)
     @Column
-    public email: string;
-
-    @Unique
-    @AllowNull(true)
-    @Column
-    public phone: string|null;
+    public phone: string;
 
     @BeforeCreate
     @BeforeUpdate
-    public static async hashPassword(instance: User) {
-        if (instance.changed("password")) {
-            instance.password = await bcrypt.hash(instance.password, 10);
+    public static async hashPassword(user: UserModel) {
+        if (user.changed("password")) {
+            user.password = await bcrypt.hash(user.password, 15);
         }
     }
 
-    public isPasswordMatching(password: string): Promise<boolean> {
-        return bcrypt.compare(password, this.password);
+    public comparePasswords(pass: string): Promise<boolean> {
+        return bcrypt.compare(pass, this.password);
     }
 }

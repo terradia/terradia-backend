@@ -7,17 +7,10 @@ export default {
   development: {
     username: "postgres",
     password: "postgres",
-    database: "terradia_dev",
+    database: "terradia_db",
     host: "localhost",
     port: 5432,
-    dialect: "postgres",
-    // Prevents occasional bugs on seeding in development
-    pool: {
-      max: 5,
-      min: 0,
-      idle: 20000,
-      acquire: 20000
-    }
+    dialect: "postgres"
   },
   production: {
     username: process.env.DB_USER,
