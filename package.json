@@ -4,8 +4,13 @@
   "description": "Backend",
   "main": "index.js",
   "scripts": {
-    "start": "cross-env DEBUG=app:* ts-node-dev --files --project tsconfig.json -r dotenv/config --transpileOnly ./src/index.ts",
-    "dev": "docker-compose -d terradia up"
+    "start": "cross-env DEBUG=app:* ts-node-dev --files --project tsconfig.json -r dotenv/config --transpileOnly app/index.ts",
+    "dev": "docker-compose -d terradia up",
+    "db:create": "db-migrate db:create terradia_db --config app/database/database.json -e creation",
+    "migration:create": "db-migrate create --migrations-dir app/database/migrations --config app/database/database.json",
+    "migrate:up": "db-migrate up --config app/database/database.json --migrations-dir app/database/migrations -v",
+    "migrate:down": "db-migrate down -c 1 --config app/database/database.json -m app/database/migrations",
+    "migrate:down:all": "db-migrate down -c 999 --config app/database/database.json -m app/database/migrations"
   },
   "repository": {
     "type": "git",
@@ -19,6 +24,7 @@
   },
   "homepage": "https://github.com/terradia/terradia-backend#readme",
   "devDependencies": {
+    "@types/bcrypt": "^3.0.0",
     "@types/body-parser": "^1.17.0",
     "@types/compression": "^0.0.36",
     "@types/cookie-parser": "^1.4.1",
@@ -28,17 +34,17 @@
     "@types/graphql-resolvers": "^0.2.0",
     "@types/helmet": "^0.0.43",
     "@types/jsonwebtoken": "^8.3.2",
-    "@types/node": "^11.13.6",
-    "@types/validator": "^10.11.0",
+    "@types/node": "^11.13.19",
+    "@types/validator": "^10.11.3",
     "chalk": "^2.4.2",
     "cross-env": "^5.2.0",
+    "cz-conventional-changelog": "^2.1.0",
     "db-migrate": "^0.11.5",
     "db-migrate-pg": "^0.5.0",
     "debug": "^4.1.1",
     "dotenv": "^7.0.0",
     "ts-node-dev": "^1.0.0-pre.35",
-    "typescript": "^3.4.5",
-    "cz-conventional-changelog": "^2.1.0"
+    "typescript": "^3.4.5"
   },
   "config": {
     "commitizen": {
@@ -46,16 +52,19 @@
     }
   },
   "dependencies": {
+    "@types/bluebird": "^3.5.27",
     "apollo-server": "^2.7.0",
     "apollo-server-express": "^2.7.0",
-    "graphql": "^14.4.2",
+    "bcrypt": "latest",
     "compression": "latest",
-    "helmet": "latest",
     "cookie-parser": "latest",
+    "graphql": "^14.4.2",
+    "helmet": "latest",
     "pg": "^7.11.0",
-    "sequelize-typescript": "^1.0.0-beta.3 ",
+    "prettier": "^1.18.2",
     "reflect-metadata": "^0.1.13",
-    "sequelize": "^5.10.1",
-    "bcrypt": "latest"
+    "sequelize": "^5.17.0",
+    "sequelize-cli": "^5.5.0",
+    "sequelize-typescript": "^1.0.0"
   }
 }
