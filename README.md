@@ -61,13 +61,22 @@ Once your new migration is created you can code the `up` & `down` functions (jus
 ## Development
 
 - #### Apollo Server
+
 The Apollo Server is available at the url : `http://localhost:8000`
+
 - #### Pgadmin
+
 The Pgadmin url is : `http://localhost:5050`
+
 - #### PostgreSQL
-**Url** : `http://localhost:5432` 
+
+**Url** : `http://localhost:5432`
+ 
 **Username** : `postgres`
+
 **Password** : `postgres`
+
 **Local database hostname at server creation:** `postgres`
+
 *(it's the name of the PostgreSQL inside the docker-compose network, it is not `localhost`)*
 
