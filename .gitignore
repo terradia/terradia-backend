@@ -59,3 +59,12 @@ typings/
 
 # next.js build output
 .next
+
+# JetBrains caching directory
+.idea
+
+# dist directory (transpiled and compiled code is inside this directory)
+dist
+
+# postgre folder that we have in the repository
+postgre

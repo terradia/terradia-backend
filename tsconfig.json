@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "module": "commonjs",
+    "lib": ["dom","es6"],
+    "outDir": "dist",
+    "rootDir": "src",
+    "removeComments": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "target": "es6", // or a more recent ecmascript version
+    "emitDecoratorMetadata": true
+  }
+}
