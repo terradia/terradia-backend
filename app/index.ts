@@ -8,7 +8,7 @@ import cookieParser from "cookie-parser";
 import resolvers from "./graphql/resolvers";
 import typeDefs from "./graphql/schema";
 
-import sequelize from "./models";
+import sequelize from "./database/models";
 
 import bodyParser = require("body-parser");
 import logger from "./logger";

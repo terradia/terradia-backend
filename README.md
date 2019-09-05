@@ -15,6 +15,11 @@ The server is composed of multiple dockers :
 
 ### Install & Run the Docker-Compose
 
+- You will need to install all the dependencies to make the dockers work :
+
+
+    # npm install
+
 - First, build & run the docker-compose :
 
 *This will run the docker and show the logs in the terminal and close the docker when you do a `Ctrl + C`.*
