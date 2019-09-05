@@ -1,4 +1,4 @@
-version: "3.7"
+version: "3"
 
 services:
   api:
@@ -18,23 +18,36 @@ services:
       - postgres
 
   postgres:
-    image: postgres
-    restart: always
-    env_file:
-      ./.env
+    image: postgres:11
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres
     volumes:
       - ./postgre:/var/lib/postgresql/data
 
   pgadmin:
+    container_name: pgadmin_container
     image: dpage/pgadmin4
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
     volumes:
       - pgadmin:/root/.pgadmin
+    networks:
+      - postgres
     ports:
       - "${PGADMIN_PORT:-5050}:80"
     restart: unless-stopped
+
+networks:
+  postgres:
+    driver: bridge
 
 volumes:
   postgres:
