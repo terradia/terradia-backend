@@ -2,7 +2,7 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import { AuthenticationError } from "apollo-server-express";
 
-import User from "./models/user.model";
+import User from "./database/models/user.model";
 
 export const getUser = async (req: express.Request) => {
     const { authorization } = req.headers;
