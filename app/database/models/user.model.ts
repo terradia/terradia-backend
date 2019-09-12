@@ -58,7 +58,24 @@ export default class UserModel extends Model<UserModel> {
         }
     }
 
-    public comparePasswords(pass: string): Promise<boolean> {
-        return bcrypt.compare(pass, this.password);
+    public static comparePasswords(pass: string, hash: string): Promise<boolean> {
+        return bcrypt.compare(pass, hash);
     }
+
+    public userExist(email: string): boolean {
+        return false;
+    }
+
+    public static async findByLogin (login: string): Promise<UserModel | null>{
+        let user = await UserModel.findOne({
+            where: { email: login },
+        });
+        // if (!user) {
+        //     user = await UserModel.findOne({
+        //         where: { email: login },
+        //     });
+        // }
+
+        return user;
+    };
 }
