@@ -14,7 +14,7 @@ import {
     Unique
 } from "sequelize-typescript";
 
-import bcrypt from "bcrypt-nodejs";
+import bcrypt from "bcrypt";
 
 const NAME_REGEX = /^[a-zàâéèëêïîôùüçœ\'’ -]+$/i;
 
