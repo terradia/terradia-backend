@@ -50,15 +50,24 @@ export default class UserModel extends Model<UserModel> {
     @Column
     public phone: string;
 
+    @Default(false)
+    @Column
+    public validated: boolean;
+
     @BeforeCreate
     @BeforeUpdate
     public static async hashPassword(user: UserModel) {
         if (user.changed("password")) {
-            user.password = await bcrypt.hash(user.password, 15);
+            await bcrypt.hash(user.password, null, null, (err, hash) => {
+                user.password = hash;
+            });
         }
     }
 
-    public comparePasswords(pass: string): Promise<boolean> {
-        return bcrypt.compare(pass, this.password);
+    async comparePasswords(pass: string): Promise<boolean> {
+        return bcrypt.compare(pass, this.password, (res) => {
+            console.log(res);
+            return res
+        });
     }
 }

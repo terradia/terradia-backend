@@ -55,7 +55,6 @@
     "@types/bluebird": "^3.5.27",
     "apollo-server": "^2.7.0",
     "apollo-server-express": "^2.7.0",
-    "bcrypt": "latest",
     "compression": "latest",
     "cookie-parser": "latest",
     "graphql": "^14.4.2",
@@ -66,6 +65,7 @@
     "reflect-metadata": "^0.1.13",
     "sequelize": "^5.17.0",
     "sequelize-cli": "^5.5.0",
-    "sequelize-typescript": "^1.0.0"
+    "sequelize-typescript": "^1.0.0",
+    "bcrypt-nodejs": "latest"
   }
 }
