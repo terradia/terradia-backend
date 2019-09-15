@@ -85,3 +85,8 @@ The Pgadmin url is : `http://localhost:5050`
 
 *(it's the name of the PostgreSQL inside the docker-compose network, it is not `localhost`)*
 
+## Start BackEnd
+
+    make up (run the db and the admin)
+    
+    npm start (run the apollo server)
