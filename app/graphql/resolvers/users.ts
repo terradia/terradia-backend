@@ -2,22 +2,40 @@ import UserModel from "../../database/models/user.model";
 import { UserInputError } from "apollo-server-express";
 import { generateAuthlink } from "../../auth";
 import jwt from "jsonwebtoken";
-
-// Create token using jwt.
-const createToken = async (user, secret, expiresIn?) => {
-  return jwt.sign({sub: user.id}, secret, {
-      expiresIn
-  });
+import { AuthenticationError, UserInputError } from 'apollo-server';
+const createToken = async (user, secret, expiresIn) => {
+    const { id, email, username, role } = user;
+    return await jwt.sign({ id, email, username, role }, secret, {
+        expiresIn,
+    });
 };
 
+const EXPIREIN = '3000m'
 export default {
-  Query: {
-    getUser: async (_parent, _args, { user }) => {
-      if (!user) {
-        return null;
-      }
-      // TODO : Analytics
-      return user;
+    Query: {
+        getUser: async (_parent, _args, { user }) => {
+            if (!user) {
+                return null;
+            }
+            // TODO : Analytics
+            return user;
+        }
+    },
+    Mutation: {
+        login: async(_parent, { email, password }, {models, secret}, _info ) => {
+            let user = await models.models.UserModel.findByLogin(email);
+            if (!user) {
+                throw new UserInputError(
+                    'No user found with this login credentials.',
+                );
+            }
+            const isValid = await models.models.UserModel.comparePasswords(password, user.password);
+
+            if (!isValid) {
+                throw new AuthenticationError('Invalid password.');
+            }
+            return { token: createToken(user, secret, EXPIREIN), userId: user.id };
+        }
     }
   },
   Mutation: {

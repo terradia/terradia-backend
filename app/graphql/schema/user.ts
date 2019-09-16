@@ -18,6 +18,14 @@ export default gql`
     message: String!
     userId: String!
   }
+  extend type Mutation {
+    login(email: String, password: String): SigninAnswer!
+  }
+  type SigninAnswer {
+    token: String!
+    userId: String!
+  }
+  
   type User {
     id: ID!
     firstName: String!
