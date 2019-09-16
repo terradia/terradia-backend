@@ -67,7 +67,7 @@ export default class UserModel extends Model<UserModel> {
     }
 
     public static async findByLogin (login: string): Promise<UserModel | null>{
-        let user = await UserModel.findOne({
+        return await UserModel.findOne({
             where: { email: login },
         });
         // if (!user) {
@@ -76,6 +76,5 @@ export default class UserModel extends Model<UserModel> {
         //     });
         // }
 
-        return user;
     };
 }

@@ -5,11 +5,13 @@ export default gql`
     getUser: User!
   }
   extend type Mutation {
-    login(email: String, password: String): Token
+    login(email: String, password: String): SigninAnswer!
   }
-  type Token {
-      token: String!
+  type SigninAnswer {
+    token: String!
+    userId: String!
   }
+  
   type User {
     id: ID!
     firstName: String!

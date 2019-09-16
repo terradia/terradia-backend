@@ -33,7 +33,7 @@ export default {
             if (!isValid) {
                 throw new AuthenticationError('Invalid password.');
             }
-            return { token: createToken(user, secret, EXPIREIN) };
+            return { token: createToken(user, secret, EXPIREIN), userId: user.id };
         }
     }
 };
