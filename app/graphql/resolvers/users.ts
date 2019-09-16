@@ -22,14 +22,14 @@ export default {
     }
   },
   Mutation: {
-    login: async (_parent, {email, password}, {models, secret}, _info) => {
-      let user = await models.models.UserModel.findByLogin(email);
+    login: async (_parent, {email, password}, {secret}) => {
+      let user = await UserModel.findByLogin(email);
       if (!user) {
         throw new UserInputError(
             'No user found with this login credentials.',
         );
       }
-      const isValid = await models.models.UserModel.comparePasswords(password, user.password);
+      const isValid = await UserModel.comparePasswords(password, user.password);
 
       if (!isValid) {
         throw new AuthenticationError('Invalid password.');

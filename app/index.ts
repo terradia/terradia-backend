@@ -61,7 +61,7 @@ const startServer = async () => {
         context: async ({ req }) => {
             const user = await getUser(req);
             // TOKEN_SECRET is the secret to generate the tokens of the users. It is in the env
-            return { user, secret: process.env.TOKEN_SECRET, models: sequelize };
+            return { user, secret: process.env.TOKEN_SECRET };
         },
         formatError: error => {
             const message = error.message
