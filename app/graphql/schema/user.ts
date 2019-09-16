@@ -12,14 +12,15 @@ export default gql`
       email: String!
       phone: String
     ): SignupAnswer!
+    login(
+        email: String!,
+        password: String!
+    ): SigninAnswer!
   }
   type SignupAnswer {
     token: String!
     message: String!
     userId: String!
-  }
-  extend type Mutation {
-    login(email: String, password: String): SigninAnswer!
   }
   type SigninAnswer {
     token: String!
