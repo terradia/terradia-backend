@@ -1,29 +1,29 @@
 version: "3"
 
 services:
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    expose:
-      - "8000"
-    ports:
-      - "8000:8000"
-    environment:
-      - NODE_ENV=development
-      - PORT=8000
-      - APOLLO_INTROSPECTION=true
-      - APOLLO_PLAYGROUND=true
-    env_file:
-      - ./.env
-    networks:
-      - postgres
-    volumes:
-      - ./app:/app/app
-      - ./node_modules:/app/node_modules # the docker will take the node modules you have in you repository to avoid duplicates.
-    depends_on:
-      - postgres
-      - pgadmin
+#  api:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    expose:
+#      - "8000"
+#    ports:
+#      - "8000:8000"
+#    environment:
+#      - NODE_ENV=development
+#      - PORT=8000
+#      - APOLLO_INTROSPECTION=true
+#      - APOLLO_PLAYGROUND=true
+#    env_file:
+#      - ./.env
+#    networks:
+#      - postgres
+#    volumes:
+#      - ./app:/app/app
+#      - ./node_modules:/app/node_modules # the docker will take the node modules you have in you repository to avoid duplicates.
+#    depends_on:
+#      - postgres
+#      - pgadmin
 
   postgres:
     image: postgres:11
