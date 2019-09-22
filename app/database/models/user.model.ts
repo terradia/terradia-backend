@@ -58,29 +58,16 @@ export default class UserModel extends Model<UserModel> {
     @BeforeUpdate
     public static async hashPassword(user: UserModel) {
         if (user.changed("password")) {
-            if (user.changed("password")) {
-                user.password = await bcrypt.hash(user.password, 15);
-            }
+            await bcrypt.hash(user.password, null, null, (err, hash) => {
+                user.password = hash;
+            });
         }
     }
 
-    public static comparePasswords(pass: string, hash: string): Promise<boolean> {
-        return bcrypt.compare(pass, hash);
-    }
-
-    public userExist(email: string): boolean {
-        return false;
-    }
-
-    public static async findByLogin (login: string): Promise<UserModel | null>{
-        return await UserModel.findOne({
-            where: { email: login },
+    async comparePasswords(pass: string): Promise<boolean> {
+        return bcrypt.compare(pass, this.password, (res) => {
+            console.log(res);
+            return res
         });
-        // if (!user) {
-        //     user = await UserModel.findOne({
-        //         where: { email: login },
-        //     });
-        // }
-
-    };
+    }
 }
