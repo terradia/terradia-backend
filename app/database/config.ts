@@ -12,6 +12,14 @@ export default {
     port: 5432,
     dialect: "postgres"
   },
+  test: {
+    username: "postgres",
+    password: "postgres",
+    database: "terradia_db",
+    host: "localhost",
+    port: 5432,
+    dialect: "postgres"
+  },
   production: {
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,

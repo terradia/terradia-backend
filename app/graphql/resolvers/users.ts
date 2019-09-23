@@ -1,5 +1,4 @@
 import UserModel from "../../database/models/user.model";
-import { UserInputError } from "apollo-server-express";
 import { generateAuthlink } from "../../auth";
 import jwt from "jsonwebtoken";
 import { AuthenticationError, UserInputError } from 'apollo-server';
