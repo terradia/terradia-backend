@@ -1,10 +1,21 @@
-import {BelongsToMany, Column, DataType, Default, IsUUID, Model, PrimaryKey, Table} from "sequelize-typescript";
+import {
+    AllowNull,
+    BelongsToMany,
+    Column,
+    DataType,
+    Default,
+    IsNull,
+    IsUUID,
+    Model,
+    PrimaryKey,
+    Table
+} from "sequelize-typescript";
 import ProductModel from "./product.model";
 import ProductCategoryModel from "./product-cateogry.model";
 
 @Table({
     tableName: "Categories",
-    timestamps: true
+    timestamps: false
 })
 export default class CategoryModel extends Model<CategoryModel> {
 
@@ -16,6 +27,7 @@ export default class CategoryModel extends Model<CategoryModel> {
     @Column
     public name: string;
 
+    @AllowNull(true)
     @Column
     public parentCategoryId: number;
 

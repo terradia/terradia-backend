@@ -7,6 +7,7 @@ export default gql`
   }
   extend type Mutation {
     createProduct(name: String!, description: String!): Product!
+    addCategoryToProduct(categoryName: String!, productId: String!): Product!
   }
   
   type Product {
@@ -18,7 +19,7 @@ export default gql`
   type Category {
     id: Int!
     name: String!
-    parentCategoryId: Int!
+    parentCategoryId: Int
     products: [Product]
   }
 `;

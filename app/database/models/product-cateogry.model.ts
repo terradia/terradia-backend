@@ -9,7 +9,7 @@ import ProductModel from "./product.model";
 
 @Table({
     tableName: "ProductCategories",
-    timestamps: true
+    timestamps: false
 })
 export default class ProductCategoryModel extends Model<ProductCategoryModel> {
     @ForeignKey(() => ProductModel)

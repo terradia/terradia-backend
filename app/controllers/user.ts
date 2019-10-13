@@ -32,12 +32,12 @@ export default {
             if (record.validated) {
               return res.status(400).body({
                 type: "fail",
-                message: "Tu as déjà confirmé ton mail principal"
+                message: "Tu as déjà confirmé ton mail"
               });
             }
             return record.update({ validated: true }).then(() => ({
               type: "success",
-              message: "Ton adresse mail principale a bien été confirmée"
+              message: "Ton adresse mail a bien été confirmée"
             }));
           })
           .catch(next);
