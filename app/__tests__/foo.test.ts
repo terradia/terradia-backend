@@ -36,34 +36,28 @@ const LOGIN = gql`
 `;
 
 test('authentication', async () => {
+    const expected = /[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}/;
     let user = generateUser();
-    console.log(user);
     let emailAlreadyTaken = await UserModel.findOne({
         where: {email: user.email}
     });
     while (emailAlreadyTaken) {
-        console.log("Generating new user");
         user = generateUser();
         emailAlreadyTaken = await UserModel.findOne({
             where: {email: user.email}
         });
     }
-    console.log(emailAlreadyTaken);
     const server =  await createNewInstance();
     const {mutate} =  createTestClient(server);
     const registerRes = await mutate({
         mutation: REGISTER,
         variables: {firstName: user.firstName, lastName: user.lastName, password: user.password, email: user.email, phone: user.phone}
     });
-    console.log(process.env.TOKEN_SECRET);
-    console.log(registerRes);
     const res = await mutate({
         mutation: LOGIN,
         variables: {email: user.email, password: user.password},
     });
-    console.log(res);
-    // expect(sum()).toBe(0);
-
+    expect(res.data.login.userId).toEqual(expect.stringMatching(expected));
 });
 
 test('basic again', () => {
