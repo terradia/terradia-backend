@@ -12,10 +12,10 @@ export const getUser = async (req: express.Request) => {
     if (token) {
         try {
             const decoded: any = await jwt.verify(token, process.env.TOKEN_SECRET!);
-            return await User.findByPk(decoded.sub);
+            return await User.findByPk(decoded.id);
         } catch (e) {
             throw new AuthenticationError(
-                "Session expired, please connect you again" // TODO : change the string to be translated.
+                "Session expired, please connect you again", // TODO : change the string to be translated.
             );
         }
     }

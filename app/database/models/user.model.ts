@@ -58,9 +58,7 @@ export default class UserModel extends Model<UserModel> {
     @BeforeUpdate
     public static async hashPassword(user: UserModel) {
         if (user.changed("password")) {
-            if (user.changed("password")) {
-                user.password = await bcrypt.hash(user.password, 15);
-            }
+            user.password = await bcrypt.hash(user.password, 15);
         }
     }
 

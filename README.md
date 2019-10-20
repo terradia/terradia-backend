@@ -71,7 +71,13 @@ The Apollo Server is available at the url : `http://localhost:8000`
 
 - #### Pgadmin
 
-The Pgadmin url is : `http://localhost:5050`
+The Pgadmin url is : [http://localhost:5050]()
+
+When you access this url, a connection will be needed to access pgadmin, here are the credentials :
+
+**Email** : `pgadmin4@pgadmin.org`
+
+**Password** : `admin`
 
 - #### PostgreSQL
 
