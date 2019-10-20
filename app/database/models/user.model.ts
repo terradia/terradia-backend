@@ -14,7 +14,7 @@ import {
     Unique
 } from "sequelize-typescript";
 
-import bcrypt from "bcrypt-nodejs";
+import bcrypt from "bcrypt";
 
 const NAME_REGEX = /^[a-zàâéèëêïîôùüçœ\'’ -]+$/i;
 
@@ -50,6 +50,10 @@ export default class UserModel extends Model<UserModel> {
     @Column
     public phone: string;
 
+    @Default(false)
+    @Column
+    public validated: boolean;
+
     @BeforeCreate
     @BeforeUpdate
     public static async hashPassword(user: UserModel) {
@@ -58,7 +62,23 @@ export default class UserModel extends Model<UserModel> {
         }
     }
 
-    public comparePasswords(pass: string): Promise<boolean> {
-        return bcrypt.compare(pass, this.password);
+    public static comparePasswords(pass: string, hash: string): Promise<boolean> {
+        return bcrypt.compare(pass, hash);
     }
+
+    public userExist(email: string): boolean {
+        return false;
+    }
+
+    public static async findByLogin (login: string): Promise<UserModel | null>{
+        return await UserModel.findOne({
+            where: { email: login },
+        });
+        // if (!user) {
+        //     user = await UserModel.findOne({
+        //         where: { email: login },
+        //     });
+        // }
+
+    };
 }

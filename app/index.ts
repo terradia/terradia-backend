@@ -10,6 +10,8 @@ import typeDefs from "./graphql/schema";
 
 import sequelize from "./database/models";
 
+import userController from "./controllers/user";
+
 import bodyParser = require("body-parser");
 import logger from "./logger";
 import { getUser } from "./auth";
@@ -80,6 +82,9 @@ const startServer = async () => {
     graphServer.applyMiddleware({ app: server, cors: corsOptions });
     server.use(bodyParser.json());
     server.use(bodyParser.urlencoded({ extended: true }));
+
+    // check the email of the user.
+    server.get("/user/validation/check-email", userController.checkEmail);
 
     server.use(
         (
