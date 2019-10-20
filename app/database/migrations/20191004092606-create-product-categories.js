@@ -1,13 +1,13 @@
-'use strict';
+"use strict";
 
 var dbm;
 var type;
 var seed;
 
 /**
-  * We receive the dbmigrate dependency from dbmigrate initially.
-  * This enables us to not have to rely on NODE_PATH.
-  */
+ * We receive the dbmigrate dependency from dbmigrate initially.
+ * This enables us to not have to rely on NODE_PATH.
+ */
 exports.setup = function(options, seedLink) {
   dbm = options.dbmigrate;
   type = dbm.dataType;
@@ -15,31 +15,29 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db
-      .createTable("ProductCategories",
-          {
-            id: {
-              type: "int",
-              primaryKey: true,
-              autoIncrement: true,
-              notNull: true,
-              unsigned: true
-            },
-            productId: {
-              type: "uuid",
-              notNull: true
-            },
-            categoryId: {
-              type: "int",
-              notNull: true
-            }
-          });
+  return db.createTable("ProductCategories", {
+    id: {
+      type: "int",
+      primaryKey: true,
+      autoIncrement: true,
+      notNull: true,
+      unsigned: true
+    },
+    productId: {
+      type: "uuid",
+      notNull: true
+    },
+    categoryId: {
+      type: "uuid",
+      notNull: true
+    }
+  });
 };
 
 exports.down = function(db) {
-  return db.dropTable('ProductCategories');
+  return db.dropTable("ProductCategories");
 };
 
 exports._meta = {
-  "version": 1
+  version: 1
 };

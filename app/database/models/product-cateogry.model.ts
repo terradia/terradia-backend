@@ -18,5 +18,5 @@ export default class ProductCategoryModel extends Model<ProductCategoryModel> {
 
     @ForeignKey(() => CategoryModel)
     @Column
-    categoryId: number;
+    categoryId: string;
 }

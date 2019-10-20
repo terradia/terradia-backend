@@ -50,6 +50,10 @@ export default class UserModel extends Model<UserModel> {
     @Column
     public phone: string;
 
+    @Default(false)
+    @Column
+    public validated: boolean;
+
     @BeforeCreate
     @BeforeUpdate
     public static async hashPassword(user: UserModel) {
