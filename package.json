@@ -4,7 +4,7 @@
   "description": "Backend",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --detectOpenHandles",
     "start": "cross-env DEBUG=app:* ts-node-dev --files --project tsconfig.json -r dotenv/config --transpileOnly app/index.ts",
     "dev": "docker-compose -d terradia up",
     "db:create": "db-migrate db:create terradia_db --config app/database/database.json -e creation",

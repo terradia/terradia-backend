@@ -1,10 +1,7 @@
-import { sum } from './foo';
 const {createTestClient} = require('apollo-server-testing');
-// const {constructTestServer} = require('./__utils');
 import {createNewInstance} from './__utils'
 const faker = require('faker');
 const gql = require('graphql-tag');
-import sequelize from "../database/models";
 import UserModel from "../database/models/user.model";
 
 const generateUser = () => {
@@ -34,36 +31,51 @@ const LOGIN = gql`
         }
     }
 `;
-describe("Testing register and login", () =>{
+let mutate = null;
+const expected = /[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}/;
+let user = generateUser();
+let server = null;
 
-    test('authentication', async () => {
-        const expected = /[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}/;
-        let user = generateUser();
-        let emailAlreadyTaken = await UserModel.findOne({
+beforeAll(async (done) => {
+    let emailAlreadyTaken = await UserModel.findOne({
+        where: {email: user.email}
+    });
+    while (emailAlreadyTaken) {
+        user = generateUser();
+        emailAlreadyTaken = await UserModel.findOne({
             where: {email: user.email}
         });
-        while (emailAlreadyTaken) {
-            user = generateUser();
-            emailAlreadyTaken = await UserModel.findOne({
-                where: {email: user.email}
-            });
-        }
-        const server =  await createNewInstance();
-        const {mutate} =  createTestClient(server);
+    }
+    server =  await createNewInstance();
+
+    mutate = createTestClient(server).mutate;
+    done();
+});
+
+
+describe("Testing register and login", () => {
+
+    test('register', async (done) => {
         const registerRes = await mutate({
             mutation: REGISTER,
-            variables: {firstName: user.firstName, lastName: user.lastName, password: user.password, email: user.email, phone: user.phone}
+            variables: {
+                firstName: user.firstName,
+                lastName: user.lastName,
+                password: user.password,
+                email: user.email,
+                phone: user.phone
+            }
         });
         await expect(registerRes.data.register.userId).toEqual(expect.stringMatching(expected));
-
+        done();
+    });
+    test('login', async (done) => {
         const res = await mutate({
             mutation: LOGIN,
             variables: {email: user.email, password: user.password},
         });
-        return expect(res.data.login.userId).toEqual(expect.stringMatching(expected));
+        await expect(res.data.login.userId).toEqual(expect.stringMatching(expected));
+        done();
     });
 });
 
-test('basic again', () => {
-    expect(sum(1, 2)).toBe(3);
-});
