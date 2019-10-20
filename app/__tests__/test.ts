@@ -15,6 +15,17 @@ const generateUser = () => {
     };
 };
 
+
+const GET_PRODUCTS = gql`
+    query getProducts {
+        getAllCategories {
+            id,
+            name
+        }
+    }
+`;
+
+
 const REGISTER = gql`
     mutation Register($firstName: String!, $lastName: String!, $password: String!, $email: String!, $phone: String!) {
         register(firstName: $firstName, lastName: $lastName, password: $password, email: $email, phone: $phone){
@@ -31,7 +42,7 @@ const LOGIN = gql`
         }
     }
 `;
-let mutate = null;
+let mutate, query = null;
 const expected = /[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}/;
 let user = generateUser();
 let server = null;
@@ -48,7 +59,9 @@ beforeAll(async (done) => {
     }
     server =  await createNewInstance();
 
-    mutate = createTestClient(server).mutate;
+    let serv = createTestClient(server);
+    mutate = serv.mutate;
+    query = serv.query;
     done();
 });
 
@@ -77,5 +90,23 @@ describe("Testing register and login", () => {
         await expect(res.data.login.userId).toEqual(expect.stringMatching(expected));
         done();
     });
+    test('bad login', async (done) => {
+        const res = await mutate({
+            mutation: LOGIN,
+            variables: {email: 'tttttttttttt@tttttt.com', password: 'thisisabadpassword'},
+        });
+        await expect(res.errors[0].message).toEqual(expect.stringMatching("No user found with this login credentials."));
+        done();
+    });
+
 });
 
+describe("Testing register and login", () => {
+    test("Fetch categories", async (done) => {
+        const res = await query({
+            mutation: GET_PRODUCTS,
+        });
+        expect(Array.isArray(res.data.getAllCategories)).toBe(true);
+        done();
+    })
+});
