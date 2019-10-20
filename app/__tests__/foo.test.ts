@@ -34,30 +34,34 @@ const LOGIN = gql`
         }
     }
 `;
+describe("Testing register and login", () =>{
 
-test('authentication', async () => {
-    const expected = /[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}/;
-    let user = generateUser();
-    let emailAlreadyTaken = await UserModel.findOne({
-        where: {email: user.email}
-    });
-    while (emailAlreadyTaken) {
-        user = generateUser();
-        emailAlreadyTaken = await UserModel.findOne({
+    test('authentication', async () => {
+        const expected = /[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}/;
+        let user = generateUser();
+        let emailAlreadyTaken = await UserModel.findOne({
             where: {email: user.email}
         });
-    }
-    const server =  await createNewInstance();
-    const {mutate} =  createTestClient(server);
-    const registerRes = await mutate({
-        mutation: REGISTER,
-        variables: {firstName: user.firstName, lastName: user.lastName, password: user.password, email: user.email, phone: user.phone}
+        while (emailAlreadyTaken) {
+            user = generateUser();
+            emailAlreadyTaken = await UserModel.findOne({
+                where: {email: user.email}
+            });
+        }
+        const server =  await createNewInstance();
+        const {mutate} =  createTestClient(server);
+        const registerRes = await mutate({
+            mutation: REGISTER,
+            variables: {firstName: user.firstName, lastName: user.lastName, password: user.password, email: user.email, phone: user.phone}
+        });
+        await expect(registerRes.data.register.userId).toEqual(expect.stringMatching(expected));
+
+        const res = await mutate({
+            mutation: LOGIN,
+            variables: {email: user.email, password: user.password},
+        });
+        return expect(res.data.login.userId).toEqual(expect.stringMatching(expected));
     });
-    const res = await mutate({
-        mutation: LOGIN,
-        variables: {email: user.email, password: user.password},
-    });
-    expect(res.data.login.userId).toEqual(expect.stringMatching(expected));
 });
 
 test('basic again', () => {
