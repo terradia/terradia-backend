@@ -12,14 +12,15 @@ export default {
   },
   Mutation: {
     createCompany: async (_parent, _args, { user }) => {
-      const company = await CompanyModel.findOrCreate({
-        where: { ..._args, users: [user.toJSON()] }
+      const newCompany = await CompanyModel.create({..._args}).then((compagny) =>  {
+        compagny.addUser(user.id);
+        return compagny;
       });
       // CompanyModel.update(
       //   { users: [user] },
       //   { where: { id: company.id } }
       // );
-      return company.toJSON();
+      return newCompany;
     }
   }
 };
