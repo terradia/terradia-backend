@@ -6,10 +6,12 @@ import {
     IsUUID,
     Model,
     PrimaryKey,
-    Table
+    BelongsTo,
+    Table, ForeignKey
 } from "sequelize-typescript";
 import CategoryModel from "./category.model";
 import ProductCategoryModel from "./product-cateogry.model";
+import CompanyModel from "./company.model";
 
 @Table({
     tableName: "Products",
@@ -28,6 +30,22 @@ export default class ProductModel extends Model<ProductModel> {
     @Column
     public description: string;
 
+    @Column
+    public image: string;
+
     @BelongsToMany(() => CategoryModel, () => ProductCategoryModel)
-    categories: CategoryModel[];
+    public categories: CategoryModel[];
+
+    @Column
+    public createdAt: Date;
+
+    @Column
+    public updatedAt: Date;
+
+    @ForeignKey(() => CompanyModel)
+    @Column
+    companyId: string;
+
+    @BelongsTo(() => CompanyModel)
+    public company: CompanyModel;
 }

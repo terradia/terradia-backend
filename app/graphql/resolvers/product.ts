@@ -1,6 +1,7 @@
 import ProductModel from "../../database/models/product.model";
 import CategoryModel from "../../database/models/category.model";
 import ProductCategoryModel from "../../database/models/product-cateogry.model";
+import CompanyModel from "../../database/models/company.model";
 
 export default {
   Query: {
@@ -27,14 +28,22 @@ export default {
             required: false,
             attributes: ["id", "name"],
             through: { attributes: [] }
+          },
+          {
+            model: CompanyModel,
+            as: "company",
+            required: false,
+            attributes: [],
+            through: { attributes: [] }
           }
         ]
       });
     }
   },
   Mutation: {
-    createProduct: async (_parent, _args) => {
-      let product = await ProductModel.create(_args);
+    createProduct: async (_parent, _args, { user }) => {
+      console.log(user.company);
+      let product = await ProductModel.create({ _args, company: user.company });
       return product.toJSON();
     },
     addCategoryToProduct: async (

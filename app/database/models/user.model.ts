@@ -1,10 +1,10 @@
 import {
     AllowNull,
     BeforeCreate,
-    BeforeUpdate,
+    BeforeUpdate, BelongsTo,
     Column,
     DataType,
-    Default,
+    Default, ForeignKey,
     Is,
     IsEmail,
     IsUUID,
@@ -15,6 +15,7 @@ import {
 } from "sequelize-typescript";
 
 import bcrypt from "bcrypt";
+import CompanyModel from "./company.model";
 
 const NAME_REGEX = /^[a-zàâéèëêïîôùüçœ\'’ -]+$/i;
 
@@ -53,6 +54,13 @@ export default class UserModel extends Model<UserModel> {
     @Default(false)
     @Column
     public validated: boolean;
+
+    @ForeignKey(() => CompanyModel)
+    @Column
+    public companyId: string;
+
+    @BelongsTo(() => CompanyModel)
+    public company: CompanyModel;
 
     @BeforeCreate
     @BeforeUpdate

@@ -1,4 +1,4 @@
-import { gql } from 'apollo-server';
+import { gql } from "apollo-server";
 
 export default gql`
   extend type Query {
@@ -12,10 +12,7 @@ export default gql`
       email: String!
       phone: String
     ): SignupAnswer!
-    login(
-        email: String!,
-        password: String!
-    ): SigninAnswer!
+    login(email: String!, password: String!): SigninAnswer!
   }
   type SignupAnswer {
     token: String!
@@ -26,7 +23,7 @@ export default gql`
     token: String!
     userId: String!
   }
-  
+
   type User {
     id: ID!
     firstName: String!
@@ -35,5 +32,6 @@ export default gql`
     password: String!
     phone: String!
     validated: Boolean
+    company: Company
   }
 `;
