@@ -16,6 +16,9 @@ export default {
           }
         ]
       });
+    },
+    getCategoryByName: async (_parent, _args) => {
+      return CategoryModel.findOne({where: {name: _args.name}, include: [ProductModel]});
     }
   },
   Mutation: {

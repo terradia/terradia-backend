@@ -7,43 +7,21 @@ export default {
   Query: {
     getAllProducts: async (_parent, _args, _context) => {
       return ProductModel.findAll({
-        include: [
-          {
-            model: CategoryModel,
-            as: "categories",
-            required: false,
-            attributes: ["id", "name"],
-            through: { attributes: [] }
-          }
-        ]
+        include: [CategoryModel,CompanyModel]
       });
     },
     getProduct: async (_parent, { id }) => {
       return ProductModel.findOne({
         id,
-        include: [
-          {
-            model: CategoryModel,
-            as: "categories",
-            required: false,
-            attributes: ["id", "name"],
-            through: { attributes: [] }
-          },
-          {
-            model: CompanyModel,
-            as: "company",
-            required: false,
-            attributes: [],
-            through: { attributes: [] }
-          }
-        ]
+        include: [CategoryModel, CompanyModel]
       });
     }
   },
   Mutation: {
     createProduct: async (_parent, _args, { user }) => {
-      console.log(user.company);
-      let product = await ProductModel.create({ _args, company: user.company });
+      let product = await ProductModel.create({ ..._args, companyId: user.companyId }).then((product) =>  {
+        return product;
+      });
       return product.toJSON();
     },
     addCategoryToProduct: async (

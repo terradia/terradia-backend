@@ -24,8 +24,6 @@ export const getUser = async (req: express.Request) => {
 };
 
 export const generateAuthlink = (type: string, payload: object) => {
-    const token = jwt.sign({ ...payload, type }, process.env.TOKEN_SECRET!, {
-        expiresIn: "1h"
-    });
+    const token = jwt.sign({ ...payload, type }, process.env.TOKEN_SECRET!, {});
     return `${process.env.HOSTNAME}/user/validation/${type}?token=${token}`;
 };
