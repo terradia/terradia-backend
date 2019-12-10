@@ -54,6 +54,12 @@ export default class CompanyModel extends Model<CompanyModel> {
   public reviews!: CompanyReviewModel[];
 
   @Column
+  public averageMark!: number;
+
+  @Column
+  public numberOfMarks!: number;
+
+  @Column
   public createdAt!: Date;
 
   @Column

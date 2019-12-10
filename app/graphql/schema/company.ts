@@ -20,6 +20,8 @@ export default gql`
         users: [User]
         products: [Product]
         reviews: [CompanyReview]
+        averageMark: Float
+        numberOfMarks: Int
         createdAt: Date
         updatedAt: Date
     }

@@ -23,14 +23,24 @@ export default {
     ) => {
       const customer = user.customer.toJSON();
       if (customer) {
-        return CompanyReviewModel.create(
-          {
-            title,
-            customerMark,
-            description
-          }).then(async review => {
+        const company = await CompanyModel.findByPk(companyId);
+        return CompanyReviewModel.create({
+          title,
+          customerMark,
+          description
+        }).then(async review => {
           await review.setCustomer(customer.id);
           await review.setCompany(companyId);
+
+          const avg = company.averageMark;
+          const num = company.numberOfMarks;
+          const newNum = num + 1;
+          const newAvg = (avg * num + customerMark) / newNum;
+
+          await CompanyModel.update(
+            { averageMark: newAvg, numberOfMarks: newNum },
+            { where: { id: companyId } }
+          );
           return CompanyReviewModel.findByPk(review.id, {
             include: [CustomerModel, CompanyModel]
           });
