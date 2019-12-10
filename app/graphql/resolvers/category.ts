@@ -1,6 +1,6 @@
 import CategoryModel from "../../database/models/category.model";
 import ProductModel from "../../database/models/product.model";
-import ProductCategoryModel from "../../database/models/product-cateogry.model";
+import ProductCategoryModel from "../../database/models/product-category.model";
 
 export default {
   Query: {
