@@ -13,6 +13,6 @@ export default gql`
   type Customer {
     id: String!
     user: User!
-    productReviews: [ProductReview]
+    companyReviews: [CompanyReview]
   }
 `;

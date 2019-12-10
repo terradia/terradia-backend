@@ -1,18 +1,18 @@
 import CustomerModel from "../../database/models/customer.model";
 import UserModel from "../../database/models/user.model";
-import ProductReviewModel from "../../database/models/product-review.model";
+import CompanyReviewModel from "../../database/models/company-review.model";
 
 export default {
   Query: {
     getAllCustomers: async () => {
       return CustomerModel.findAll({
-        include: [UserModel, ProductReviewModel]
+        include: [UserModel, CompanyReviewModel]
       });
     },
     getCustomer: async (_parent, { userId }) => {
       return CustomerModel.findOne({
         where: { userId },
-        include: [UserModel, ProductReviewModel]
+        include: [UserModel, CompanyReviewModel]
       });
     }
   },

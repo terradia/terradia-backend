@@ -7,7 +7,7 @@ import {
   Table
 } from "sequelize-typescript";
 import UserModel from "./user.model";
-import ProductReviewModel from "./product-review.model";
+import CompanyReviewModel from "./company-review.model";
 
 // Customer :
 // Contains the information of the customer, relating to his orders, payements, reviews etc...
@@ -23,6 +23,6 @@ export default class CustomerModel extends Model<CustomerModel> {
   @BelongsTo(() => UserModel)
   public user : UserModel;
 
-  @HasMany(() => ProductReviewModel)
-  public productReviews : ProductReviewModel[];
+  @HasMany(() => CompanyReviewModel)
+  public companyReviews : CompanyReviewModel[];
 }

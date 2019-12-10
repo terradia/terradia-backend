@@ -2,17 +2,14 @@ import ProductModel from "../../database/models/product.model";
 import CategoryModel from "../../database/models/category.model";
 import ProductCategoryModel from "../../database/models/product-category.model";
 import CompanyModel from "../../database/models/company.model";
-import ProductReviewModel from "../../database/models/product-review.model";
-import CustomerModel from "../../database/models/customer.model";
 
 export default {
   Query: {
-    getAllProducts: async (_parent, _args, _context) => {
+    getAllProducts: async () => {
       return ProductModel.findAll({
         include: [
           CategoryModel,
-          CompanyModel,
-          { model: ProductReviewModel, include: [CustomerModel] }
+          CompanyModel
         ]
       });
     },
@@ -21,8 +18,7 @@ export default {
         where: { id },
         include: [
           CategoryModel,
-          CompanyModel,
-          { model: ProductReviewModel, include: [CustomerModel] }
+          CompanyModel
         ]
       });
     }
@@ -39,8 +35,7 @@ export default {
     },
     addCategoryToProduct: async (
       _parent,
-      { productId, categoryName },
-      _context
+      { productId, categoryName }
     ) => {
       let category = await CategoryModel.findOne({
         where: { name: categoryName }

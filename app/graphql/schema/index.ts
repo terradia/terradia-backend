@@ -4,7 +4,7 @@ import userSchema from "./user";
 import productSchema from "./product";
 import categorySchema from "./category";
 import companySchema from "./company";
-import productReviewSchema from "./productReview";
+import companyReviewSchema from "./companyReview";
 import customerSchema from "./customer";
 
 const linkSchema = gql`
@@ -27,6 +27,6 @@ export default [
   categorySchema,
   productSchema,
   companySchema,
-  productReviewSchema,
+  companyReviewSchema,
   customerSchema
 ];

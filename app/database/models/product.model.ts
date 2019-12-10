@@ -12,7 +12,6 @@ import {
 import CategoryModel from "./category.model";
 import ProductCategoryModel from "./product-category.model";
 import CompanyModel from "./company.model";
-import ProductReviewModel from "./product-review.model";
 
 @Table({
     tableName: "Products",
@@ -50,6 +49,4 @@ export default class ProductModel extends Model<ProductModel> {
     @BelongsTo(() => CompanyModel)
     public company: CompanyModel;
 
-    @HasMany(() => ProductReviewModel)
-    public productReviews: ProductReviewModel[];
 }

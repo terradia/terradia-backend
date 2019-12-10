@@ -7,12 +7,13 @@ import {
 } from "sequelize-typescript";
 import ProductModel from "./product.model";
 import CustomerModel from "./customer.model";
+import CompanyModel from "./company.model";
 
 @Table({
-  tableName: "ProductReviews",
+  tableName: "CompanyReviews",
   timestamps: false
 })
-export default class ProductReviewModel extends Model<ProductReviewModel> {
+export default class CompanyReviewModel extends Model<CompanyReviewModel> {
   @Column
   public title!: string;
 
@@ -29,10 +30,10 @@ export default class ProductReviewModel extends Model<ProductReviewModel> {
   @BelongsTo(() => CustomerModel)
   public customer!: CustomerModel;
 
-  @ForeignKey(() => ProductModel)
+  @ForeignKey(() => CompanyModel)
   @Column
-  public productId!: string;
+  public companyId!: string;
 
-  @BelongsTo(() => ProductModel)
-  public product!: ProductModel;
+  @BelongsTo(() => CompanyModel)
+  public company!: CompanyModel;
 }

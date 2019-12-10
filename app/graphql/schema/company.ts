@@ -19,6 +19,7 @@ export default gql`
         cover: String
         users: [User]
         products: [Product]
+        reviews: [CompanyReview]
         createdAt: Date
         updatedAt: Date
     }

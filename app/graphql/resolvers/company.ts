@@ -1,6 +1,7 @@
 import ProductModel from "../../database/models/product.model";
 import UserModel from "../../database/models/user.model";
 import CompanyModel from "../../database/models/company.model";
+import CompanyReviewModel from "../../database/models/company-review.model";
 
 interface getAllCompaniesArguments {
   page: number;
@@ -9,22 +10,22 @@ interface getAllCompaniesArguments {
 
 export default {
   Query: {
-    getAllCompanies: async (_parent, { page, pageSize }: getAllCompaniesArguments, _context) => {
+    getAllCompanies: async (_parent, { page, pageSize }: getAllCompaniesArguments) => {
       return CompanyModel.findAll({
-        include: [ProductModel, UserModel],
+        include: [ProductModel, UserModel, CompanyReviewModel],
         offset: page,
         limit: pageSize,
       });
     },
     getCompany: async (_parent, { companyId }, _context) => {
       return CompanyModel.findByPk(companyId, {
-        include: [ProductModel, UserModel]
+        include: [ProductModel, UserModel, CompanyReviewModel]
       });
     },
     getCompanyByName: async (_parent, { name }: { name: string }) => {
       return CompanyModel.findOne({
         where: { name },
-        include: [ProductModel, UserModel]
+        include: [ProductModel, UserModel, CompanyReviewModel]
       });
     }
   },
