@@ -6,15 +6,7 @@ export default {
   Query: {
     getAllCategories: async (_parent, _args, _context) => {
       return CategoryModel.findAll({
-        include: [
-          {
-            model: ProductModel,
-            as: "products",
-            required: false,
-            attributes: ["id", "name"],
-            through: { attributes: [] }
-          }
-        ]
+        include: [ProductModel]
       });
     },
     getCategoryByName: async (_parent, _args) => {

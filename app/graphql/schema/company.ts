@@ -2,7 +2,7 @@ import {gql} from "apollo-server";
 
 export default gql`
     extend type Query {
-        getAllCompanies: [Company]
+        getAllCompanies(page: Int, pageSize: Int): [Company]
         getCompany(id: ID!): Company
         getCompanyByName(name: String!): Company
     }
