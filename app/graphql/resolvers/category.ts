@@ -1,21 +1,16 @@
 import CategoryModel from "../../database/models/category.model";
 import ProductModel from "../../database/models/product.model";
-import ProductCategoryModel from "../../database/models/product-cateogry.model";
+import ProductCategoryModel from "../../database/models/product-category.model";
 
 export default {
   Query: {
     getAllCategories: async (_parent, _args, _context) => {
       return CategoryModel.findAll({
-        include: [
-          {
-            model: ProductModel,
-            as: "products",
-            required: false,
-            attributes: ["id", "name"],
-            through: { attributes: [] }
-          }
-        ]
+        include: [ProductModel]
       });
+    },
+    getCategoryByName: async (_parent, _args) => {
+      return CategoryModel.findOne({where: {name: _args.name}, include: [ProductModel]});
     }
   },
   Mutation: {

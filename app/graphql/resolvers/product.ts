@@ -1,46 +1,41 @@
 import ProductModel from "../../database/models/product.model";
 import CategoryModel from "../../database/models/category.model";
-import ProductCategoryModel from "../../database/models/product-cateogry.model";
+import ProductCategoryModel from "../../database/models/product-category.model";
+import CompanyModel from "../../database/models/company.model";
 
 export default {
   Query: {
-    getAllProducts: async (_parent, _args, _context) => {
+    getAllProducts: async () => {
       return ProductModel.findAll({
         include: [
-          {
-            model: CategoryModel,
-            as: "categories",
-            required: false,
-            attributes: ["id", "name"],
-            through: { attributes: [] }
-          }
+          CategoryModel,
+          CompanyModel
         ]
       });
     },
     getProduct: async (_parent, { id }) => {
       return ProductModel.findOne({
-        id,
+        where: { id },
         include: [
-          {
-            model: CategoryModel,
-            as: "categories",
-            required: false,
-            attributes: ["id", "name"],
-            through: { attributes: [] }
-          }
+          CategoryModel,
+          CompanyModel
         ]
       });
     }
   },
   Mutation: {
-    createProduct: async (_parent, _args) => {
-      let product = await ProductModel.create(_args);
+    createProduct: async (_parent, _args, { user }) => {
+      let product = await ProductModel.create({
+        ..._args,
+        companyId: user.companyId
+      }).then(product => {
+        return product;
+      });
       return product.toJSON();
     },
     addCategoryToProduct: async (
       _parent,
-      { productId, categoryName },
-      _context
+      { productId, categoryName }
     ) => {
       let category = await CategoryModel.findOne({
         where: { name: categoryName }
@@ -53,16 +48,8 @@ export default {
         }
       });
       let product = await ProductModel.findOne({
-        id: productId,
-        include: [
-          {
-            model: CategoryModel,
-            as: "categories",
-            required: false,
-            attributes: ["id", "name"],
-            through: { attributes: [] }
-          }
-        ]
+        where: { id: productId },
+        include: [CategoryModel]
       });
       return product ? product.toJSON() : null;
     }

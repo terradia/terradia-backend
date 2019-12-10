@@ -10,7 +10,7 @@ import {
   Table
 } from "sequelize-typescript";
 import ProductModel from "./product.model";
-import ProductCategoryModel from "./product-cateogry.model";
+import ProductCategoryModel from "./product-category.model";
 
 @Table({
   tableName: "Categories",
@@ -21,18 +21,18 @@ export default class CategoryModel extends Model<CategoryModel> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  public id: string;
+  public id!: string;
 
   @Column
-  public name: string;
+  public name!: string;
 
   @AllowNull(true)
   @Column
-  public parentCategoryId: number;
+  public parentCategoryId!: number;
 
   @BelongsToMany(() => ProductModel, {
     onDelete: "CASCADE",
     through: () => ProductCategoryModel
   })
-  products: ProductModel[];
+  products!: ProductModel[];
 }

@@ -1,4 +1,4 @@
-import { gql } from 'apollo-server';
+import { gql } from "apollo-server";
 
 export default gql`
   extend type Query {
@@ -12,7 +12,12 @@ export default gql`
   type Product {
     id: ID!
     name: String!
+    image: String
     description: String!
     categories: [Category]
+    createdAt: Date
+    updatedAt: Date
+    company: Company
+    productReviews: [CompanyReview]
   }
 `;
