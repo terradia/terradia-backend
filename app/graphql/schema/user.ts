@@ -33,5 +33,6 @@ export default gql`
     phone: String!
     validated: Boolean
     company: Company
+    customer: Customer
   }
 `;

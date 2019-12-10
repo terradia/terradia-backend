@@ -4,6 +4,8 @@ import userSchema from "./user";
 import productSchema from "./product";
 import categorySchema from "./category";
 import companySchema from "./company";
+import productReviewSchema from "./productReview";
+import customerSchema from "./customer";
 
 const linkSchema = gql`
   scalar Date
@@ -24,5 +26,7 @@ export default [
   userSchema,
   categorySchema,
   productSchema,
-  companySchema
+  companySchema,
+  productReviewSchema,
+  customerSchema
 ];
