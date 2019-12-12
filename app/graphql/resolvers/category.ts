@@ -4,7 +4,7 @@ import ProductCategoryModel from "../../database/models/product-cateogry.model";
 
 export default {
   Query: {
-    getAllCategories: async (_parent, _args, _context) => {
+    getAllCategories: async (_parent: any, _args: any, _context: any) => {
       return CategoryModel.findAll({
         include: [
           {
@@ -17,16 +17,16 @@ export default {
         ]
       });
     },
-    getCategoryByName: async (_parent, _args) => {
+    getCategoryByName: async (_parent: any, _args: any) => {
       return CategoryModel.findOne({where: {name: _args.name}, include: [ProductModel]});
     }
   },
   Mutation: {
-    createCategory: async (_parent, _args, _context) => {
+    createCategory: async (_parent: any, _args: any, _context: any) => {
       let category = await CategoryModel.create(_args);
       return category.toJSON();
     },
-    deleteCategory: async (_parent, _args, _context) => {
+    deleteCategory: async (_parent: any, _args: any, _context: any) => {
       let category = await CategoryModel.findByPk(_args.id);
       if (category !== null) {
         await CategoryModel.destroy({ where: { id: _args.id } });

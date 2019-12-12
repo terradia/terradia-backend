@@ -1,12 +1,11 @@
-import express from "express";
 import jwt from "jsonwebtoken";
-import { AuthenticationError } from "apollo-server-express";
+import { AuthenticationError } from "apollo-server-azure-functions";
 
 import User from "./database/models/user.model";
 import CompanyModel from "./database/models/company.model";
 
-export const getUser = async (req: express.Request) => {
-    const { authorization } = req.headers;
+export const getUser = async (request: any) => {
+    const { authorization }: any = request.headers;
     const token = authorization
         ? authorization.substring(7, authorization.length)
         : undefined;
@@ -25,5 +24,5 @@ export const getUser = async (req: express.Request) => {
 
 export const generateAuthlink = (type: string, payload: object) => {
     const token = jwt.sign({ ...payload, type }, process.env.TOKEN_SECRET!, {});
-    return `${process.env.HOSTNAME}/user/validation/${type}?token=${token}`;
+    return `${process.env.HOSTNAME}/${type}?token=${token}`;
 };

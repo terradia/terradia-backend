@@ -1,20 +1,20 @@
 {
   "creation": {
     "driver": "pg",
-    "user": "postgres",
-    "password": "postgres",
-    "host": "localhost",
-    "schema": "public",
-    "port": "5432"
+    "user": "terradia@terradia-db",
+    "password": "J8C7tfSU*fvEKax#KRK@+KjzxfHg73EW",
+    "host": "terradia-db.postgres.database.azure.com",
+    "port": 5432,
+    "schema": "public"
   },
   "dev": {
     "driver": "pg",
-    "user": "postgres",
-    "password": "postgres",
-    "host": "localhost",
-    "database": "terradia_db",
+    "user": "terradia@terradia-db",
+    "password": "J8C7tfSU*fvEKax#KRK@+KjzxfHg73EW",
+    "host": "terradia-db.postgres.database.azure.com",
+    "port": 5432,
     "schema": "public",
-    "port": "5432"
+    "database": "terradia_db"
   },
   "prod": {
     "driver": "pg",

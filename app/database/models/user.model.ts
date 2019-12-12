@@ -13,8 +13,7 @@ import {
     Table,
     Unique
 } from "sequelize-typescript";
-
-import bcrypt from "bcrypt";
+import bcrypt from 'bcryptjs';
 import CompanyModel from "./company.model";
 
 const NAME_REGEX = /^[a-zàâéèëêïîôùüçœ\'’ -]+$/i;
@@ -28,39 +27,39 @@ export default class UserModel extends Model<UserModel> {
     @PrimaryKey
     @Default(DataType.UUIDV4)
     @Column(DataType.UUID)
-    public id: string;
+    public id!: string;
 
     @Is(NAME_REGEX)
     @Column
-    public firstName: string;
+    public firstName!: string;
 
     @Is(NAME_REGEX)
     @Column
-    public lastName: string;
+    public lastName!: string;
 
     @AllowNull(false)
     @IsEmail
     @Column
-    public email: string;
+    public email!: string;
 
     @AllowNull(false)
     @Column
-    public password: string;
+    public password!: string;
 
     @Unique
     @Column
-    public phone: string;
+    public phone!: string;
 
     @Default(false)
     @Column
-    public validated: boolean;
+    public validated!: boolean;
 
     @ForeignKey(() => CompanyModel)
     @Column
-    public companyId: string;
+    public companyId!: string;
 
     @BelongsTo(() => CompanyModel)
-    public company: CompanyModel;
+    public company!: CompanyModel;
 
     @BeforeCreate
     @BeforeUpdate
@@ -79,7 +78,7 @@ export default class UserModel extends Model<UserModel> {
     }
 
     public static async findByLogin (login: string): Promise<UserModel | null>{
-        return await UserModel.findOne({
+        return UserModel.findOne({
             where: { email: login },
         });
         // if (!user) {
@@ -87,6 +86,5 @@ export default class UserModel extends Model<UserModel> {
         //         where: { email: login },
         //     });
         // }
-
     };
 }

@@ -2,9 +2,9 @@
   "name": "terradia-backend",
   "version": "1.0.0",
   "description": "Backend",
-  "main": "index.js",
+  "main": "./server/dist/index.js",
   "scripts": {
-    "start": "cross-env DEBUG=app:* ts-node-dev --files --project tsconfig.json -r dotenv/config --transpileOnly app/index.ts",
+    "start": "cross-env DEBUG=app:* ts-node-dev --files --project tsconfig.json -r dotenv/config --transpileOnly ./app/index.ts",
     "dev": "docker-compose -d terradia up",
     "db:create": "db-migrate db:create terradia_db --config app/database/database.json -e creation",
     "migration:create": "db-migrate create --migrations-dir app/database/migrations --config app/database/database.json",
@@ -24,8 +24,8 @@
   },
   "homepage": "https://github.com/terradia/terradia-backend#readme",
   "devDependencies": {
-    "@types/bcrypt": "^3.0.0",
-    "@types/bcrypt-nodejs": "0.0.30",
+    "@types/bcryptjs": "^2.4.2",
+    "@types/bluebird": "^3.5.27",
     "@types/body-parser": "^1.17.0",
     "@types/compression": "^0.0.36",
     "@types/cookie-parser": "^1.4.1",
@@ -36,16 +36,18 @@
     "@types/helmet": "^0.0.43",
     "@types/jsonwebtoken": "^8.3.2",
     "@types/node": "^11.13.19",
+    "@types/node-fetch": "^2.5.4",
+    "@types/pg": "^7.11.2",
     "@types/validator": "^10.11.3",
     "chalk": "^2.4.2",
-    "cross-env": "^5.2.0",
+    "cross-env": "^5.2.1",
     "cz-conventional-changelog": "^2.1.0",
     "db-migrate": "^0.11.5",
     "db-migrate-pg": "^0.5.0",
     "debug": "^4.1.1",
-    "dotenv": "^7.0.0",
+    "dotenv": "^8.2.0",
     "ts-node-dev": "^1.0.0-pre.35",
-    "typescript": "^3.4.5"
+    "typescript": "^3.7.2"
   },
   "config": {
     "commitizen": {
@@ -53,21 +55,23 @@
     }
   },
   "dependencies": {
-    "@types/bluebird": "^3.5.27",
-    "apollo-server": "^2.7.0",
-    "apollo-server-express": "^2.7.0",
-    "compression": "latest",
-    "cookie-parser": "latest",
+    "apollo-server-azure-functions": "^2.9.12",
+    "azure-function-express": "latest",
+    "bcryptjs": "^2.4.3",
+    "bluebird": "^3.7.2",
+    "body-parser": "^1.19.0",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.4",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
     "graphql": "^14.4.2",
     "helmet": "latest",
     "jsonwebtoken": "^8.5.1",
     "pg": "^7.11.0",
-    "reflect-metadata": "^0.1.13",
-    "sequelize": "^5.17.0",
-    "sequelize-cli": "^5.5.0",
     "prettier": "^1.18.2",
-    "sequelize-typescript": "^1.0.0",
-    "bcrypt-nodejs": "^0.0.3",
-    "bcrypt": "^3.0.6"
+    "reflect-metadata": "^0.1.13",
+    "sequelize": "^5.21.2",
+    "sequelize-cli": "^5.5.1",
+    "sequelize-typescript": "^1.0.0"
   }
 }

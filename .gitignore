@@ -68,3 +68,6 @@ dist
 
 # postgre folder that we have in the repository
 postgre
+
+# azure function local settings
+local.settings.json

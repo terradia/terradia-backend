@@ -14,9 +14,9 @@ import ProductModel from "./product.model";
 export default class ProductCategoryModel extends Model<ProductCategoryModel> {
     @ForeignKey(() => ProductModel)
     @Column
-    productId: string;
+    productId!: string;
 
     @ForeignKey(() => CategoryModel)
     @Column
-    categoryId: string;
+    categoryId!: string;
 }

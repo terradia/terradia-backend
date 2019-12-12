@@ -1,111 +1,67 @@
-import { ApolloServer } from "apollo-server-express";
-import cors from "cors";
-import express from "express";
-import helmet from "helmet";
-import compression from "compression";
-import cookieParser from "cookie-parser";
-
+import {ApolloServer} from "apollo-server-azure-functions"
 import resolvers from "./graphql/resolvers";
 import typeDefs from "./graphql/schema";
-
-import sequelize from "./database/models";
-
-import userController from "./controllers/user";
-
-import bodyParser = require("body-parser");
+import initSequelize from "./database/models";
 import logger from "./logger";
 import { getUser } from "./auth";
 
-const server: express.Express = express();
-
-const customHost = process.env.HOST;
+const customHost = process.env.DB_HOST;
 const prettyHost = customHost || "localhost";
-const port: number = parseInt(process.env.PORT || "8000", 10);
-
-const noCache = (
-    _req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-) => {
-    res.setHeader("Surrogate-Control", "no-store");
-    res.setHeader(
-        "Cache-Control",
-        "no-store, no-cache, must-revalidate, proxy-revalidate"
-    );
-    res.setHeader("Pragma", "no-cache");
-    res.setHeader("Expires", "0");
-    next();
-};
+const port: number = parseInt(process.env.DB_PORT || "8000", 10);
 
 const whitelist = [
     "https://terradia.eu",
     "http://localhost:3000"
 ];
 const corsOptions = {
-    origin: whitelist,
-    credentials: true
+    origin: "*",
+    credentials: true,
+    methods: ["GET", "POST", "OPTIONS"]
 };
 
-const startServer = async () => {
-    server.use(cors(corsOptions));
-    server.use(helmet());
-    server.use(noCache);
-    server.use(compression());
-    server.use(cookieParser());
+const startServer = () => {
+    const timer = Date.now();
+    console.log("initializing server (sequelize + Apollo): " + timer);
+    initSequelize();
 
-    await sequelize;
+    const contextFunc = async (request: any) => {
+        console.log("---------------------------");
+        console.log(request);
+        console.log("---------------------------");
+        const user = await getUser(request.request).then((user) => {
+            return user
+        }).catch((err) => {
+            console.log(err);
+            return null;
+        });
+        // TOKEN_SECRET is the secret to generate the tokens of the users. It is in the env
+        return { user, secret: process.env.TOKEN_SECRET };
+    };
 
     const graphServer = new ApolloServer({
-        resolvers,
-        typeDefs,
-        context: async ({ req }) => {
-            const user = await getUser(req);
-            // TOKEN_SECRET is the secret to generate the tokens of the users. It is in the env
-            return { user, secret: process.env.TOKEN_SECRET };
-        },
+        resolvers: resolvers,
+        typeDefs: typeDefs,
+        context: contextFunc,
         formatError: error => {
             const message = error.message
                 .replace("SequelizeValidationError: ", "")
                 .replace("Validation error: ", "")
                 .replace("GraphQL error:", "")
                 .trim();
+            console.log(message);
             return {
                 ...error,
                 message
             };
         },
-        uploads: {
-            maxFileSize: 5000000, // 5 MB
-            maxFiles: 2
-        }
+        introspection: true,
+        playground: true
     });
-    graphServer.applyMiddleware({ app: server, cors: corsOptions });
-    server.use(bodyParser.json());
-    server.use(bodyParser.urlencoded({ extended: true }));
+    logger.appStarted(port, prettyHost, graphServer.graphqlPath);
 
-    // check the email of the user.
-    server.get("/user/validation/check-email", userController.checkEmail);
-
-    server.use(
-        (
-            err: any,
-            _req: express.Request,
-            res: express.Response,
-            _next: express.NextFunction
-        ) => {
-            console.error(err.stack);
-            res.status(err.status || 500).send({ message: err.message, error: err });
-        }
-    );
-
-    server.listen(port, prettyHost, (err: any) => {
-        if (err) {
-            return logger.error(err.message);
-        }
-        return logger.appStarted(port, prettyHost, graphServer.graphqlPath);
-    });
+    const diff = Math.floor((Date.now() - timer));
+    console.log("server initialized in : " + diff);
+    return graphServer;
 };
 
-startServer();
-
-export default startServer;
+export default startServer().createHandler({cors: corsOptions})
