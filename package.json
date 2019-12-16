@@ -4,7 +4,7 @@
   "description": "Backend",
   "main": "./server/dist/index.js",
   "scripts": {
-    "start": "cross-env DEBUG=app:* ts-node-dev --files --project tsconfig.json -r dotenv/config --transpileOnly ./app/index.ts",
+    "start": "tsc & func host start --cors \"*\"",
     "dev": "docker-compose -d terradia up",
     "db:create": "db-migrate db:create terradia_db --config app/database/database.json -e creation",
     "migration:create": "db-migrate create --migrations-dir app/database/migrations --config app/database/database.json",
@@ -39,6 +39,7 @@
     "@types/node-fetch": "^2.5.4",
     "@types/pg": "^7.11.2",
     "@types/validator": "^10.11.3",
+    "azure-functions-core-tools": "^2.7.1948",
     "chalk": "^2.4.2",
     "cross-env": "^5.2.1",
     "cz-conventional-changelog": "^2.1.0",
