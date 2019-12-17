@@ -2,6 +2,7 @@ import CompanyReviewModel from "../../database/models/company-review.model";
 import UserModel from "../../database/models/user.model";
 import CustomerModel from "../../database/models/customer.model";
 import CompanyModel from "../../database/models/company.model";
+import { ApolloError } from "apollo-server";
 
 interface reviewData {
   title: string;
@@ -46,7 +47,7 @@ export default {
           });
         });
       } else {
-        throw Error("You need to be a customer review a product.");
+        throw new ApolloError("You need to be a customer review a product.", "403");
       }
     }
   }

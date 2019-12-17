@@ -4,6 +4,8 @@ export default gql`
   extend type Query {
     getAllProducts: [Product]!
     getProduct(id: ID!): Product!
+    getProductsByCompany(companyId: String): [Product]!
+    getProductsByCompanyByCategory(companyId: String): [Category]!
   }
   extend type Mutation {
     createProduct(name: String!, description: String!): Product!

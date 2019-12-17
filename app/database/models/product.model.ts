@@ -22,31 +22,31 @@ export default class ProductModel extends Model<ProductModel> {
     @PrimaryKey
     @Default(DataType.UUIDV4)
     @Column(DataType.UUID)
-    public id: string;
+    public id!: string;
 
     @Column
-    public name: string;
+    public name!: string;
 
     @Column
-    public description: string;
+    public description!: string;
 
     @Column
-    public image: string;
+    public image!: string;
 
     @BelongsToMany(() => CategoryModel, () => ProductCategoryModel)
-    public categories: CategoryModel[];
+    public categories!: CategoryModel[];
 
     @Column
-    public createdAt: Date;
+    public createdAt!: Date;
 
     @Column
-    public updatedAt: Date;
+    public updatedAt!: Date;
 
     @ForeignKey(() => CompanyModel)
     @Column
-    companyId: string;
+    companyId!: string;
 
     @BelongsTo(() => CompanyModel)
-    public company: CompanyModel;
+    public company!: CompanyModel;
 
 }
