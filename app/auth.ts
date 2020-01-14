@@ -17,7 +17,6 @@ export const getUser = async (req: express.Request) => {
         token,
         process.env.TOKEN_SECRET!
       );
-      console.log(decoded);
       return await User.findByPk(decoded.id, {
         include: [CompanyModel, CustomerModel]
       });

@@ -4,8 +4,6 @@ import CompanyReviewModel from "../../database/models/company-review.model";
 import CompanyModel from "../../database/models/company.model";
 import CustomersFavoriteCompaniesModel from "../../database/models/customers-favorite-companies.model";
 import { ApolloError } from "apollo-server";
-import debug from "debug";
-import chalk from "chalk";
 
 interface FavoriteArgs {
   companyId: string;
@@ -19,14 +17,22 @@ export default {
   Query: {
     getAllCustomers: async () => {
       return CustomerModel.findAll({
-        include: [UserModel, CompanyReviewModel]
+        include: [UserModel, CompanyReviewModel, CompanyModel]
       });
     },
     getCustomer: async (_parent, { userId }) => {
       return CustomerModel.findOne({
         where: { userId },
-        include: [UserModel, CompanyReviewModel]
+        include: [UserModel, CompanyReviewModel, CompanyModel]
       });
+    },
+    getCustomerFavoriteCompanies: async (_parent, { userId }, { user }) => {
+      let id = userId ? userId : user.id;
+      const customer = await CustomerModel.findOne({
+        where: { userId: id },
+        include: [UserModel, CompanyReviewModel, CompanyModel]
+      });
+      return customer.favoriteCompanies;
     }
   },
   Mutation: {

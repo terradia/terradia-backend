@@ -4,6 +4,7 @@ export default gql`
   extend type Query {
     getAllCustomers: [Customer]
     getCustomer(userId: String!): Customer
+    getCustomerFavoriteCompanies(userId: String): [Company]
   }
 
   extend type Mutation {
