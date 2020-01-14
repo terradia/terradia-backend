@@ -1,5 +1,5 @@
 import {
-  BelongsTo,
+  BelongsTo, BelongsToMany,
   Column, DataType, Default,
   ForeignKey,
   HasMany, IsUUID,
@@ -9,6 +9,7 @@ import {
 import UserModel from "./user.model";
 import CompanyReviewModel from "./company-review.model";
 import CustomersFavoriteCompaniesModel from "./customers-favorite-companies.model";
+import CompanyModel from "./company.model";
 
 // Customer :
 // Contains the information of the customer, relating to his orders, payements, reviews etc...
@@ -33,6 +34,6 @@ export default class CustomerModel extends Model<CustomerModel> {
   @HasMany(() => CompanyReviewModel)
   public companyReviews!: CompanyReviewModel[];
 
-  @HasMany(() => CustomersFavoriteCompaniesModel)
-  public favoriteCompanies!: CustomersFavoriteCompaniesModel[];
+  @BelongsToMany(() => CompanyModel, () => CustomersFavoriteCompaniesModel)
+  public favoriteCompanies!: CompanyModel[];
 }

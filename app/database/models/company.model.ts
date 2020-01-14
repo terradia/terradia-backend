@@ -7,12 +7,14 @@ import {
   IsUUID,
   Model,
   PrimaryKey,
-  Table
+  Table, BelongsToMany
 } from "sequelize-typescript";
 import ProductModel from "./product.model";
 import ProductCategoryModel from "./product-category.model";
 import UserModel from "./user.model";
 import CompanyReviewModel from "./company-review.model";
+import CustomerModel from "./customer.model";
+import CustomersFavoriteCompaniesModel from "./customers-favorite-companies.model";
 
 @Table({
   tableName: "Companies",
@@ -52,6 +54,9 @@ export default class CompanyModel extends Model<CompanyModel> {
 
   @HasMany(() => CompanyReviewModel)
   public reviews!: CompanyReviewModel[];
+
+  @BelongsToMany(() => CustomerModel, () => CustomersFavoriteCompaniesModel)
+  public customersFavorites!: CustomerModel[];
 
   @Column
   public averageMark!: number;
