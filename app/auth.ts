@@ -8,15 +8,16 @@ import CustomerModel from "./database/models/customer.model";
 
 export const getUser = async (req: express.Request) => {
   const { authorization } = req.headers;
-  const token = authorization
-    ? authorization.substring(7, authorization.length)
-    : undefined;
+  let token = authorization;
+  if (authorization && authorization.substring(7, authorization.length) == "Bearer ")
+    token = authorization.substring(7, authorization.length);
   if (token) {
     try {
       const decoded: any = await jwt.verify(
-        authorization,
+        token,
         process.env.TOKEN_SECRET!
       );
+      console.log(decoded);
       return await User.findByPk(decoded.id, {
         include: [CompanyModel, CustomerModel]
       });
