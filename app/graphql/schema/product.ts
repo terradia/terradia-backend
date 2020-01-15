@@ -20,6 +20,7 @@ export default gql`
     createdAt: Date
     updatedAt: Date
     company: Company
+    companyProductsCategory: CompanyProductsCategory
     productReviews: [CompanyReview]
   }
 `;

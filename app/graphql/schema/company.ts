@@ -19,6 +19,7 @@ export default gql`
         cover: String
         users: [User]
         products: [Product]
+        productsCategories: [CompanyProductsCategory]
         reviews: [CompanyReview]
         averageMark: Float
         numberOfMarks: Int

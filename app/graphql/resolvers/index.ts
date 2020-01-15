@@ -4,6 +4,7 @@ import categories from "./category";
 import companies from "./company";
 import customer from "./customer";
 import productReview from "./companyReview";
+import companyProductsCategory from "./companyProductsCategory";
 
 export default [
     users,
@@ -11,5 +12,6 @@ export default [
     categories,
     companies,
     customer,
-    productReview
+    productReview,
+    companyProductsCategory
 ];
