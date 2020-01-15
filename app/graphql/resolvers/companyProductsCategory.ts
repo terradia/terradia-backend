@@ -4,6 +4,7 @@ import CompanyModel from "../../database/models/company.model";
 import CompanyReviewModel from "../../database/models/company-review.model";
 import CompanyProductsCategoryModel from "../../database/models/company-products-category.model";
 import { ApolloError } from "apollo-server-errors";
+import { where } from "sequelize";
 
 export default {
   Query: {
@@ -68,11 +69,28 @@ export default {
         });
         return category;
       } else {
-        throw new ApolloError(
-          "Cannot find this Category",
-          "404"
-        );
+        throw new ApolloError("Cannot find this Category", "404");
       }
+    },
+    addProductToCompanyCategory: async (
+      _parent: any,
+      { categoryId, productId }: { categoryId: string; productId: string }
+    ) => {
+      const product = await ProductModel.findOne({ where: { id: productId } });
+      const category = await CompanyProductsCategoryModel.findOne({
+        where: { id: categoryId }
+      });
+      if (product) {
+        if (category) {
+          if (category.companyId != product.companyId)
+            throw new ApolloError("This product is not owned by this company.", "403");
+          ProductModel.update(
+            { companyProductsCategoryId: categoryId },
+            { where: { id: productId } }
+          );
+          return product;
+        } else throw new ApolloError("Category not found", "404");
+      } else throw new ApolloError("Product not found", "404");
     }
   }
 };
