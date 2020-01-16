@@ -1,10 +1,6 @@
 import ProductModel from "../../database/models/product.model";
-import UserModel from "../../database/models/user.model";
-import CompanyModel from "../../database/models/company.model";
-import CompanyReviewModel from "../../database/models/company-review.model";
 import CompanyProductsCategoryModel from "../../database/models/company-products-category.model";
 import { ApolloError } from "apollo-server-errors";
-import { where } from "sequelize";
 
 export default {
   Query: {

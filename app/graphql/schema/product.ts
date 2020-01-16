@@ -8,7 +8,7 @@ export default gql`
     getProductsByCompanyByCategory(companyId: String): [Category]!
   }
   extend type Mutation {
-    createProduct(name: String!, description: String!): Product!
+    createProduct(name: String!, description: String!, companyId: String!): Product!
     addCategoryToProduct(categoryName: String!, productId: String!): Product!
   }
   type Product {

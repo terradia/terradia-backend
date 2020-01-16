@@ -24,7 +24,7 @@ export default class CompanyProductsCategoryModel extends Model<CompanyProductsC
   @Column(DataType.UUID)
   public id!: string;
 
-  @Column
+  @Column(DataType.STRING)
   public name!: string;
 
   @ForeignKey(() => CompanyModel)

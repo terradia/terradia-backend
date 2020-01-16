@@ -4,22 +4,11 @@ import CompanyModel from "../../database/models/company.model";
 import CompanyReviewModel from "../../database/models/company-review.model";
 import CompanyProductsCategoryModel from "../../database/models/company-products-category.model";
 
-interface getAllCompaniesArguments {
-  page: number;
-  pageSize: number;
-}
-
 export default {
   Query: {
     getAllCompanies: async (
       _parent: any,
-      {
-        page,
-        pageSize
-      }: {
-        page: number;
-        pageSize: number;
-      }
+      { page, pageSize }: { page: number; pageSize: number }
     ) => {
       return CompanyModel.findAll({
         include: [
@@ -32,8 +21,9 @@ export default {
         limit: pageSize
       });
     },
-    getCompany: async (_parent, { companyId }: { companyId: string }) => {
-      return CompanyModel.findByPk(companyId, {
+    getCompany: async (_parent: any, { companyId }: { companyId: string }) => {
+      return CompanyModel.findOne({
+        where: { id: companyId },
         include: [
           ProductModel,
           UserModel,
@@ -55,7 +45,16 @@ export default {
     }
   },
   Mutation: {
-    createCompany: async (_parent, _args, { user }: { user: UserModel }) => {
+    createCompany: async (
+      _parent,
+      _args: {
+        name: string;
+        description: string;
+        email: string;
+        phone: string;
+      },
+      { user }: { user: UserModel }
+    ) => {
       const newCompany = await CompanyModel.create({ ..._args }).then(
         company => {
           // @ts-ignore
