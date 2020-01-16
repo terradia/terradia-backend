@@ -83,7 +83,10 @@ export default {
       if (product) {
         if (category) {
           if (category.companyId != product.companyId)
-            throw new ApolloError("This product is not owned by this company.", "403");
+            throw new ApolloError(
+              "This product is not owned by this company.",
+              "403"
+            );
           ProductModel.update(
             { companyProductsCategoryId: categoryId },
             { where: { id: productId } }
@@ -91,6 +94,26 @@ export default {
           return product;
         } else throw new ApolloError("Category not found", "404");
       } else throw new ApolloError("Product not found", "404");
+    },
+    removeProductFromCompanyCategory: async (
+      _parent: any,
+      { productId }: { productId: string }
+    ) => {
+      const product = await ProductModel.findOne({
+        where: { id: productId },
+        include: [CompanyProductsCategoryModel]
+      });
+      if (product && product.companyProductsCategoryId !== null) {
+        ProductModel.update(
+          { companyProductsCategoryId: null },
+          { where: { id: productId } }
+        );
+        return product;
+      } else
+        throw new ApolloError(
+          "This product is not in any category of products",
+          "404"
+        );
     }
   }
 };

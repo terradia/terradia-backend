@@ -11,27 +11,51 @@ interface getAllCompaniesArguments {
 
 export default {
   Query: {
-    getAllCompanies: async (_parent, { page, pageSize }: getAllCompaniesArguments) => {
+    getAllCompanies: async (
+      _parent: any,
+      {
+        page,
+        pageSize
+      }: {
+        page: number;
+        pageSize: number;
+      }
+    ) => {
       return CompanyModel.findAll({
-        include: [ProductModel, UserModel, CompanyReviewModel, CompanyProductsCategoryModel],
+        include: [
+          ProductModel,
+          UserModel,
+          CompanyReviewModel,
+          CompanyProductsCategoryModel
+        ],
         offset: page,
-        limit: pageSize,
+        limit: pageSize
       });
     },
-    getCompany: async (_parent, { companyId }, _context) => {
+    getCompany: async (_parent, { companyId }: { companyId: string }) => {
       return CompanyModel.findByPk(companyId, {
-        include: [ProductModel, UserModel, CompanyReviewModel, CompanyProductsCategoryModel]
+        include: [
+          ProductModel,
+          UserModel,
+          CompanyReviewModel,
+          CompanyProductsCategoryModel
+        ]
       });
     },
     getCompanyByName: async (_parent, { name }: { name: string }) => {
       return CompanyModel.findOne({
         where: { name },
-        include: [ProductModel, UserModel, CompanyReviewModel, CompanyProductsCategoryModel]
+        include: [
+          ProductModel,
+          UserModel,
+          CompanyReviewModel,
+          CompanyProductsCategoryModel
+        ]
       });
     }
   },
   Mutation: {
-    createCompany: async (_parent, _args, { user }) => {
+    createCompany: async (_parent, _args, { user }: { user: UserModel }) => {
       const newCompany = await CompanyModel.create({ ..._args }).then(
         company => {
           // @ts-ignore

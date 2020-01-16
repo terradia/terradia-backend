@@ -9,6 +9,7 @@ export default gql`
         createCompanyProductsCategory(companyId: String!, name: String!): CompanyProductsCategory
         removeCompanyProductsCategory(categoryId: String!): CompanyProductsCategory
         addProductToCompanyCategory(categoryId: String!, productId: String!): Product
+        removeProductFromCompanyCategory(productId: String!): Product
     }
     type CompanyProductsCategory {
         id: ID!
