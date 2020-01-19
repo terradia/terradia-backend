@@ -34,5 +34,6 @@ export default gql`
     validated: Boolean
     company: Company
     customer: Customer
+    companies: CompaniesUsers
   }
 `;

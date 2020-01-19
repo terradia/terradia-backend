@@ -3,10 +3,17 @@ import { UserInputError } from "apollo-server-express";
 import { generateAuthlink } from "../../auth";
 import jwt from "jsonwebtoken";
 import { AuthenticationError, UserInputError } from "apollo-server";
+import CompaniesUsersModel from "../../database/models/companies-users.model";
+import CompaniesRoleModel from "../../database/models/role.model";
+
+interface addCompaniesToUsersArgs {
+  userId: string;
+  companyId: string;
+}
 
 const createToken = async (user, secret) => {
   const { id, email, username, role } = user;
-  return jwt.sign({id, email, username, role}, secret, {});
+  return jwt.sign({ id, email, username, role }, secret, {});
 };
 
 export default {
@@ -55,6 +62,30 @@ export default {
         userId: user.id,
         message: `Un email de confirmation a été envoyé a cette adresse email : ${user.email}, clique sur le lien dans le mail afin valider ton compte !`
       };
+    },
+    addCompaniesToUsers: async (
+      _parent: any,
+      { userId, companyId }: addCompaniesToUsersArgs
+    ) => {
+      let company = await CompaniesRoleModel.findOne({
+        where: { name: companyId }
+      });
+      if (company) {
+        // findOrCreate so that it doesn't add multiple times the company to a user.
+        await CompaniesUsersModel.findOrCreate({
+          where: {
+            userId,
+            categoryId: company.id
+          }
+        });
+      } else {
+        throw new Error(`The company ${companyId} doesn't exists.`);
+      }
+      let companiesUser = await UserModel.findOne({
+        where: { id: userId },
+        include: [CompaniesRoleModel]
+      });
+      return companiesUser ? companiesUser.toJSON() : null;
     }
   }
 };

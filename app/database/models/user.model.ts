@@ -20,6 +20,7 @@ import {
 import bcrypt from "bcrypt";
 import CompanyModel from "./company.model";
 import CustomerModel from "./customer.model";
+import CompaniesRoleModel from "./role.model";
 
 const NAME_REGEX = /^[a-zàâéèëêïîôùüçœ\'’ -]+$/i;
 
@@ -65,6 +66,9 @@ export default class UserModel extends Model<UserModel> {
 
   @BelongsTo(() => CompanyModel)
   public company!: CompanyModel;
+
+  @BelongsTo(() => CompaniesRoleModel)
+  public role!: CompaniesRoleModel;
 
   @HasOne(() => CustomerModel)
   public customer!: CustomerModel;

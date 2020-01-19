@@ -7,7 +7,8 @@ import {
   IsUUID,
   Model,
   PrimaryKey,
-  Table, BelongsToMany
+  Table,
+  BelongsToMany
 } from "sequelize-typescript";
 import ProductModel from "./product.model";
 import ProductCategoryModel from "./product-category.model";
@@ -15,6 +16,7 @@ import UserModel from "./user.model";
 import CompanyReviewModel from "./company-review.model";
 import CustomerModel from "./customer.model";
 import CustomersFavoriteCompaniesModel from "./customers-favorite-companies.model";
+import CompaniesRoleModel from "./role.model";
 
 @Table({
   tableName: "Companies",
@@ -57,6 +59,9 @@ export default class CompanyModel extends Model<CompanyModel> {
 
   @BelongsToMany(() => CustomerModel, () => CustomersFavoriteCompaniesModel)
   public customersFavorites!: CustomerModel[];
+
+  @BelongsToMany(() => CompaniesRoleModel, () => CompaniesRoleModel)
+  public role!: CompaniesRoleModel[];
 
   @Column
   public averageMark!: number;
