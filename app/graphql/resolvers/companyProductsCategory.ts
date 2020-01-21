@@ -14,7 +14,7 @@ export default {
     ) => {
       return CompanyProductsCategoryModel.findAll({
         where: { companyId },
-        include: [ProductModel]
+        include: [ProductModel, CompanyModel]
       });
     },
     getCompanyProductsCategory: async (

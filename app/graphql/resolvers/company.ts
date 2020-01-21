@@ -26,7 +26,10 @@ export default {
           ProductModel,
           UserModel,
           CompanyReviewModel,
-          CompanyProductsCategoryModel
+          {
+            model: CompanyProductsCategoryModel,
+            include: [ProductModel]
+          }
         ],
         offset: page,
         limit: pageSize
