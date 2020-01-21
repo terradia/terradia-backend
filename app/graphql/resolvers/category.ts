@@ -4,25 +4,31 @@ import ProductCategoryModel from "../../database/models/product-category.model";
 
 export default {
   Query: {
-    getAllCategories: async (_parent, _args, _context) => {
+    getAllCategories: async () => {
       return CategoryModel.findAll({
         include: [ProductModel]
       });
     },
-    getCategoryByName: async (_parent, _args) => {
-      return CategoryModel.findOne({where: {name: _args.name}, include: [ProductModel]});
+    getCategoryByName: async (_parent: any, { name }: { name: string }) => {
+      return CategoryModel.findOne({
+        where: { name },
+        include: [ProductModel]
+      });
     }
   },
   Mutation: {
-    createCategory: async (_parent, _args, _context) => {
+    createCategory: async (
+      _parent: any,
+      _args: { name: string; parentCategoryId?: string }
+    ) => {
       let category = await CategoryModel.create(_args);
       return category.toJSON();
     },
-    deleteCategory: async (_parent, _args, _context) => {
-      let category = await CategoryModel.findByPk(_args.id);
+    deleteCategory: async (_parent: any, { id }: { id: string }) => {
+      let category = await CategoryModel.findByPk(id);
       if (category !== null) {
-        await CategoryModel.destroy({ where: { id: _args.id } });
-        await ProductCategoryModel.destroy({ where: { categoryId: _args.id } });
+        await CategoryModel.destroy({ where: { id } });
+        await ProductCategoryModel.destroy({ where: { categoryId: id } });
         return category.toJSON();
       } else {
         throw Error("The category was already deleted or, does not exist");
