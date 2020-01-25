@@ -7,6 +7,7 @@ import companySchema from "./company";
 import companyReviewSchema from "./companyReview";
 import customerSchema from "./customer";
 import companyProductsCategorySchema from "./companyProductsCategory";
+import addressSchema from './address'
 
 const linkSchema = gql`
   scalar Date
@@ -30,5 +31,6 @@ export default [
   companySchema,
   companyReviewSchema,
   customerSchema,
-  companyProductsCategorySchema
+  companyProductsCategorySchema,
+  addressSchema
 ];

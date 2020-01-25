@@ -10,6 +10,7 @@ import UserModel from "./user.model";
 import CompanyReviewModel from "./company-review.model";
 import CustomersFavoriteCompaniesModel from "./customers-favorite-companies.model";
 import CompanyModel from "./company.model";
+import AddressModel from './address.model'
 
 // Customer :
 // Contains the information of the customer, relating to his orders, payements, reviews etc...
@@ -33,6 +34,9 @@ export default class CustomerModel extends Model<CustomerModel> {
 
   @HasMany(() => CompanyReviewModel)
   public companyReviews!: CompanyReviewModel[];
+
+  @HasMany(() => AddressModel)
+  public address!: AddressModel[];
 
   @BelongsToMany(() => CompanyModel, () => CustomersFavoriteCompaniesModel)
   public favoriteCompanies!: CompanyModel[];
