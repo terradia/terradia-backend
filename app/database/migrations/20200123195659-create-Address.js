@@ -15,7 +15,7 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.createTable("Addresses", {
+  return db.createTable("CustomerAddresses", {
     id: {
       type: "uuid",
       primaryKey: true,
@@ -31,7 +31,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-  return db.dropTable("Addresses");
+  return db.dropTable("CustomerAddresses");
 };
 
 exports._meta = {

@@ -35,13 +35,16 @@ export default {
         limit: pageSize
       });
     },
-    getCompany: async (_parent, { companyId }: { companyId: string }) => {
-      return CompanyModel.findByPk(companyId, {
+    getCompany: async (_parent, { id }: { id: string }) => {
+      return CompanyModel.findByPk(id, {
         include: [
           ProductModel,
           UserModel,
           CompanyReviewModel,
-          CompanyProductsCategoryModel
+          {
+            model: CompanyProductsCategoryModel,
+            include: [ProductModel]
+          }
         ]
       });
     },

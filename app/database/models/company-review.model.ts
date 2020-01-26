@@ -5,7 +5,6 @@ import {
   Model, PrimaryKey,
   Table
 } from "sequelize-typescript";
-import ProductModel from "./product.model";
 import CustomerModel from "./customer.model";
 import CompanyModel from "./company.model";
 

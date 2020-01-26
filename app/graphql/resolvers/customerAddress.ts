@@ -1,12 +1,9 @@
-import CompanyReviewModel from "../../database/models/company-review.model";
 import UserModel from "../../database/models/user.model";
 import CustomerModel from "../../database/models/customer.model";
-import CompanyModel from "../../database/models/company.model";
 import { ApolloError } from "apollo-server";
-import AddressModel from "../../database/models/address.model";
-import {where} from "sequelize";
+import CustomerAddressModel from "../../database/models/customer-address.model";
 
-interface createAddressData {
+interface createCustomerAddressData {
   address: string;
   apartment?: number;
   information?: string;
@@ -24,18 +21,18 @@ interface argumentsData {
 
 export default {
   Query: {
-    getActiveAddress: async (
+    getActiveCustomerAddress: async (
         _parent: any,
         {}, {user}:argumentsData, {}
     ) => {
-      return AddressModel.findOne({where: {active: true}});
+      return CustomerAddressModel.findOne({where: {active: true}});
     },
-    getAllAddressesByUser: async (
+    getAllCustomerAddressesByUser: async (
         _parent: any,
         {}, {user}:argumentsData, {}
     ) => {
       const customer = user.customer.toJSON();
-      return AddressModel.findAll({
+      return CustomerAddressModel.findAll({
         where: {customerId: customer.id},
         include: [
           CustomerModel
@@ -44,27 +41,26 @@ export default {
     }
   },
   Mutation: {
-    createOrUpdateAddress: async (
+    createOrUpdateCustomerAddress: async (
         _parent,
-        {address, apartment, information,id}: createAddressData,
+        {address, apartment, information,id}: createCustomerAddressData,
         {user}: argumentsData
     ) => {
-      console.log(id);
       const customer = user.customer.toJSON();
       if (customer) {
-        await AddressModel.update({active: false}, {where: {active: true}});
+        await CustomerAddressModel.update({active: false}, {where: {active: true}});
         if (id) {
-          await AddressModel.update({address, apartment, information, active: true}, {where: {id}});
+          await CustomerAddressModel.update({address, apartment, information, active: true}, {where: {id}});
         }
         else  {
-          return AddressModel.create({
+          return CustomerAddressModel.create({
             address,
             apartment,
             information
           }).then(async addr => {
             console.log(addr);
             await addr.setCustomer(customer.id);
-            return AddressModel.findByPk(addr.id, {
+            return CustomerAddressModel.findByPk(addr.id, {
               include: [CustomerModel]
             });
           });
@@ -73,14 +69,14 @@ export default {
         throw new ApolloError("You need to be a customer review a product.", "403");
       }
     },
-    setActiveAddress: async (
+    setActiveCustomerAddress: async (
         _parent,
         {id}: setActiveData,
         {user}: argumentsData
     ) => {
-      await AddressModel.update({active: false}, {where: {active: true}});
-      AddressModel.update({active: true}, {where: {id}});
-      return AddressModel.findByPk(id, {
+      await CustomerAddressModel.update({active: false}, {where: {active: true}});
+      CustomerAddressModel.update({active: true}, {where: {id}});
+      return CustomerAddressModel.findByPk(id, {
         include: [CustomerModel]
       });
     }

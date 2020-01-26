@@ -1,18 +1,17 @@
 import {
-  addHook, BeforeBulkCreate, BeforeCreate, BeforeValidate,
   BelongsTo,
   Column, DataType, Default,
-  ForeignKey, HookOptions, IsUUID,
+  ForeignKey, IsUUID,
   Model, PrimaryKey,
   Table
 } from "sequelize-typescript";
 import CustomerModel from "./customer.model";
 
 @Table({
-  tableName: "Addresses",
+  tableName: "CustomerAddresses",
   timestamps: false
 })
-export default class AddressModel extends Model<AddressModel> {
+export default class CustomerAddressModel extends Model<CustomerAddressModel> {
   @IsUUID(4)
   @PrimaryKey
   @Default(DataType.UUIDV4)
