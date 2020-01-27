@@ -7,7 +7,7 @@ export default gql`
         getCompanyByName(name: String!): Company
     }
     extend type Mutation {
-        createCompany(name: String!, description: String, email: String, phone: String): Company!
+        createCompany(name: String!, logo: Upload!,  description: String, email: String, phone: String): Company!
     }
     type Company {
         id: ID!

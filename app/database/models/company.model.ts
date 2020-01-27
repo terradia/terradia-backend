@@ -7,10 +7,9 @@ import {
   IsUUID,
   Model,
   PrimaryKey,
-  Table, BelongsToMany
+  Table, BelongsToMany, AfterFind
 } from "sequelize-typescript";
 import ProductModel from "./product.model";
-import ProductCategoryModel from "./product-category.model";
 import UserModel from "./user.model";
 import CompanyReviewModel from "./company-review.model";
 import CustomerModel from "./customer.model";
@@ -88,4 +87,17 @@ export default class CompanyModel extends Model<CompanyModel> {
 
   @Column
   public updatedAt!: Date;
+
+  @AfterFind
+  static afterFindHook(result: any): void {
+    if(result.constructor === Array) {
+      let arrayLength = result.length;
+      for (let i = 0; i < arrayLength; i++) {
+        result[i].logo = process.env.__S3_URL__ + result[i].logo;
+      }
+    } else {
+      result.logo = process.env.__S3_URL__ + result.logo;
+    }
+    return result;
+  }
 }

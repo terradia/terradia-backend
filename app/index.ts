@@ -1,6 +1,6 @@
 import { ApolloServer } from "apollo-server-express";
 import cors from "cors";
-import express from "express";
+import express, {json} from "express";
 import helmet from "helmet";
 import compression from "compression";
 import cookieParser from "cookie-parser";
@@ -52,6 +52,7 @@ const startServer = async () => {
     server.use(noCache);
     server.use(compression());
     server.use(cookieParser());
+    server.use(json({ limit: '2mb' }));
 
     await sequelize;
 
@@ -79,7 +80,7 @@ const startServer = async () => {
             maxFiles: 2
         }
     });
-    graphServer.applyMiddleware({ app: server, cors: corsOptions });
+    graphServer.applyMiddleware({ app: server, cors: corsOptions});
     server.use(bodyParser.json());
     server.use(bodyParser.urlencoded({ extended: true }));
 

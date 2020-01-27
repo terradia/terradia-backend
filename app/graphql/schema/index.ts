@@ -30,5 +30,5 @@ export default [
   companySchema,
   companyReviewSchema,
   customerSchema,
-  companyProductsCategorySchema
+  companyProductsCategorySchema,
 ];

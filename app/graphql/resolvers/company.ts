@@ -3,6 +3,9 @@ import UserModel from "../../database/models/user.model";
 import CompanyModel from "../../database/models/company.model";
 import CompanyReviewModel from "../../database/models/company-review.model";
 import CompanyProductsCategoryModel from "../../database/models/company-products-category.model";
+import uploadToS3 from '../../uploadS3';
+import * as path from "path";
+const md5 = require('md5');
 
 interface getAllCompaniesArguments {
   page: number;
@@ -59,7 +62,10 @@ export default {
   },
   Mutation: {
     createCompany: async (_parent, _args, { user }: { user: UserModel }) => {
-      const newCompany = await CompanyModel.create({ ..._args }).then(
+      const { stream, filename, mimetype, encoding } = await _args.logo;
+      const hash = md5(filename) + path.extname(filename);
+      uploadToS3(hash, stream);
+      const newCompany = await CompanyModel.create({ ..._args, logo: hash }).then(
         company => {
           // @ts-ignore
           company.addUser(user.id);
