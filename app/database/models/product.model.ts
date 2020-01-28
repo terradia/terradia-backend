@@ -14,6 +14,7 @@ import {
 import CategoryModel from "./category.model";
 import ProductCategoryModel from "./product-category.model";
 import ProductReviewModel from "./product-review.model";
+import CompanyModel from "./company.model";
 
 @Table({
   tableName: "Products",
@@ -44,12 +45,12 @@ export default class ProductModel extends Model<ProductModel> {
   @Column
   public updatedAt!: Date;
 
-  @ForeignKey(() => ProductModel)
+  @ForeignKey(() => CompanyModel)
   @Column
-  productId!: string;
+  companyId!: string;
 
-  @BelongsTo(() => ProductModel)
-  public product!: ProductModel;
+  @BelongsTo(() => CompanyModel)
+  public company!: CompanyModel;
   
   @HasMany(() => ProductReviewModel)
   public reviews!: ProductReviewModel[];
