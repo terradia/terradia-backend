@@ -27,26 +27,11 @@ exports.up = function(db) {
         defaultValue: new String("uuid_generate_v4()")
       },
       userId: { type: "uuid", allowNull: false }
-    })
-    .then(() => {
-      db.createTable("ProductReviews", {
-        id: {
-          type: "uuid",
-          primaryKey: true,
-          notNull: true,
-          defaultValue: new String("uuid_generate_v4()")
-        },
-        title: { type: "string", allowNull: false },
-        description: { type: "string", allowNull: true },
-        productId: { type: "uuid", allowNull: false },
-        customerMark: { type: "integer", allowNull: false },
-        customerId: { type: "uuid", allowNull: false }
-      });
     });
 };
 
 exports.down = function(db) {
-  return db.dropTable("Customers").then(() => { db.dropTable("ProductReviews")});
+  return db.dropTable("Customers");
 };
 
 exports._meta = {
