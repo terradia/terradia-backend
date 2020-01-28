@@ -3,6 +3,7 @@ import CategoryModel from "../../database/models/category.model";
 import ProductCategoryModel from "../../database/models/product-category.model";
 import CompanyModel from "../../database/models/company.model";
 import UserModel from "../../database/models/user.model";
+import ProductReviewModel from "../../database/models/product-review.model";
 
 interface addCategoryToProductArgs {
   productId: string;
@@ -17,12 +18,12 @@ export default {
   Query: {
     getAllProducts: async () => {
       return ProductModel.findAll({
-        include: [CategoryModel, CompanyModel]
+        include: [CategoryModel, CompanyModel, ProductReviewModel]
       });
     },
     getProduct: async (_parent: any, { id }) => {
       return ProductModel.findByPk(id, {
-        include: [CategoryModel, CompanyModel]
+        include: [CategoryModel, CompanyModel, ProductReviewModel]
       });
     },
     getProductsByCompany: async (_parent: any, { companyId }) => {
@@ -33,7 +34,7 @@ export default {
     getProductsByCompanyByCategory: async (_parent: any, { companyId }) => {
       return CategoryModel.findAll({
         include: [
-          { model: ProductModel, where: { companyId }, include: [CompanyModel] }
+          { model: ProductModel, where: { companyId }, include: [CompanyModel, ProductReviewModel] }
         ]
       });
     }

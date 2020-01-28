@@ -1,52 +1,56 @@
 import {
-    BelongsToMany,
-    Column,
-    DataType,
-    Default,
-    IsUUID,
-    Model,
-    PrimaryKey,
-    BelongsTo,
-    Table, ForeignKey, HasMany
+  BelongsToMany,
+  Column,
+  DataType,
+  Default,
+  IsUUID,
+  Model,
+  PrimaryKey,
+  BelongsTo,
+  Table,
+  ForeignKey,
+  HasMany
 } from "sequelize-typescript";
 import CategoryModel from "./category.model";
 import ProductCategoryModel from "./product-category.model";
-import CompanyModel from "./company.model";
+import ProductReviewModel from "./product-review.model";
 
 @Table({
-    tableName: "Products",
-    timestamps: true
+  tableName: "Products",
+  timestamps: true
 })
 export default class ProductModel extends Model<ProductModel> {
-    @IsUUID(4)
-    @PrimaryKey
-    @Default(DataType.UUIDV4)
-    @Column(DataType.UUID)
-    public id!: string;
+  @IsUUID(4)
+  @PrimaryKey
+  @Default(DataType.UUIDV4)
+  @Column(DataType.UUID)
+  public id!: string;
 
-    @Column
-    public name!: string;
+  @Column
+  public name!: string;
 
-    @Column
-    public description!: string;
+  @Column
+  public description!: string;
 
-    @Column
-    public image!: string;
+  @Column
+  public image!: string;
 
-    @BelongsToMany(() => CategoryModel, () => ProductCategoryModel)
-    public categories!: CategoryModel[];
+  @BelongsToMany(() => CategoryModel, () => ProductCategoryModel)
+  public categories!: CategoryModel[];
 
-    @Column
-    public createdAt!: Date;
+  @Column
+  public createdAt!: Date;
 
-    @Column
-    public updatedAt!: Date;
+  @Column
+  public updatedAt!: Date;
 
-    @ForeignKey(() => CompanyModel)
-    @Column
-    companyId!: string;
+  @ForeignKey(() => ProductModel)
+  @Column
+  productId!: string;
 
-    @BelongsTo(() => CompanyModel)
-    public company!: CompanyModel;
-
+  @BelongsTo(() => ProductModel)
+  public product!: ProductModel;
+  
+  @HasMany(() => ProductReviewModel)
+  public reviews!: ProductReviewModel[];
 }
