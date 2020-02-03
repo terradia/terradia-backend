@@ -82,6 +82,13 @@ export default class CompanyModel extends Model<CompanyModel> {
   @Column(DataType.NUMBER)
   public numberOfMarks!: number;
 
+  @Column(DataType.GEOMETRY)
+  // @ts-ignore
+  public position!: any;
+
+  @Column(DataType.STRING)
+  public address!: string;
+
   @Column
   public createdAt!: Date;
 

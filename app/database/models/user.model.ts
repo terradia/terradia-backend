@@ -2,7 +2,7 @@ import {
   AllowNull,
   BeforeCreate,
   BeforeUpdate,
-  BelongsTo,
+  BelongsTo, BelongsToMany,
   Column,
   DataType,
   Default,
