@@ -6,7 +6,7 @@ import CompanyProductsCategoryModel from "../../database/models/company-products
 import CompanyUserModel from "../../database/models/company-user.model";
 import RoleModel from "../../database/models/role.model";
 import companyUser from "../schema/companyUser";
-import { UserInputError } from 'apollo-server-express'
+import { UserInputError } from "apollo-server-express";
 // @ts-ignore
 import sequelize from "../../database/models";
 import NodeGeocoder from "node-geocoder";
@@ -37,7 +37,7 @@ export default {
       return companies;
     },
     getCompany: async (_parent: any, { companyId }: { companyId: string }) => {
-      let company = await  CompanyModel.findByPk(companyId, {
+      let company = await CompanyModel.findByPk(companyId, {
         include: [
           ProductModel,
           {
@@ -84,8 +84,8 @@ export default {
       );
       const distance = sequelize.fn(
         "ST_DistanceSphere",
-          sequelize.col("position"),
-          location,
+        sequelize.col("position"),
+        location
       );
 
       const companies = await CompanyModel.findAll({
@@ -100,13 +100,23 @@ export default {
         offset: page,
         limit: pageSize
       });
-      return companies.map((element) => {
+      return companies.map(element => {
         return element.toJSON();
       });
     }
   },
   Mutation: {
-    createCompany: async (_parent: any, _args, { user }: { user: UserModel }) => {
+    createCompany: async (
+      _parent: any,
+      _args: {
+        name: string;
+        description: string;
+        email: string;
+        phone: string;
+        address: string;
+      },
+      { user }: { user: UserModel }
+    ) => {
       let point = undefined;
       let geocoder = NodeGeocoder({ provider: "openstreetmap" });
       await geocoder.geocode(_args.address, function(err, res) {
@@ -120,15 +130,15 @@ export default {
           ]
         };
       });
-      const newCompany = await CompanyModel.create({ ..._args, position: point }).then(
-          company => {
-            console.log(company);
-            // @ts-ignore
-            company.addUser(user.id);
-            return company;
-          }
-      );
-      const ownerRole = await RoleModel.findOne({where: {slugName: "owner"}});
+      const ownerRole = await RoleModel.findOne({
+        where: { slugName: "owner" }
+      }).then(elem => elem);
+      if (ownerRole == null)
+        throw new ApolloError("There is no owner Role in DB, cannot create Company. Try to seed the DB.", 500);
+      const newCompany = await CompanyModel.create({
+        ..._args,
+        position: point
+      }).toJSON();
       await CompanyUserModel.create({
         companyId: newCompany.id,
         userId: user.id,
@@ -136,10 +146,14 @@ export default {
       }).then(userCompany => {
         userCompany.addRole(ownerRole.id);
       });
-      return newCompany.toJSON();
+      return newCompany;
     },
-    joinCompany: async (_parent, {companyId, userId}, { user }: { user: UserModel}) => {
-      const userRole = await RoleModel.findOne({where: {slugName: "user"}});
+    joinCompany: async (
+      _parent,
+      { companyId, userId },
+      { user }: { user: UserModel }
+    ) => {
+      const userRole = await RoleModel.findOne({ where: { slugName: "user" } });
       await CompanyUserModel.create({
         companyId,
         userId,
@@ -149,17 +163,22 @@ export default {
       });
       return CompanyModel.findByPk(companyId);
     },
-    leaveCompany: async (_parent, {companyId, userId}, {user}: {user: UserModel}) => {
-       let companyUser = await CompanyUserModel.destroy({
+    leaveCompany: async (
+      _parent,
+      { companyId, userId },
+      { user }: { user: UserModel }
+    ) => {
+      let companyUser = await CompanyUserModel.destroy({
         where: {
           userId
         }
-      }).then((data) => {
-        if (data === 0)
-          throw new UserInputError("User not found in company");
-       }).error((error) => {
-         throw new UserInputError(error);
-       });
+      })
+        .then(data => {
+          if (data === 0) throw new UserInputError("User not found in company");
+        })
+        .error(error => {
+          throw new UserInputError(error);
+        });
       return CompanyModel.findByPk(companyId);
     }
   }

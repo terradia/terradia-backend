@@ -6,7 +6,7 @@ import { ApolloError } from "apollo-server-errors";
 
 const createToken = async (user: UserModel, secret: string) => {
   const { id, email, username, role } = user;
-  return jwt.sign({ id, email, username, role }, secret, {});
+  return jwt.sign({ id, email, username, role }, secret);
 };
 
 export default {
