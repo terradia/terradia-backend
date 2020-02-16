@@ -6,7 +6,7 @@ import {
   Column,
   DataType,
   Default,
-  ForeignKey,
+  ForeignKey, HasMany,
   HasOne,
   Is,
   IsEmail,
@@ -20,6 +20,7 @@ import {
 import bcrypt from "bcrypt";
 import CompanyModel from "./company.model";
 import CustomerModel from "./customer.model";
+import CompanyUserModel from "./company-user.model";
 
 const NAME_REGEX = /^[a-zàâéèëêïîôùüçœ\'’ -]+$/i;
 
@@ -59,12 +60,18 @@ export default class UserModel extends Model<UserModel> {
   @Column(DataType.BOOLEAN)
   public validated!: boolean;
 
-  @ForeignKey(() => CompanyModel)
-  @Column
-  public companyId!: string;
+  // TODO: Remove => Not longer used
+  // @ForeignKey(() => CompanyModel)
+  // @Column
+  // public companyId!: string;
+  //
+  // // Not longer used
+  // @BelongsTo(() => CompanyModel)
+  // public company!: CompanyModel;
 
-  @BelongsTo(() => CompanyModel)
-  public company!: CompanyModel;
+  // All companies for each user
+  @HasMany(() => CompanyUserModel)
+  public companies!: CompanyUserModel[];
 
   @HasOne(() => CustomerModel)
   public customer!: CustomerModel;
