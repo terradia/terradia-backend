@@ -67,12 +67,16 @@ export default {
 
       const companies = await CompanyModel.findAll({
         attributes: { include: [[distance, "distance"]] },
+        include: [
+          ProductModel,
+          UserModel,
+          CompanyReviewModel,
+          CompanyProductsCategoryModel
+        ],
         order: distance,
         offset: page,
         limit: pageSize
       });
-      console.log(companies);
-
       return companies.map((element) => {
         return element.toJSON();
       });
