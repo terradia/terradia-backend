@@ -13,6 +13,7 @@ import UserModel from "../models/user.model";
 import {downRoles, upRoles} from "./roles";
 import {downUsers, upUsers} from "./users";
 import {downCompanies, upCompanies} from "./companies";
+import {downProducts, upProducts} from "./products";
 
 // @ts-ignore
 sequelize.addModels([
@@ -32,6 +33,7 @@ export const up = async () => {
         await upRoles();
         await upUsers();
         await upCompanies();
+        await upProducts();
         debug("init:seed")(chalk.green("Every seeds went well"));
         return process.exit();
     } catch (err) {
@@ -43,6 +45,7 @@ export const down = async () => {
     await downRoles();
     await downUsers();
     await downCompanies();
+    await downProducts();
     debug("init:seed")(chalk.green("All relevant data were erased"));
     return process.exit();
 };
