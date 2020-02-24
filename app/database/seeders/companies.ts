@@ -23,7 +23,9 @@ async function generateCompanies(): [company] {
             name: faker.company.companyName(),
             description: faker.company.catchPhraseDescriptor(),
             address,
-            position: point
+            position: point,
+            averageMark: (Math.random() * 5).toFixed(2),
+            numberOfMarks: Math.floor(Math.random() * 99) + 1
         });
     }
     return companiesGenerated;

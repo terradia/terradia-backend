@@ -14,6 +14,8 @@ import {downRoles, upRoles} from "./roles";
 import {downUsers, upUsers} from "./users";
 import {downCompanies, upCompanies} from "./companies";
 import {downProducts, upProducts} from "./products";
+import {downCustomers, upCustomers} from "./customers";
+import {downCompaniesReviews, upCompaniesReviews} from "./companyReviews";
 
 // @ts-ignore
 sequelize.addModels([
@@ -34,6 +36,8 @@ export const up = async () => {
         await upUsers();
         await upCompanies();
         await upProducts();
+        await upCustomers();
+        await upCompaniesReviews();
         debug("init:seed")(chalk.green("Every seeds went well"));
         return process.exit();
     } catch (err) {
@@ -46,6 +50,8 @@ export const down = async () => {
     await downUsers();
     await downCompanies();
     await downProducts();
+    await downCustomers();
+    await downCompaniesReviews();
     debug("init:seed")(chalk.green("All relevant data were erased"));
     return process.exit();
 };
