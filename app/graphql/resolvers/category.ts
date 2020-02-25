@@ -1,6 +1,7 @@
 import CategoryModel from "../../database/models/category.model";
 import ProductModel from "../../database/models/product.model";
 import ProductCategoryModel from "../../database/models/product-category.model";
+import { ApolloError } from "apollo-server-errors";
 
 export default {
   Query: {
@@ -26,13 +27,15 @@ export default {
     },
     deleteCategory: async (_parent: any, { id }: { id: string }) => {
       let category = await CategoryModel.findByPk(id);
-      if (category !== null) {
+      if (category) {
         await CategoryModel.destroy({ where: { id } });
         await ProductCategoryModel.destroy({ where: { categoryId: id } });
         return category.toJSON();
-      } else {
-        throw Error("The category was already deleted or, does not exist");
-      }
+      } else
+        throw new ApolloError(
+          "The category was already deleted or, does not exist",
+          "404"
+        );
     }
   }
 };

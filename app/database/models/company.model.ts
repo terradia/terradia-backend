@@ -10,12 +10,12 @@ import {
   Table, BelongsToMany
 } from "sequelize-typescript";
 import ProductModel from "./product.model";
-import ProductCategoryModel from "./product-category.model";
 import UserModel from "./user.model";
 import CompanyReviewModel from "./company-review.model";
 import CustomerModel from "./customer.model";
 import CustomersFavoriteCompaniesModel from "./customers-favorite-companies.model";
 import CompanyProductsCategoryModel from "./company-products-category.model";
+import CompanyUserModel from "./company-user.model";
 
 @Table({
   tableName: "Companies",
@@ -28,33 +28,33 @@ export default class CompanyModel extends Model<CompanyModel> {
   @Column(DataType.UUID)
   public id!: string;
 
-  @Column
+  @Column(DataType.STRING)
   public name!: string;
 
   @AllowNull(true)
-  @Column
+  @Column(DataType.STRING)
   public description!: string;
 
   // to contact the company easily
-  @Column
+  @Column(DataType.STRING)
   public email!: string;
 
   // to contact the company easily
-  @Column
+  @Column(DataType.STRING)
   public phone!: string;
 
   // A string because to get the images you should get them from the media server of Terradia
   // https://media.terradia.eu/ + company.logo
-  @Column
+  @Column(DataType.STRING)
   public logo!: string;
 
   // A string because to get the images you should get them from the media server of Terradia
   // https://media.terradia.eu/ + company.cover
-  @Column
+  @Column(DataType.STRING)
   public cover!: string;
 
-  @HasMany(() => UserModel)
-  public users!: UserModel[];
+  // @HasMany(() => UserModel)
+  // public users!: UserModel[];
 
   // This way we can get all the products independently of their categories
   // the second usage is that we can have projects without categories to "hide them"
@@ -69,19 +69,30 @@ export default class CompanyModel extends Model<CompanyModel> {
   @HasMany(() => CompanyReviewModel)
   public reviews!: CompanyReviewModel[];
 
+  // All company users
+  @HasMany(() => CompanyUserModel)
+  public users!: CompanyUserModel[];
+
   // all the users that made favorite this company => could be usefull for big companies to find
   // people to do promotions of their companies (if the users said he want to do that or other...)
   @BelongsToMany(() => CustomerModel, () => CustomersFavoriteCompaniesModel)
   public customersFavorites!: CustomerModel[];
 
   // Mark average the company get from the customers reviews.
-  @Column
+  @Column(DataType.NUMBER)
   public averageMark!: number;
 
   // Number of marks given to the company to calculate the average mark and the also know the number of people that
   // rated the company.
-  @Column
+  @Column(DataType.NUMBER)
   public numberOfMarks!: number;
+
+  @Column(DataType.GEOMETRY)
+  // @ts-ignore
+  public position!: any;
+
+  @Column(DataType.STRING)
+  public address!: string;
 
   @Column
   public createdAt!: Date;

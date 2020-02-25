@@ -25,15 +25,15 @@ export default class ProductModel extends Model<ProductModel> {
     @Column(DataType.UUID)
     public id!: string;
 
-    @Column
+    @Column(DataType.STRING)
     public name!: string;
 
-    @Column
+    @Column(DataType.STRING)
     public description!: string;
 
     // A string because to get the images you should get them from the media server of Terradia
     // https://media.terradia.eu/ + company.image
-    @Column
+    @Column(DataType.STRING)
     public image!: string;
 
     // categories of the products to make it easier to find it.
