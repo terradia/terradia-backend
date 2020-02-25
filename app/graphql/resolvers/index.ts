@@ -8,6 +8,7 @@ import productReview from "./productReview"
 import companyProductsCategory from "./companyProductsCategory";
 import role from "./role";
 import customerAddress from "./customerAddress"
+import tagCompanyCategory from "./tagCompanyCategory";
 
 export default [
     users,
@@ -21,4 +22,6 @@ export default [
     companyProductsCategory,
     role,
     customerAddress
+    companyProductsCategory,
+    tagCompanyCategory
 ];

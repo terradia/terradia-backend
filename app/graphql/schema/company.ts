@@ -17,6 +17,7 @@ export default gql`
         ): Company!
         joinCompany(companyId: String!, userId: String!): Company!
         leaveCompany(companyId: String!, userId: String!): Company!
+        addTagCategoryToCompany(tagName: String!, companyId: String!): Company!
     }
     type Company {
         id: ID!
@@ -34,6 +35,7 @@ export default gql`
         address: String!
         distance: Float
         position: GeographicPoint
+        Tag: [TagCompany]
         createdAt: Date
         updatedAt: Date
         users: [CompanyUser]
