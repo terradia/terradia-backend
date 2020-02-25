@@ -32,7 +32,7 @@ export default gql`
     password: String!
     phone: String!
     validated: Boolean
-    company: Company
+    companies: [CompanyUser]
     customer: Customer
   }
 `;

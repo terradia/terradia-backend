@@ -10,12 +10,11 @@ import {
   Table, BelongsToMany
 } from "sequelize-typescript";
 import ProductModel from "./product.model";
-import ProductCategoryModel from "./product-category.model";
-import UserModel from "./user.model";
 import CompanyReviewModel from "./company-review.model";
 import CustomerModel from "./customer.model";
 import CustomersFavoriteCompaniesModel from "./customers-favorite-companies.model";
 import CompanyProductsCategoryModel from "./company-products-category.model";
+import CompanyUserModel from "./company-user.model";
 
 @Table({
   tableName: "Companies",
@@ -53,8 +52,8 @@ export default class CompanyModel extends Model<CompanyModel> {
   @Column
   public cover!: string;
 
-  @HasMany(() => UserModel)
-  public users!: UserModel[];
+  // @HasMany(() => UserModel)
+  // public users!: UserModel[];
 
   // This way we can get all the products independently of their categories
   // the second usage is that we can have projects without categories to "hide them"
@@ -68,6 +67,10 @@ export default class CompanyModel extends Model<CompanyModel> {
   // All the reviews of the company
   @HasMany(() => CompanyReviewModel)
   public reviews!: CompanyReviewModel[];
+
+  // All company users
+  @HasMany(() => CompanyUserModel)
+  public users!: CompanyUserModel[];
 
   // all the users that made favorite this company => could be usefull for big companies to find
   // people to do promotions of their companies (if the users said he want to do that or other...)

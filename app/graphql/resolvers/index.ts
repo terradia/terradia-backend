@@ -5,6 +5,7 @@ import companies from "./company";
 import customer from "./customer";
 import productReview from "./companyReview";
 import companyProductsCategory from "./companyProductsCategory";
+import role from "./role";
 import customerAddress from "./customerAddress"
 
 export default [
@@ -15,5 +16,6 @@ export default [
     customer,
     productReview,
     companyProductsCategory,
+    role
     customerAddress
 ];
