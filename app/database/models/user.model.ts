@@ -2,7 +2,7 @@ import {
   AllowNull,
   BeforeCreate,
   BeforeUpdate,
-  BelongsTo,
+  BelongsTo, BelongsToMany,
   Column,
   DataType,
   Default,
@@ -36,28 +36,28 @@ export default class UserModel extends Model<UserModel> {
   public id!: string;
 
   @Is(NAME_REGEX)
-  @Column
+  @Column(DataType.STRING)
   public firstName!: string;
 
   @Is(NAME_REGEX)
-  @Column
+  @Column(DataType.STRING)
   public lastName!: string;
 
   @AllowNull(false)
   @IsEmail
-  @Column
+  @Column(DataType.STRING)
   public email!: string;
 
   @AllowNull(false)
-  @Column
+  @Column(DataType.STRING)
   public password!: string;
 
   @Unique
-  @Column
+  @Column(DataType.STRING)
   public phone!: string;
 
   @Default(false)
-  @Column
+  @Column(DataType.BOOLEAN)
   public validated!: boolean;
 
   // TODO: Remove => Not longer used

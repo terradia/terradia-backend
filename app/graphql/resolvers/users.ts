@@ -1,17 +1,17 @@
 import UserModel from "../../database/models/user.model";
-import { UserInputError } from "apollo-server-express";
 import { generateAuthlink } from "../../auth";
 import jwt from "jsonwebtoken";
 import { AuthenticationError, UserInputError } from "apollo-server";
+import { ApolloError } from "apollo-server-errors";
 
-const createToken = async (user, secret) => {
+const createToken = async (user: UserModel, secret: string) => {
   const { id, email, username, role } = user;
-  return jwt.sign({id, email, username, role}, secret, {});
+  return jwt.sign({ id, email, username, role }, secret);
 };
 
 export default {
   Query: {
-    getUser: async (_parent, _args, { user }) => {
+    getUser: async (_: any, __: any, { user }: { user: UserModel }) => {
       if (!user) {
         return null;
       }
@@ -20,7 +20,11 @@ export default {
     }
   },
   Mutation: {
-    login: async (_parent, { email, password }, { secret }) => {
+    login: async (
+      _: any,
+      { email, password }: { email: string; password: string },
+      { secret }: { secret: string }
+    ) => {
       let user = await UserModel.findByLogin(email);
       if (!user) {
         throw new UserInputError("No user found with this login credentials.");
@@ -32,13 +36,27 @@ export default {
       }
       return { token: createToken(user, secret), userId: user.id };
     },
-    register: async (_parent, { email, ...userInformations }, { secret }) => {
+    register: async (
+      _: any,
+      {
+        email,
+        ...userInformations
+      }: {
+        email: string;
+        firstName: string;
+        lastName: string;
+        password: string;
+        phone: string;
+      },
+      { secret }: { secret: string }
+    ) => {
       const emailAlreadyTaken = await UserModel.findOne({
         where: { email }
       });
       if (emailAlreadyTaken) {
-        throw new UserInputError(
-          "Il semblerais qu'il existe déjà un utilisateur avec cet email."
+        throw new ApolloError(
+          "Il semblerais qu'il existe déjà un utilisateur avec cet email.",
+          403
         );
       }
       const user = await UserModel.create({ ...userInformations, email });
@@ -51,7 +69,7 @@ export default {
       console.log(validationLink);
       // TODO : here handle the identification of the user for the analytics.
       return {
-        token: createToken(user, secret, "365 days"),
+        token: createToken(user, secret),
         userId: user.id,
         message: `Un email de confirmation a été envoyé a cette adresse email : ${user.email}, clique sur le lien dans le mail afin valider ton compte !`
       };

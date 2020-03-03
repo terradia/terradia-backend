@@ -19,13 +19,13 @@ export default class CompanyReviewModel extends Model<CompanyReviewModel> {
   @Column(DataType.UUID)
   public id!: string;
 
-  @Column
+  @Column(DataType.STRING)
   public title!: string;
 
-  @Column
+  @Column(DataType.STRING)
   public description!: string;
 
-  @Column
+  @Column(DataType.STRING)
   public customerMark!: number;
 
   @ForeignKey(() => CustomerModel)

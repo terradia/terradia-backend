@@ -1,13 +1,20 @@
-import {gql} from "apollo-server";
+import { gql } from "apollo-server";
 
 export default gql`
     extend type Query {
         getAllCompanies(page: Int, pageSize: Int): [Company]
         getCompany(companyId: ID!): Company
         getCompanyByName(name: String!): Company
+        getCompaniesByDistance(page: Int, pageSize: Int, lat: Float!, lon: Float!): [Company]
     }
     extend type Mutation {
-        createCompany(name: String!, description: String, email: String, phone: String): Company!
+        createCompany(
+            name: String!
+            description: String
+            email: String
+            phone: String
+            address: String!
+        ): Company!
         joinCompany(companyId: String!, userId: String!): Company!
         leaveCompany(companyId: String!, userId: String!): Company!
     }
@@ -24,8 +31,14 @@ export default gql`
         reviews: [CompanyReview]
         averageMark: Float
         numberOfMarks: Int
+        address: String!
+        distance: Float
+        position: GeographicPoint
         createdAt: Date
         updatedAt: Date
         users: [CompanyUser]
+    }
+    type GeographicPoint {
+        coordinates: [Float]
     }
 `;
