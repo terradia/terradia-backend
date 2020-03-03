@@ -15,6 +15,7 @@ import CategoryModel from "./category.model";
 import ProductCategoryModel from "./product-category.model";
 import ProductReviewModel from "./product-review.model";
 import CompanyModel from "./company.model";
+import CompanyProductsCategoryModel from "./company-products-category.model";
 
 @Table({
   tableName: "Products",
@@ -27,17 +28,20 @@ export default class ProductModel extends Model<ProductModel> {
   @Column(DataType.UUID)
   public id!: string;
 
-  @Column
-  public name!: string;
+    @Column(DataType.STRING)
+    public name!: string;
 
-  @Column
-  public description!: string;
+    @Column(DataType.STRING)
+    public description!: string;
 
-  @Column
-  public image!: string;
+    // A string because to get the images you should get them from the media server of Terradia
+    // https://media.terradia.eu/ + company.image
+    @Column(DataType.STRING)
+    public image!: string;
 
-  @BelongsToMany(() => CategoryModel, () => ProductCategoryModel)
-  public categories!: CategoryModel[];
+    // categories of the products to make it easier to find it.
+    @BelongsToMany(() => CategoryModel, () => ProductCategoryModel)
+    public categories!: CategoryModel[];
 
   @Column
   public createdAt!: Date;
@@ -45,13 +49,26 @@ export default class ProductModel extends Model<ProductModel> {
   @Column
   public updatedAt!: Date;
 
-  @ForeignKey(() => CompanyModel)
-  @Column
-  companyId!: string;
+    // id of the product's company
+    @ForeignKey(() => CompanyModel)
+    @Column
+    companyId!: string;
 
-  @BelongsTo(() => CompanyModel)
-  public company!: CompanyModel;
-  
+    // The company of the product
+    // We keep the company and even if we can find it from the companyProductsCategory because we want the product to
+    // be in the company without a category if the company want to hide products or doesn't need categories.
+    @BelongsTo(() => CompanyModel)
+    public company!: CompanyModel;
+
+    // id of the company products category
+    @ForeignKey(() => CompanyProductsCategoryModel)
+    @Column
+    companyProductsCategoryId!: string;
+
+    // The company products category of the product
+    @BelongsTo(() => CompanyProductsCategoryModel)
+    public companyProductsCategory!: CompanyProductsCategoryModel;
+
   @HasMany(() => ProductReviewModel)
   public reviews!: ProductReviewModel[];
 }

@@ -5,6 +5,8 @@ import companies from "./company";
 import customer from "./customer";
 import companyReview from "./companyReview";
 import productReview from "./productReview"
+import companyProductsCategory from "./companyProductsCategory";
+import role from "./role";
 
 export default [
     users,
@@ -13,5 +15,8 @@ export default [
     companies,
     customer,
     companyReview,
-    productReview
+    productReview,
+    role,
+    companyProductsCategory,
+    role
 ];
