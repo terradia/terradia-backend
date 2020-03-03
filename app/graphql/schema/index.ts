@@ -37,6 +37,6 @@ export default [
   companyProductsCategorySchema,
   companyUserSchema,
   roleSchema,
-  userPermissionsSchema
+  userPermissionsSchema,
   customerAddressSchema
 ];

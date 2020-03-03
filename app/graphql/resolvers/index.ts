@@ -16,6 +16,6 @@ export default [
     customer,
     productReview,
     companyProductsCategory,
-    role
+    role,
     customerAddress
 ];
