@@ -6,27 +6,29 @@ import {
   Table
 } from "sequelize-typescript";
 import CustomerModel from "./customer.model";
-import CompanyModel from "./company.model";
 
 @Table({
-  tableName: "CompanyReviews",
+  tableName: "CustomerAddresses",
   timestamps: false
 })
-export default class CompanyReviewModel extends Model<CompanyReviewModel> {
+export default class CustomerAddressModel extends Model<CustomerAddressModel> {
   @IsUUID(4)
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
   public id!: string;
 
-  @Column(DataType.STRING)
-  public title!: string;
+  @Column
+  public address!: string;
 
-  @Column(DataType.STRING)
-  public description!: string;
+  @Column
+  public apartment!: string;
 
-  @Column(DataType.STRING)
-  public customerMark!: number;
+  @Column
+  public information!: string;
+
+  @Column
+  public active!: boolean;
 
   @ForeignKey(() => CustomerModel)
   @Column
@@ -35,10 +37,4 @@ export default class CompanyReviewModel extends Model<CompanyReviewModel> {
   @BelongsTo(() => CustomerModel)
   public customer!: CustomerModel;
 
-  @ForeignKey(() => CompanyModel)
-  @Column
-  public companyId!: string;
-
-  @BelongsTo(() => CompanyModel)
-  public company!: CompanyModel;
 }
