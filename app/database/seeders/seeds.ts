@@ -16,6 +16,7 @@ import {downCompanies, upCompanies} from "./companies";
 import {downProducts, upProducts} from "./products";
 import {downCustomers, upCustomers} from "./customers";
 import {downCompaniesReviews, upCompaniesReviews} from "./companyReviews";
+import {downCustomersAddress, upCustomersAddress} from "./customerAddress"
 import {downProductsReviews, upProductsReviews} from "./productReviews"
 
 // @ts-ignore
@@ -39,6 +40,7 @@ export const up = async () => {
         await upProducts();
         await upCustomers();
         await upCompaniesReviews();
+        await upCustomersAddress();
         await upProductsReviews();
         debug("init:seed")(chalk.green("Every seeds went well"));
         return process.exit();
@@ -55,6 +57,7 @@ export const down = async () => {
     await downCustomers();
     await downCompaniesReviews();
     await downProductsReviews();
+    await downCustomersAddress();
     debug("init:seed")(chalk.green("All relevant data were erased"));
     return process.exit();
 };
