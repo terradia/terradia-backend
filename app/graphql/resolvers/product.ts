@@ -9,12 +9,12 @@ export default {
   Query: {
     getAllProducts: async () => {
       return ProductModel.findAll({
-        include: [CategoryModel, CompanyModel]
+        include: [CategoryModel, CompanyModel, ProductReviewModel]
       });
     },
     getProduct: async (_parent: any, { id }: { id: string }) => {
       return ProductModel.findByPk(id, {
-        include: [CategoryModel, CompanyModel]
+        include: [CategoryModel, CompanyModel, ProductReviewModel]
       });
     },
     getProductsByCompany: async (
@@ -35,7 +35,7 @@ export default {
       if (!company) throw new ApolloError("This company does not exist", "404");
       return CategoryModel.findAll({
         include: [
-          { model: ProductModel, where: { companyId }, include: [CompanyModel] }
+          { model: ProductModel, where: { companyId }, include: [CompanyModel, ProductReviewModel] }
         ]
       });
     }

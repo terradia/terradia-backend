@@ -5,27 +5,27 @@ import {
   Model, PrimaryKey,
   Table
 } from "sequelize-typescript";
+import ProductModel from "./product.model";
 import CustomerModel from "./customer.model";
-import CompanyModel from "./company.model";
 
 @Table({
-  tableName: "CompanyReviews",
+  tableName: "ProductReviews",
   timestamps: false
 })
-export default class CompanyReviewModel extends Model<CompanyReviewModel> {
+export default class ProductReviewModel extends Model<ProductReviewModel> {
   @IsUUID(4)
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
   public id!: string;
 
-  @Column(DataType.STRING)
+  @Column
   public title!: string;
 
-  @Column(DataType.STRING)
+  @Column
   public description!: string;
 
-  @Column(DataType.STRING)
+  @Column
   public customerMark!: number;
 
   @ForeignKey(() => CustomerModel)
@@ -35,10 +35,10 @@ export default class CompanyReviewModel extends Model<CompanyReviewModel> {
   @BelongsTo(() => CustomerModel)
   public customer!: CustomerModel;
 
-  @ForeignKey(() => CompanyModel)
+  @ForeignKey(() => ProductModel)
   @Column
-  public companyId!: string;
+  public productId!: string;
 
-  @BelongsTo(() => CompanyModel)
-  public company!: CompanyModel;
+  @BelongsTo(() => ProductModel)
+  public product!: ProductModel;
 }

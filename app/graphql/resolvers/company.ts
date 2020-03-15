@@ -5,9 +5,7 @@ import CompanyReviewModel from "../../database/models/company-review.model";
 import CompanyProductsCategoryModel from "../../database/models/company-products-category.model";
 import CompanyUserModel from "../../database/models/company-user.model";
 import RoleModel from "../../database/models/role.model";
-import companyUser from "../schema/companyUser";
 import { UserInputError } from "apollo-server-express";
-// @ts-ignore
 import sequelize from "../../database/models";
 import NodeGeocoder from "node-geocoder";
 import { ApolloError } from "apollo-server-errors";
@@ -92,7 +90,14 @@ export default {
         attributes: { include: [[distance, "distance"]] },
         include: [
           ProductModel,
-          UserModel,
+          {
+            model: CompanyUserModel,
+            include: [RoleModel, UserModel]
+          },
+          {
+            model: CompanyProductsCategoryModel,
+            include: [ProductModel]
+          },
           CompanyReviewModel,
           CompanyProductsCategoryModel
         ],
@@ -134,7 +139,10 @@ export default {
         where: { slugName: "owner" }
       }).then(elem => elem);
       if (ownerRole == null)
-        throw new ApolloError("There is no owner Role in DB, cannot create Company. Try to seed the DB.", 500);
+        throw new ApolloError(
+          "There is no owner Role in DB, cannot create Company. Try to seed the DB.",
+          500
+        );
       const newCompany = await CompanyModel.create({
         ..._args,
         position: point
