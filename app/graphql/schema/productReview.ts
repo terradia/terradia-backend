@@ -5,6 +5,10 @@ export default gql`
         createProductReview(title: String, customerMark: Int, description: String, productId: String): ProductReview
     }
     
+    extend type Query {
+        getProductReviews(id: ID!, limit: Int!, offset: Int!): [ProductReview]
+    }
+    
     type ProductReview {
         id: String!
         title: String!

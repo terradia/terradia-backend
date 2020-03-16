@@ -10,7 +10,7 @@ interface company {
 
 async function generateCompanies(): [company] {
     let companiesGenerated = [];
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 10; i++) {
         let address = faker.address.streetAddress(true);
         let point = {
             type: "Point",

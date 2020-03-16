@@ -21,6 +21,8 @@ export default gql`
     updatedAt: Date
     company: Company
     companyProductsCategory: CompanyProductsCategory
-    productReviews: [ProductReview]
+    reviews: [ProductReview]
+    averageMark: Float
+    numberOfMarks: Int
   }
 `;
