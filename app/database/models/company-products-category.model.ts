@@ -10,7 +10,6 @@ import {
   Table
 } from "sequelize-typescript";
 import ProductModel from "./product.model";
-import ProductCategoryModel from "./product-category.model";
 import CompanyModel from "./company.model";
 
 @Table({

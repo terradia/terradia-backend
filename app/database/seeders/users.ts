@@ -2,7 +2,7 @@ import faker from "faker";
 import UserModel from "../models/user.model";
 import bcrypt from "bcrypt";
 
-const nb = 20;
+const nb = 5;
 
 let admin = {
     firstName: "root",

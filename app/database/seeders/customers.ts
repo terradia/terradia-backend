@@ -6,8 +6,8 @@ export const upCustomers: any = async () => {
         const users = await UserModel.findAll();
         const customers: any[] = [];
         await users.map(async (user) => {
-            const rand: number = parseInt(Math.random() * 4);
-            if (rand === 1) customers.push({ userId: user.id });
+            const rand: number = parseInt(Math.random() * 2);
+            if (rand === 1 || user.firstName === "root") customers.push({ userId: user.id });
         });
         return (CustomerModel.bulkCreate(customers))
     } catch (err) {

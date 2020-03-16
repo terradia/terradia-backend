@@ -18,6 +18,7 @@ import {downCustomers, upCustomers} from "./customers";
 import {downCompaniesReviews, upCompaniesReviews} from "./companyReviews";
 import {downCustomersAddress, upCustomersAddress} from "./customerAddress"
 import {downProductsReviews, upProductsReviews} from "./productReviews"
+import {downCompanyProductsCategories, upCompanyProductsCategories} from "./companyProductsCategories"
 
 // @ts-ignore
 sequelize.addModels([
@@ -37,6 +38,7 @@ export const up = async () => {
         await upRoles();
         await upUsers();
         await upCompanies();
+        await upCompanyProductsCategories();
         await upProducts();
         await upCustomers();
         await upCompaniesReviews();
@@ -53,6 +55,7 @@ export const down = async () => {
     await downRoles();
     await downUsers();
     await downCompanies();
+    await downCompanyProductsCategories();
     await downProducts();
     await downCustomers();
     await downCompaniesReviews();

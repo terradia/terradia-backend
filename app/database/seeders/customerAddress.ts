@@ -4,8 +4,8 @@ import CustomerAddressModel from "../models/customer-address.model";
 
 async function generateCompanyReviews(customer: CustomerModel): any[] {
     let customerAddressesGenerated: any[] = [];
-    const rand: number = Math.floor(Math.random() * 10);
-    for (let i = 0; i < rand; i++) {
+    // const rand: number = Math.floor(Math.random() * 10);
+    for (let i = 0; i < 7; i++) {
         customerAddressesGenerated.push({
             address: faker.address.streetAddress() + faker.address.city() + faker.address.zipCode() + faker.address.country(),
             apartment: faker.address.secondaryAddress(),
