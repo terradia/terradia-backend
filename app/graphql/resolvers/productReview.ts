@@ -3,6 +3,8 @@ import CustomerModel from "../../database/models/customer.model";
 import { ApolloError } from "apollo-server";
 import ProductModel from "../../database/models/product.model";
 import ProductReviewModel from "../../database/models/product-review.model";
+import CategoryModel from "../../database/models/category.model";
+import CompanyModel from "../../database/models/company.model";
 
 interface reviewData {
   title: string;
@@ -16,6 +18,16 @@ interface argumentsData {
 }
 
 export default {
+  Query: {
+    getProductReviews: async (_parent: any, { id, limit, offset }: { id: string, limit: number, offset: number }) => {
+      return await ProductReviewModel.findAll({
+        where: {productId: id},
+        include: [{model: CustomerModel, include: [UserModel]}],
+        offset,
+        limit
+      });
+    },
+  },
   Mutation: {
     createProductReview: async (
       _parent,

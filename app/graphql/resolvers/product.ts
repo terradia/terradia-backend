@@ -2,8 +2,11 @@ import ProductModel from "../../database/models/product.model";
 import CategoryModel from "../../database/models/category.model";
 import ProductCategoryModel from "../../database/models/product-category.model";
 import CompanyModel from "../../database/models/company.model";
+import ProductReviewModel from "../../database/models/product-review.model";
 
 import { ApolloError } from "apollo-server-errors";
+import CustomerModel from "../../database/models/customer.model";
+import UserModel from "../../database/models/user.model";
 
 export default {
   Query: {
@@ -13,8 +16,8 @@ export default {
       });
     },
     getProduct: async (_parent: any, { id }: { id: string }) => {
-      return ProductModel.findByPk(id, {
-        include: [CategoryModel, CompanyModel, ProductReviewModel]
+      return await ProductModel.findByPk(id, {
+        include: [CategoryModel, CompanyModel, {model: ProductReviewModel, include: [{model: CustomerModel, include: [UserModel]}]}]
       });
     },
     getProductsByCompany: async (

@@ -31,7 +31,7 @@ export default {
         _parent: any,
         {}, {user}:argumentsData, {}
     ) => {
-      const customer = user.customer.toJSON();
+      const customer = user.customer;
       return CustomerAddressModel.findAll({
         where: {customerId: customer.id},
         include: [
