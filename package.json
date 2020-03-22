@@ -50,8 +50,7 @@
     "debug": "^4.1.1",
     "dotenv": "^7.0.0",
     "faker": "latest",
-    "ts-node-dev": "^1.0.0-pre.35",
-    "typescript": "^3.4.5"
+    "ts-node-dev": "^1.0.0-pre.35"
   },
   "config": {
     "commitizen": {
