@@ -26,7 +26,7 @@ export default {
           CompanyReviewModel,
           {
             model: CompanyProductsCategoryModel,
-            include: [ProductModel]
+            include: [ProductModel],
           }
         ],
         offset: page,

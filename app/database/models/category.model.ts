@@ -28,7 +28,7 @@ export default class CategoryModel extends Model<CategoryModel> {
 
   @AllowNull(true)
   @Column(DataType.NUMBER)
-  public parentCategoryId!: number;
+  public parentCategoryId!: string;
 
   @BelongsToMany(() => ProductModel, {
     onDelete: "CASCADE",
