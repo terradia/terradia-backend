@@ -18,7 +18,7 @@ export default {
       });
     },
     getProduct: async (_parent: any, { id }: { id: string }) => {
-      return await ProductModel.findByPk(id, {
+      return ProductModel.findByPk(id, {
         include: [
           CategoryModel,
           CompanyModel,
@@ -58,7 +58,7 @@ export default {
     getAllUnits: async (
       _: any,
       { referencesOnly = false }: { referencesOnly?: boolean }
-    ) => {
+    ): Promise<UnitModel[]> => {
       if (referencesOnly === true)
         return UnitModel.findAll({
           where: { referenceUnitId: { [Op.is]: null } }
@@ -66,26 +66,23 @@ export default {
       return UnitModel.findAll();
     },
     getUnit: async (
-      _parent: any,
-      { id, notation, name }: { id: string; notation?: string; name?: string }
-    ) => {
+      _: any,
+      { id, notation, name }: { id?: string; notation?: string; name?: string }
+    ): Promise<UnitModel | null> => {
       if (!name && !notation && !id)
         throw new ApolloError(
           "You should at least give one of the three arguments",
           "400"
         );
-      let options: any = {};
+      let options: { id?: string; notation?: string; name?: string } = {};
       if (id) options["id"] = id;
       else if (notation) options["notation"] = notation;
       else if (name) options["name"] = name;
-      const unit = await UnitModel.findOne({
+      const unit: UnitModel | null = await UnitModel.findOne({
+        // @ts-ignore
         where: options
       });
-      if (!unit)
-        throw new ApolloError(
-          "Cannot find this unit.",
-          "404"
-        );
+      if (!unit) throw new ApolloError("Cannot find this unit.", "404");
       return unit;
     }
   },
