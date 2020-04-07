@@ -1,6 +1,6 @@
 import faker from "faker";
 import UserModel from "../models/user.model";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 const nb = 5;
 
@@ -8,7 +8,7 @@ let admin = {
     firstName: "root",
     lastName: "root",
     email: "root@root.com",
-    password: bcrypt.hashSync("rootroot", 15),
+    password: bcrypt.hashSync("rootroot", 15), // TODO : make the password more secure.
     phone: faker.phone.phoneNumber(),
 };
 
@@ -20,8 +20,8 @@ interface user {
     phone: string;
 }
 
-async function generateUsers(): any[] {
-    let usersGenerated: [user] = [];
+async function generateUsers(): Promise<any[]> {
+    let usersGenerated: user[] = [];
     usersGenerated.push(admin);
     console.log("Generating users .... please wait");
     for (let i = 0 ; i < nb ; i++) {

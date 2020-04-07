@@ -2,11 +2,10 @@ import {
   AllowNull,
   BeforeCreate,
   BeforeUpdate,
-  BelongsTo, BelongsToMany,
   Column,
   DataType,
   Default,
-  ForeignKey, HasMany,
+  HasMany,
   HasOne,
   Is,
   IsEmail,
@@ -17,7 +16,7 @@ import {
   Unique
 } from "sequelize-typescript";
 
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import CompanyModel from "./company.model";
 import CustomerModel from "./customer.model";
 import CompanyUserModel from "./company-user.model";

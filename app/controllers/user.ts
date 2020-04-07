@@ -1,13 +1,12 @@
-import { NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import UserModel from "../database/models/user.model";
 
 export default {
-  checkEmail: (req: Request, res: Response, next: NextFunction) =>
+  checkEmail: (req: any, res: any, next: any) =>
     jwt.verify(
       req.query.token,
       process.env.TOKEN_SECRET!,
-      async (err: Error, decoded) => {
+      async (err: any, decoded: any) => {
         if (err) {
           return res.status(400).body({
             type: "fail",
