@@ -5,8 +5,9 @@ import { AuthenticationError, UserInputError } from "apollo-server";
 import { ApolloError } from "apollo-server-errors";
 
 const createToken = async (user: UserModel, secret: string) => {
-  const { id, email, username, role } = user;
-  return jwt.sign({ id, email, username, role }, secret);
+  const payload: Partial<UserModel> = user.toJSON();
+  delete payload.password;
+  return jwt.sign(payload, secret);
 };
 
 export default {
@@ -56,7 +57,7 @@ export default {
       if (emailAlreadyTaken) {
         throw new ApolloError(
           "Il semblerais qu'il existe déjà un utilisateur avec cet email.",
-          403
+          "403"
         );
       }
       const user = await UserModel.create({ ...userInformations, email });

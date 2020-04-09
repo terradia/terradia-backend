@@ -12,15 +12,16 @@ import UserPermissionsModel from "./database/models/userPermissions.model";
 export const getUser = async (req: express.Request) => {
   const { authorization } = req.headers;
   let token = authorization;
-  if (authorization && authorization.substring(7, authorization.length) == "Bearer ")
+  if (authorization && authorization.substring(0, 7) == "Bearer ")
     token = authorization.substring(7, authorization.length);
   if (token) {
     try {
-      const decoded: any = await jwt.verify(
+      const decoded: any = jwt.verify(
         token,
         process.env.TOKEN_SECRET!
       );
-      let user =  await User.findByPk(decoded.id, {
+
+      return await User.findByPk(decoded.id, {
         include: [
           {
             model: CompanyUserModel,
@@ -33,7 +34,6 @@ export const getUser = async (req: express.Request) => {
           },
           CustomerModel]
       });
-      return user;
     } catch (e) {
       throw new AuthenticationError(
         "Session expired, please connect you again" // TODO : change the string to be translated.

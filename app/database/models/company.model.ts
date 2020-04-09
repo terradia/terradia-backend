@@ -10,7 +10,6 @@ import {
   Table, BelongsToMany
 } from "sequelize-typescript";
 import ProductModel from "./product.model";
-import UserModel from "./user.model";
 import CompanyReviewModel from "./company-review.model";
 import CustomerModel from "./customer.model";
 import CustomersFavoriteCompaniesModel from "./customers-favorite-companies.model";

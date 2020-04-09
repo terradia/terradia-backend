@@ -1,4 +1,5 @@
 import RoleModel from "../models/role.model";
+import Bluebird from "bluebird";
 
 const roles = [
     {
@@ -11,7 +12,10 @@ const roles = [
     }
 ];
 
-export const upRoles: any = () => RoleModel.bulkCreate(roles);
-export const downRoles: any = () => RoleModel.destroy({where: {}}).catch(err => {
-    console.log(err);
-});
+export const upRoles: () => Promise<RoleModel[]> = () => (RoleModel.bulkCreate(roles));
+
+export const downRoles: () => Bluebird<number | void> = () => (
+    RoleModel.destroy({where: {}}).catch(err => {
+        console.log(err);
+    })
+);

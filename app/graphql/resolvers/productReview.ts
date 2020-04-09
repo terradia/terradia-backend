@@ -17,10 +17,16 @@ interface argumentsData {
   user: UserModel;
 }
 
+interface GetProductReviewsProps {
+  id: string,
+  limit: number,
+  offset: number
+}
+
 export default {
   Query: {
-    getProductReviews: async (_parent: any, { id, limit, offset }: { id: string, limit: number, offset: number }) => {
-      return await ProductReviewModel.findAll({
+    getProductReviews: async (_: any, { id, limit, offset }: GetProductReviewsProps): Promise<ProductReviewModel[]> => {
+      return ProductReviewModel.findAll({
         where: {productId: id},
         include: [{model: CustomerModel, include: [UserModel]}],
         offset,
@@ -30,34 +36,57 @@ export default {
   },
   Mutation: {
     createProductReview: async (
-      _parent,
+        _: any,
       { title, customerMark, description, productId }: reviewData,
       { user }: argumentsData
-    ) => {
-      const customer = user.customer.toJSON();
-      if (customer) {
-        const product = await ProductModel.findByPk(productId);
-        return ProductReviewModel.create({
-          title,
-          customerMark,
-          description
-        }).then(async review => {
-          await review.setCustomer(customer.id);
-          await review.setProduct(productId);
-
-          const avg = product.averageMark;
-          const num = product.numberOfMarks;
-          const newNum = num + 1;
-          const newAvg = (avg * num + customerMark) / newNum;
-
-          await ProductModel.update(
-            { averageMark: newAvg, numberOfMarks: newNum },
-            { where: { id: productId } }
-          );
-          return ProductReviewModel.findByPk(review.id, {
-            include: [CustomerModel, ProductModel]
+    ): Promise<ProductReviewModel | null> => {
+      if (!user.customer)
+        throw new ApolloError("User is not a customer", "500");
+      const customer: Partial<CustomerModel> = user.customer.toJSON();
+      if (customer && customer.id !== undefined) {
+        const product: ProductModel | null = await ProductModel.findByPk(productId);
+        if (product) {
+          let [review] = await ProductReviewModel.findOrCreate({
+            where: {
+              title: (title !== undefined) ? title : "",
+              customerMark: customerMark,
+              description: (description !== undefined) ? description : "",
+              customerId: customer.id,
+              productId: productId
+            },
+            defaults: {
+              title: (title !== undefined) ? title : "",
+              customerMark: customerMark,
+              description: (description !== undefined) ? description : "",
+              customerId: customer.id,
+              productId: productId
+            }
           });
-        });
+          if (!review) {
+            throw new ApolloError("can't create the review", "500");
+          }
+
+            const avg: number = product?.averageMark;
+            const num: number = product?.numberOfMarks;
+            const newNum: number = num + 1;
+            const newAvg: number = (avg * num + customerMark) / newNum;
+
+            await ProductModel.update(
+                { averageMark: newAvg, numberOfMarks: newNum },
+                { where: { id: productId } }
+            );
+            return ProductReviewModel.findByPk(review.id, {
+              include: [
+                {
+                  model: CustomerModel,
+                  include: [UserModel]
+                },
+                ProductModel
+              ]
+            });
+        } else {
+          throw new ApolloError("Can't find the product", "400")
+        }
       } else {
         throw new ApolloError("You need to be a customer review a product.", "403");
       }
