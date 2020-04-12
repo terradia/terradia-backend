@@ -1,6 +1,7 @@
 import ProductModel from "../../database/models/product.model";
 import CompanyProductsCategoryModel from "../../database/models/company-products-category.model";
 import { ApolloError } from "apollo-server-errors";
+import CompanyModel from "../../database/models/company.model";
 
 export default {
   Query: {
