@@ -25,7 +25,10 @@
   "bugs": {
     "url": "https://github.com/terradia/terradia-backend/issues"
   },
-  "prettier": {},
+  "prettier": {
+    "semi": true,
+    "tabWidth": 2
+  },
   "homepage": "https://github.com/terradia/terradia-backend#readme",
   "devDependencies": {
     "@types/bcrypt": "^3.0.0",
