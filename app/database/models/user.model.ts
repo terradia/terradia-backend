@@ -59,15 +59,6 @@ export default class UserModel extends Model<UserModel> {
   @Column(DataType.BOOLEAN)
   public validated!: boolean;
 
-  // TODO: Remove => Not longer used
-  // @ForeignKey(() => CompanyModel)
-  // @Column
-  // public companyId!: string;
-  //
-  // // Not longer used
-  // @BelongsTo(() => CompanyModel)
-  // public company!: CompanyModel;
-
   // All companies for each user
   @HasMany(() => CompanyUserModel)
   public companies!: CompanyUserModel[];
