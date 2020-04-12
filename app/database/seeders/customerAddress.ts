@@ -2,11 +2,18 @@ import faker from "faker";
 import CustomerModel from "../models/customer.model";
 import CustomerAddressModel from "../models/customer-address.model";
 
-async function generateCompanyReviews(customer: CustomerModel): any[] {
-    let customerAddressesGenerated: any[] = [];
-    // const rand: number = Math.floor(Math.random() * 10);
+declare interface customerAddress {
+    address: string,
+    apartment: string,
+    information: string,
+    active: boolean,
+    customerId: string
+}
+
+const generateAddresses: (customer: CustomerModel) => customerAddress[] = (customer) => {
+    let generatedCustomerAddresses: customerAddress[] = [];
     for (let i = 0; i < 7; i++) {
-        customerAddressesGenerated.push({
+        generatedCustomerAddresses.push({
             address: faker.address.streetAddress() + faker.address.city() + faker.address.zipCode() + faker.address.country(),
             apartment: faker.address.secondaryAddress(),
             information: faker.lorem.lines(1),
@@ -14,15 +21,15 @@ async function generateCompanyReviews(customer: CustomerModel): any[] {
             customerId: customer.id,
         });
     }
-    return customerAddressesGenerated;
-}
+    return generatedCustomerAddresses;
+};
 
-export const upCustomersAddress: any = async () => {
+export const upCustomersAddress: () => Promise<CustomerAddressModel[]> = async () => {
     try {
         let customerAddressesGenerated: any[] = [];
         const customers = await CustomerModel.findAll();
-        await customers.map(async (customer) => {
-            const tmp = await generateCompanyReviews(customer);
+        customers.map((customer) => {
+            const tmp = generateAddresses(customer);
             customerAddressesGenerated = customerAddressesGenerated.concat(tmp);
         });
         return CustomerAddressModel.bulkCreate(customerAddressesGenerated);
@@ -30,7 +37,8 @@ export const upCustomersAddress: any = async () => {
         throw err;
     }
 };
-export const downCustomersAddress: any = () => {
+
+export const downCustomersAddress: () => Promise<number> = () => {
     return CustomerAddressModel.destroy({where: {}}).catch(err => {
         console.log(err);
     });

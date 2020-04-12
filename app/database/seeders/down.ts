@@ -1,0 +1,1 @@
+require("./seeds.ts").down();

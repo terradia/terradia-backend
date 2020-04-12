@@ -33,8 +33,9 @@ sequelize.addModels([
     UserModel
 ]);
 
-export const up = async () => {
+export const up: () => void = async () => {
     try {
+        await down();
         await upRoles();
         await upUsers();
         await upCompanies();
@@ -45,13 +46,12 @@ export const up = async () => {
         await upCustomersAddress();
         await upProductsReviews();
         debug("init:seed")(chalk.green("Every seeds went well"));
-        return process.exit();
     } catch (err) {
         throw err;
     }
 };
 
-export const down = async () => {
+export const down: () => void = async () => {
     await downRoles();
     await downUsers();
     await downCompanies();
@@ -62,5 +62,4 @@ export const down = async () => {
     await downProductsReviews();
     await downCustomersAddress();
     debug("init:seed")(chalk.green("All relevant data were erased"));
-    return process.exit();
 };

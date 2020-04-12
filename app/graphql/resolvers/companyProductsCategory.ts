@@ -1,27 +1,24 @@
 import ProductModel from "../../database/models/product.model";
 import CompanyProductsCategoryModel from "../../database/models/company-products-category.model";
 import { ApolloError } from "apollo-server-errors";
+import CompanyModel from "../../database/models/company.model";
+import {WhereOptions} from "sequelize";
 
 export default {
   Query: {
     getAllCompanyProductsCategories: async (
-      _parent: any,
-      { companyId }: { companyId: string }
-    ) => {
+        _: any,
+      { companyId }: { companyId: string }): Promise<CompanyProductsCategoryModel[]> => {
       return CompanyProductsCategoryModel.findAll({
         where: { companyId },
         include: [ProductModel, CompanyModel]
       });
     },
     getCompanyProductsCategory: async (
-      _parent: any,
-      {
-        companyId,
-        name,
-        categoryId
-      }: { companyId: string; name?: string; categoryId?: string }
-    ) => {
-      let where;
+        _: any,
+      {companyId, name, categoryId}:
+          { companyId: string; name?: string; categoryId?: string }): Promise<CompanyProductsCategoryModel | null> => {
+      let where : WhereOptions;
       if (name) where = { companyId, name };
       else if (categoryId) where = { companyId, id: categoryId };
       else throw new ApolloError("precise at least one filter", "403");
@@ -33,24 +30,32 @@ export default {
   },
   Mutation: {
     createCompanyProductsCategory: async (
-      _parent: any,
+        _: any,
       { companyId, name }: { companyId: string; name: string }
-    ) => {
-      let cat = await CompanyProductsCategoryModel.findOne({
-        name,
-        companyId
+    ): Promise<CompanyProductsCategoryModel | null> => {
+      let [productsCategory]: [CompanyProductsCategoryModel, boolean] = await CompanyProductsCategoryModel.findOrCreate({
+        where: {
+          name: name,
+          companyId: companyId
+        },
+        defaults: {
+          name: name,
+          companyId: companyId
+        }
+      })
+      if (!productsCategory)
+        throw new ApolloError("Can't create the Products Category");
+      return CompanyProductsCategoryModel.findByPk(productsCategory.id, {
+        include: [CompanyModel, ProductModel]
       });
-      if (cat) return cat.toJSON();
-      cat = await CompanyProductsCategoryModel.create({ name, companyId });
-      return cat.toJSON();
     },
     removeCompanyProductsCategory: async (
-      _parent: any,
+        _: any,
       { categoryId }: { categoryId: string }
-    ) => {
-      const category = await CompanyProductsCategoryModel.findOne({
+    ): Promise<CompanyProductsCategoryModel | null> => {
+      const category: CompanyProductsCategoryModel | null = await CompanyProductsCategoryModel.findOne({
         where: { id: categoryId },
-        include: [ProductModel]
+        include: [ProductModel, CompanyModel]
       });
       if (category) {
         // remove the category to all the Products that was linked to it.
@@ -69,11 +74,11 @@ export default {
       }
     },
     addProductToCompanyCategory: async (
-      _parent: any,
+        _: any,
       { categoryId, productId }: { categoryId: string; productId: string }
-    ) => {
-      const product = await ProductModel.findOne({ where: { id: productId } });
-      const category = await CompanyProductsCategoryModel.findOne({
+    ): Promise<ProductModel | null> => {
+      const product: ProductModel | null = await ProductModel.findOne({ where: { id: productId } });
+      const category: CompanyProductsCategoryModel | null = await CompanyProductsCategoryModel.findOne({
         where: { id: categoryId }
       });
       if (product) {
@@ -92,10 +97,10 @@ export default {
       } else throw new ApolloError("Product not found", "404");
     },
     removeProductFromCompanyCategory: async (
-      _parent: any,
+        _: any,
       { productId }: { productId: string }
-    ) => {
-      const product = await ProductModel.findOne({
+    ): Promise<ProductModel | null> => {
+      const product: ProductModel | null = await ProductModel.findOne({
         where: { id: productId },
         include: [CompanyProductsCategoryModel]
       });

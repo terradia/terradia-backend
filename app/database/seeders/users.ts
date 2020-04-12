@@ -4,14 +4,6 @@ import bcrypt from "bcrypt";
 
 const nb = 5;
 
-let admin = {
-    firstName: "root",
-    lastName: "root",
-    email: "root@root.com",
-    password: bcrypt.hashSync("rootroot", 15),
-    phone: faker.phone.phoneNumber(),
-};
-
 interface user {
     firstName: string;
     lastName: string;
@@ -20,8 +12,17 @@ interface user {
     phone: string;
 }
 
-async function generateUsers(): any[] {
-    let usersGenerated: [user] = [];
+
+let admin: user = {
+    firstName: "root",
+    lastName: "root",
+    email: "root@root.com",
+    password: bcrypt.hashSync("rootroot", 15),
+    phone: faker.phone.phoneNumber(),
+};
+
+const generateUsers = (): user[] => {
+    let usersGenerated: user[] = [];
     usersGenerated.push(admin);
     console.log("Generating users .... please wait");
     for (let i = 0 ; i < nb ; i++) {
@@ -37,13 +38,13 @@ async function generateUsers(): any[] {
     return usersGenerated;
 }
 
-
-
-export const upUsers: any = async () => {
-    let usersGenerated = await generateUsers();
+export const upUsers: () => Promise<UserModel[]> = async () => {
+    let usersGenerated = generateUsers();
     return UserModel.bulkCreate(usersGenerated);
 };
-export const downUsers: any = () =>
+
+export const downUsers: () => Promise<number> = () =>
   UserModel.destroy({ where: {} }).catch(err => {
       console.log(err);
   });
+
