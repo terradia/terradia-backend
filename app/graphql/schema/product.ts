@@ -6,9 +6,15 @@ export default gql`
     getProduct(id: ID!): Product!
     getProductsByCompany(companyId: String): [Product]!
     getProductsByCompanyByCategory(companyId: String): [Category]!
+    getAllUnits(referencesOnly: Boolean): [Unit]!
+    getUnit(id: ID, notation: String, name: String): Unit!
   }
   extend type Mutation {
-    createProduct(name: String!, description: String!, companyId: String!): Product!
+    createProduct(
+      name: String!
+      description: String!
+      companyId: String!
+    ): Product!
     addCategoryToProduct(categoryName: String!, productId: String!): Product!
   }
   type Product {
@@ -24,5 +30,12 @@ export default gql`
     reviews: [ProductReview]
     averageMark: Float
     numberOfMarks: Int
+  }
+  type Unit {
+    id: ID!
+    name: String!
+    notation: String!
+    referenceUnit: Unit
+    multiplicationFactor: Float
   }
 `;

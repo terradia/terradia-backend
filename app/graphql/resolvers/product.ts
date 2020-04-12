@@ -6,6 +6,8 @@ import ProductReviewModel from "../../database/models/product-review.model";
 import { ApolloError } from "apollo-server-errors";
 import CustomerModel from "../../database/models/customer.model";
 import UserModel from "../../database/models/user.model";
+import UnitModel from "../../database/models/unit.model";
+import { Op } from "sequelize";
 
 export default {
   Query: {
@@ -43,9 +45,43 @@ export default {
       if (!company) throw new ApolloError("This company does not exist", "404");
       return CategoryModel.findAll({
         include: [
-          { model: ProductModel, where: { companyId }, include: [CompanyModel, ProductReviewModel] }
+          {
+            model: ProductModel,
+            where: { companyId },
+            include: [CompanyModel, ProductReviewModel]
+          }
         ]
       });
+    },
+    getAllUnits: async (
+      _: any,
+      { referencesOnly = false }: { referencesOnly?: boolean }
+    ): Promise<UnitModel[]> => {
+      if (referencesOnly === true)
+        return UnitModel.findAll({
+          where: { referenceUnitId: { [Op.is]: null } }
+        });
+      return UnitModel.findAll();
+    },
+    getUnit: async (
+      _: any,
+      { id, notation, name }: { id?: string; notation?: string; name?: string }
+    ): Promise<UnitModel | null> => {
+      if (!name && !notation && !id)
+        throw new ApolloError(
+          "You should at least give one of the three arguments",
+          "400"
+        );
+      let options: { id?: string; notation?: string; name?: string } = {};
+      if (id) options["id"] = id;
+      else if (notation) options["notation"] = notation;
+      else if (name) options["name"] = name;
+      const unit: UnitModel | null = await UnitModel.findOne({
+        // @ts-ignore
+        where: options
+      });
+      if (!unit) throw new ApolloError("Cannot find this unit.", "404");
+      return unit;
     }
   },
   Mutation: {

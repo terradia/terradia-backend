@@ -25,12 +25,16 @@
   "bugs": {
     "url": "https://github.com/terradia/terradia-backend/issues"
   },
+  "prettier": {
+    "semi": true,
+    "tabWidth": 2
+  },
   "homepage": "https://github.com/terradia/terradia-backend#readme",
   "devDependencies": {
     "@types/bcrypt": "^3.0.0",
-    "@types/bcrypt-nodejs": "0.0.30",
+    "@types/bcryptjs": "^2.4.2",
+    "@types/body-parser": "^1.17.0",
     "@types/bluebird": "^3.5.30",
-    "@types/body-parser": "^1.19.0",
     "@types/compression": "^0.0.36",
     "@types/cookie-parser": "^1.4.1",
     "@types/cors": "^2.8.4",
@@ -60,6 +64,8 @@
     }
   },
   "dependencies": {
+    "@types/bluebird": "^3.5.27",
+    "bcryptjs": "^2.4.3",
     "apollo-server": "^2.11.0",
     "apollo-server-express": "^2.11.0",
     "bcrypt": "^3.0.8",

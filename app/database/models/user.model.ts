@@ -4,7 +4,8 @@ import {
   BeforeUpdate, BelongsTo,
   Column,
   DataType,
-  Default, ForeignKey,
+  Default,
+  ForeignKey,
   HasMany,
   HasOne,
   Is,
@@ -16,7 +17,7 @@ import {
   Unique
 } from "sequelize-typescript";
 
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import CustomerModel from "./customer.model";
 import CompanyUserModel from "./company-user.model";
 
@@ -57,15 +58,6 @@ export default class UserModel extends Model<UserModel> {
   @Default(false)
   @Column(DataType.BOOLEAN)
   public validated!: boolean;
-
-  // TODO: Remove => Not longer used
-  // @ForeignKey(() => CompanyModel)
-  // @Column
-  // public companyId!: string;
-  //
-  // // Not longer used
-  // @BelongsTo(() => CompanyModel)
-  // public company!: CompanyModel;
 
   // All companies for each user
   @HasMany(() => CompanyUserModel)
