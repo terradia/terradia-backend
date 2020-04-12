@@ -41,7 +41,6 @@ services:
       - ./.env
     volumes:
       - ./app:/app/app
-      - ./node_modules:/app/node_modules
     depends_on:
       - postgres
 
