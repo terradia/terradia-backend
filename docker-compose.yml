@@ -54,8 +54,19 @@ services:
       - ./terradia-backend.conf:/etc/nginx/nginx.conf
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
-    depends_on:
-      - certbot
+  image: linuxserver/letsencrypt
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./config/letsencrypt:/config
+    environment:
+      - EMAIL=contact@terradia.eu
+      - URL=api.terradia.eu
+      - VALIDATION=http
+      - TZ=Europe/Paris
+      - PUID=0
+      - PGID=0
   certbot:
     image: certbot/certbot
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
