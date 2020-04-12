@@ -1,13 +1,10 @@
 import {
-  BelongsTo,
   Column, DataType, Default,
   ForeignKey,
-  HasMany, IsUUID,
+  IsUUID,
   Model, PrimaryKey,
   Table
 } from "sequelize-typescript";
-import UserModel from "./user.model";
-import CompanyReviewModel from "./company-review.model";
 import CustomerModel from "./customer.model";
 import CompanyModel from "./company.model";
 

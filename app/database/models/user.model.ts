@@ -1,10 +1,11 @@
 import {
   AllowNull,
   BeforeCreate,
-  BeforeUpdate,
+  BeforeUpdate, BelongsTo,
   Column,
   DataType,
   Default,
+  ForeignKey,
   HasMany,
   HasOne,
   Is,
@@ -17,7 +18,6 @@ import {
 } from "sequelize-typescript";
 
 import bcrypt from "bcryptjs";
-import CompanyModel from "./company.model";
 import CustomerModel from "./customer.model";
 import CompanyUserModel from "./company-user.model";
 
@@ -68,7 +68,7 @@ export default class UserModel extends Model<UserModel> {
 
   @BeforeCreate
   @BeforeUpdate
-  public static async hashPassword(user: UserModel) {
+  public static async hashPassword(user: UserModel): Promise<void> {
     if (user.changed("password")) {
       user.password = await bcrypt.hash(user.password, 15);
     }
@@ -85,8 +85,12 @@ export default class UserModel extends Model<UserModel> {
   }
 
   public static async findByLogin(login: string): Promise<UserModel | null> {
-    return UserModel.findOne({
-      where: { email: login }
-    });
+    try {
+      return UserModel.findOne({
+        where: {email: login}
+      });
+    } catch (e) {
+      throw(e);
+    }
   }
 }

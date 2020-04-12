@@ -1,39 +1,29 @@
-import faker from "faker";
 import CustomerModel from "../models/customer.model";
 import ProductModel from "../models/product.model";
 import ProductReviewModel from "../models/product-review.model";
-
-async function generateProductReviews(product: ProductModel, customers: CustomerModel[]): any[] {
-    let productReviewsGenerated: any[] = [];
-    const rand: number = Math.floor(Math.random() * 100);
-    for (let i = 0; i < rand; i++) {
-        let customerMark = Math.floor(Math.random() * 4) + 1;
-        productReviewsGenerated.push({
-            title: faker.name.title(),
-            description: faker.lorem.paragraph(),
-            customerMark,
-            customerId: customers[Math.floor(Math.random() * customers.length)].id,
-            productId: product.id
-        });
-    }
-    return productReviewsGenerated;
-}
+import generateReviews, {ProductReview} from "./reviewGenerator";
 
 export const upProductsReviews: any = async () => {
     try {
-        let productReviewsGenerated: any[] = [];
+        let productReviewsGenerated: ProductReview[] = [];
         const products = await ProductModel.findAll();
         const customers = await CustomerModel.findAll();
-        await products.map(async (product) => {
-            const tmp = await generateProductReviews(product, customers);
+        products.map((product) => {
+            const tmp: ProductReview[] = generateReviews(product, customers);
             productReviewsGenerated = productReviewsGenerated.concat(tmp);
         });
-        return ProductReviewModel.bulkCreate(productReviewsGenerated);
+        productReviewsGenerated.map(productReview => {
+            return ProductReviewModel.bulkCreate([productReview]).catch(error => {
+                console.log(error);
+                console.log(productReview);
+            });
+        })
     } catch (err) {
         throw err;
     }
 };
-export const downProductsReviews: any = () => {
+
+export const downProductsReviews: () => Promise<number> = () => {
     return ProductReviewModel.destroy({where: {}}).catch(err => {
         console.log(err);
     });

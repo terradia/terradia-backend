@@ -6,6 +6,8 @@ export default gql`
         getCompany(companyId: ID!): Company
         getCompanyByName(name: String!): Company
         getCompaniesByDistance(page: Int, pageSize: Int, lat: Float!, lon: Float!): [Company]
+        getCompaniesByUser(userId: ID!): [CompanyUser]
+        getCompanies: [Company]
     }
     extend type Mutation {
         createCompany(

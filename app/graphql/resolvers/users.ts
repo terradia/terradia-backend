@@ -5,8 +5,9 @@ import { AuthenticationError, UserInputError } from "apollo-server";
 import { ApolloError } from "apollo-server-errors";
 
 const createToken = async (user: UserModel, secret: string) => {
-  const { id, email } = user;
-  return jwt.sign({ id, email }, secret);
+  const payload: Partial<UserModel> = user.toJSON();
+  delete payload.password;
+  return jwt.sign(payload, secret);
 };
 
 export default {

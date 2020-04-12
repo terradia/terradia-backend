@@ -15,49 +15,46 @@ interface Context {
 
 export default {
   Query: {
-    getAllCustomers: async () => {
+    getAllCustomers: async (): Promise<CustomerModel[]> => {
       return CustomerModel.findAll({
         include: [UserModel, CompanyReviewModel, CompanyModel]
       });
     },
-    getCustomer: async (_parent, { userId }) => {
+    getCustomer: async (_: any, { userId }: {userId: string}): Promise<CustomerModel | null> => {
       return CustomerModel.findOne({
         where: { userId },
         include: [UserModel, CompanyReviewModel, CompanyModel]
       });
     },
-    getCustomerFavoriteCompanies: async (_parent, { userId }, { user }) => {
+    getCustomerFavoriteCompanies: async (_: any, { userId }: {userId: string}, {user}: Context) => {
       let id = userId ? userId : user.id;
-      const customer = await CustomerModel.findOne({
+      const customer: CustomerModel | null = await CustomerModel.findOne({
         where: { userId: id },
         include: [UserModel, CompanyReviewModel, CompanyModel]
       });
-      return customer.favoriteCompanies;
+      return customer?.favoriteCompanies;
     }
   },
   Mutation: {
-    defineUserAsCustomer: async (_parent, { userId }) => {
-      const customer = await CustomerModel.findOne({
+    defineUserAsCustomer: async (_: any, {userId}: {userId: string}) => {
+      let [result] = await CustomerModel.findOrCreate({
         where: { userId },
+        defaults: {
+          userId
+        },
+      });
+      return CustomerModel.findOne({
+        where: { id: result.id },
         include: [UserModel]
       });
-
-      if (customer) {
-        return customer;
-      } else {
-        return CustomerModel.create().then(customer => {
-          customer.setUser(userId);
-          return customer;
-        });
-      }
     },
     addFavoriteCompany: async (
-      _parent,
+        _: any,
       { companyId }: FavoriteArgs,
       { user }: Context
-    ) => {
-      const company = await CompanyModel.findOne({ where: { id: companyId } });
-      const customerId = user.customer.id;
+    ): Promise<CustomerModel | null> => {
+      const company: CompanyModel | null = await CompanyModel.findOne({ where: { id: companyId } });
+      const customerId: string = user.customer.id;
       if (company) {
         await CustomersFavoriteCompaniesModel.findOrCreate({
           where: { companyId, customerId }
@@ -68,21 +65,25 @@ export default {
           "RESOURCE_NOT_FOUND"
         );
       }
-      return CustomerModel.findByPk(customerId, { include: [CompanyModel] });
+      return CustomerModel.findByPk(customerId, { include: [CompanyModel, CompanyReviewModel, UserModel] });
     },
     removeFavoriteCompany: async (
-      _parent,
+        _: any,
       { companyId }: FavoriteArgs,
       { user }: Context
-    ) => {
-      const company = CompanyModel.findByPk(companyId);
-      const customerId = user.customer.id;
+    ): Promise<CustomerModel | null> => {
+      if (!user.customer)
+        throw new ApolloError("User is not a customer", "500");
+      const company: CompanyModel | null = await CompanyModel.findByPk(companyId);
+      const customerId: string = user.customer.id;
       if (company) {
         await CustomersFavoriteCompaniesModel.destroy({
           where: { companyId, customerId }
         });
-      } else throw new Error("This company does not exists.");
-      return user.customer;
+      } else {
+        throw new Error("This company does not exists.");
+      }
+      return CustomerModel.findByPk(customerId, { include: [CompanyModel, CompanyReviewModel, UserModel] });
     }
   }
 };

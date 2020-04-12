@@ -2,7 +2,7 @@ import { gql } from "apollo-server";
 
 export default gql`
     extend type Mutation {
-        createProductReview(title: String, customerMark: Int, description: String, productId: String): ProductReview
+        createProductReview(title: String, customerMark: Int!, description: String, productId: String!): ProductReview
     }
     
     extend type Query {

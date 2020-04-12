@@ -1,15 +1,23 @@
 import faker from "faker";
 import CompanyModel from "../models/company.model";
+import Bluebird from "bluebird";
 
-interface company {
+declare interface GeoPoint {
+    type: string,
+    coordinates: number[]
+}
+
+interface Company {
     name: string;
     description: string;
     address: string;
-    position: any;
+    position: GeoPoint;
+    averageMark: number,
+    numberOfMarks: number
 }
 
-async function generateCompanies(): [company] {
-    let companiesGenerated = [];
+async function generateCompanies(): Promise<Company[]> {
+    let companiesGenerated: Company[] = [];
     for (let i = 0; i < 10; i++) {
         let address = faker.address.streetAddress(true);
         let point = {
@@ -24,16 +32,14 @@ async function generateCompanies(): [company] {
             description: faker.company.catchPhraseDescriptor(),
             address,
             position: point,
-            averageMark: (Math.random() * 5).toFixed(2),
+            averageMark: parseFloat((Math.random() * 5).toFixed(2)),
             numberOfMarks: Math.floor(Math.random() * 99) + 1
         });
     }
     return companiesGenerated;
 }
 
-
-
-export const upCompanies: any = async () => {
+export const upCompanies: () => Promise<CompanyModel[]> = async () => {
     try {
         const companiesGenerated = await generateCompanies();
         return await CompanyModel.bulkCreate(companiesGenerated);
@@ -41,7 +47,8 @@ export const upCompanies: any = async () => {
         throw err;
     }
 };
-export const downCompanies: any = () => {
+
+export const downCompanies: () => Bluebird<number | void> = () => {
     return CompanyModel.destroy({where: {}}).catch(err => {
         console.log(err);
     });
