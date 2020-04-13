@@ -15,34 +15,47 @@ services:
     volumes:
       - ./postgre:/var/lib/postgresql/data
 
-  pgadmin:
-    container_name: pgadmin_container
-    image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-    volumes:
-      - pgadmin:/root/.pgadmin
-    networks:
-      - postgres
-    ports:
-      - "${PGADMIN_PORT:-5050}:80"
-    restart: unless-stopped
+#  pgadmin:
+#    container_name: pgadmin_container
+#    image: dpage/pgadmin4
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+#      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+#    volumes:
+#      - pgadmin:/root/.pgadmin
+#    networks:
+#      - postgres
+#    ports:
+#      - "${PGADMIN_PORT:-5050}:80"
+#    restart: unless-stopped
 
   api:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "5000:5000"
+      - "8000:8000"
     environment:
       - NODE_ENV=development
     env_file:
       - ./.env
     volumes:
       - ./app:/app/app
-      - ./node_modules:/app/node_modules
     depends_on:
+      - postgres
+    networks:
+      - postgres
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-letsencrypt:/etc/letsencrypt
+    networks:
       - postgres
 
 networks:
