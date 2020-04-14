@@ -46,10 +46,11 @@ export default class UserModel extends Model<UserModel> {
   @Column(DataType.STRING)
   public email!: string;
 
-  @AllowNull(false)
+  @AllowNull(true)
   @Column(DataType.STRING)
   public password!: string;
 
+  @AllowNull(false)
   @Unique
   @Column(DataType.STRING)
   public phone!: string;
@@ -57,6 +58,14 @@ export default class UserModel extends Model<UserModel> {
   @Default(false)
   @Column(DataType.BOOLEAN)
   public validated!: boolean;
+
+  @Unique
+  @Column(DataType.STRING)
+  public facebookId!: string;
+
+  @Unique
+  @Column(DataType.STRING)
+  public exponentPushToken!: string;
 
   // TODO: Remove => Not longer used
   // @ForeignKey(() => CompanyModel)

@@ -2,6 +2,7 @@ import {NextFunction} from "express";
 import jwt from "jsonwebtoken";
 import UserModel from "../database/models/user.model";
 import {Request, Response} from "express"
+import CustomerModel from "../database/models/customer.model";
 
 declare interface DecodedPayload {
     type: string,
@@ -9,6 +10,14 @@ declare interface DecodedPayload {
 }
 
 export default {
+  defineUserAsCustomer: async (userId: string) => {
+    let [result] = await CustomerModel.findOrCreate({
+      where: { userId },
+      defaults: {
+        userId
+      },
+    });
+  },
     checkEmail: (req: Request, res: Response, next: NextFunction) =>
         jwt.verify(
             req.query.token,

@@ -3,6 +3,8 @@ import { generateAuthlink } from "../../auth";
 import jwt from "jsonwebtoken";
 import { AuthenticationError, UserInputError } from "apollo-server";
 import { ApolloError } from "apollo-server-errors";
+const fetch = require('node-fetch');
+import userController from '../../controllers/user';
 
 const createToken = async (user: UserModel, secret: string) => {
   const payload: Partial<UserModel> = user.toJSON();
@@ -18,7 +20,15 @@ export default {
       }
       // TODO : Analytics
       return user;
-    }
+    },
+    doesFacebookAccountExistWithEmail: async (_: any, { facebookToken }: {facebookToken: string}, { user }: {user: UserModel}) => {
+      let data = await fetch(`https://graph.facebook.com/me?fields=id,name,email&access_token=${facebookToken}`);
+      data = await data.json();
+      if (data.error)
+        throw new ApolloError("Facebook account not found");
+      let userFound = await UserModel.findAll({where: {email: data.email}});
+      return userFound.length > 0
+    },
   },
   Mutation: {
     login: async (
@@ -41,13 +51,15 @@ export default {
       _: any,
       {
         email,
-        ...userInformations
+        defineUserAsCostumer,
+        ...userInformations,
       }: {
         email: string;
         firstName: string;
         lastName: string;
         password: string;
         phone: string;
+        defineUserAsCostumer: boolean;
       },
       { secret }: { secret: string }
     ) => {
@@ -67,6 +79,9 @@ export default {
       const validationLink = generateAuthlink("check-email", {
         id: user.id
       });
+      if (defineUserAsCostumer) {
+        await userController.defineUserAsCustomer(user.id);
+      }
       console.log(validationLink);
       // TODO : here handle the identification of the user for the analytics.
       return {
@@ -74,6 +89,51 @@ export default {
         userId: user.id,
         message: `Un email de confirmation a été envoyé a cette adresse email : ${user.email}, clique sur le lien dans le mail afin valider ton compte !`
       };
-    }
+    },
+    signUpWithFacebook: async (_: any,
+                               { facebookToken, exponentPushToken, defineUserAsCostumer }:
+                                 { facebookToken: string, exponentPushToken: string, defineUserAsCostumer: boolean}, { secret }: {secret: string}) => {
+      let data = await fetch(`https://graph.facebook.com/me?fields=id,name,email&access_token=${facebookToken}`);
+      data = await data.json();
+      if (data.error)
+        throw new ApolloError("Facebook account not found");
+      const [user] = await UserModel.findOrCreate({
+        where: { email: data.email },
+        defaults: {
+          email: data.email,
+          facebookId: data.id,
+          exponentPushToken,
+          phone: "070787866"
+        }
+      });
+      if (defineUserAsCostumer) {
+        await userController.defineUserAsCustomer(user.id);
+      }
+      return {
+        token: createToken(user, secret),
+        userId: user.id,
+        message: `Un email de confirmation a été envoyé a cette adresse email : ${user.email}, clique sur le lien dans le mail afin valider ton compte !`
+      };
+    },
+    signInWithFacebook: async (_: any,
+                               { facebookToken, exponentPushToken }:
+                                 { facebookToken: string, exponentPushToken: string},
+                               { secret }: {secret: string}) => {
+      let data = await fetch(`https://graph.facebook.com/me?fields=id,name,email&access_token=${facebookToken}`);
+      data = await data.json();
+      const user = await UserModel.findOne({
+        where: { email: data.email }
+      });
+      if (!user) {
+        throw new UserInputError("No user found with this login credentials.");
+      }
+      if (user.facebookId && data.id !== user.facebookId)
+        throw new ApolloError("Account doesnt match");
+      await UserModel.update(
+        { facebookId: data.id, exponentPushToken },
+        { where: { id: user.id } }
+      );
+      return { token: createToken(user, secret), userId: user.id };
+    },
   }
 };
