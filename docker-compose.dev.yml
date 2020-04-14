@@ -1,0 +1,36 @@
+version: "3"
+
+services:
+#  pgadmin:
+#    container_name: pgadmin_container
+#    image: dpage/pgadmin4
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+#      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+#    volumes:
+#      - pgadmin:/root/.pgadmin
+#    networks:
+#      - postgres
+#    ports:
+#      - "${PGADMIN_PORT:-5050}:80"
+#    restart: unless-stopped
+
+  api:
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./app:/app/app
+
+  nginx:
+    image: nginx:1.16-alpine
+    volumes:
+      - ./nginx/dev/nginx.conf:/etc/nginx/nginx.conf
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+  api:
+  postgres:
+  pgadmin:
