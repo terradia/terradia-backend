@@ -2,6 +2,8 @@ import UserModel from "../../database/models/user.model";
 import CustomerModel from "../../database/models/customer.model";
 import {ApolloError} from "apollo-server";
 import CustomerAddressModel from "../../database/models/customer-address.model";
+import { combineResolvers } from "graphql-resolvers";
+import { isUserAndCustomer } from "./authorization";
 
 interface createCustomerAddressData {
     address: string;
@@ -21,14 +23,16 @@ interface argumentsData {
 
 export default {
     Query: {
-        getActiveCustomerAddress: async (
+        getActiveCustomerAddress: combineResolvers(isUserAndCustomer,
+          async (
             _: any,
             __: object,
             {user}: argumentsData
         ): Promise<CustomerAddressModel | null> => {
             return CustomerAddressModel.findOne({where: {active: true}});
-        },
-        getAllCustomerAddressesByUser: async (
+        }),
+        getAllCustomerAddressesByUser: combineResolvers(isUserAndCustomer,
+          async (
             _: any,
             __: any, {user}: argumentsData
         ): Promise<CustomerAddressModel[] | null> => {
@@ -42,10 +46,11 @@ export default {
                   }
                 ]
             })
-        }
+        })
     },
     Mutation: {
-        createOrUpdateCustomerAddress: async (
+        createOrUpdateCustomerAddress: combineResolvers(isUserAndCustomer,
+          async (
             _: any,
             {address, apartment, information, id}: createCustomerAddressData,
             {user}: argumentsData
@@ -74,8 +79,9 @@ export default {
             } else {
                 throw new ApolloError("You need to be a customer review a product.", "403");
             }
-        },
-        setActiveCustomerAddress: async (
+        }),
+        setActiveCustomerAddress: combineResolvers(isUserAndCustomer,
+          async (
             _: any,
             {id}: setActiveData,
             {user}: argumentsData
@@ -85,6 +91,6 @@ export default {
             return CustomerAddressModel.findByPk(id, {
                 include: [CustomerModel]
             });
-        }
+        })
     }
 };

@@ -11,6 +11,8 @@ import {ApolloError} from "apollo-server-errors";
 import {Sequelize} from "sequelize";
 import {Fn, Literal} from "sequelize/types/lib/utils";
 import CompanyUserRoleModel from "../../database/models/company-user-role.model";
+import { combineResolvers } from "graphql-resolvers";
+import { isAuthenticated } from "./authorization";
 
 declare interface Point {
   type: string,
@@ -142,7 +144,8 @@ export default {
     //TODO create getCompanyUsers
   },
   Mutation: {
-    createCompany: async (
+    createCompany: combineResolvers(isAuthenticated,
+      async (
         _: any,
       args: CreateCompanyProps,
       {user}: Context
@@ -186,8 +189,9 @@ export default {
         userCompany.addRole(ownerRole.id);
       });
       return newCompany;
-    },
-    joinCompany: async (_: any, {companyId, userId}: {companyId: string, userId: string}): Promise<CompanyModel | null> => {
+    }),
+    joinCompany: combineResolvers(isAuthenticated,
+      async (_: any, {companyId, userId}: {companyId: string, userId: string}): Promise<CompanyModel | null> => {
       // TODO Check if the user exist in the company
       const userRole: RoleModel | null = await RoleModel.findOne({ where: { slugName: "member" } });
       if (userRole == null) {
@@ -203,8 +207,9 @@ export default {
         });
       });
       return CompanyModel.findByPk(companyId);
-    },
-    leaveCompany: async (_: any, {companyId, userId}: {companyId: string, userId: string}): Promise<CompanyModel | null> => {
+    }),
+    leaveCompany: combineResolvers(isAuthenticated,
+      async (_: any, {companyId, userId}: {companyId: string, userId: string}): Promise<CompanyModel | null> => {
       const companyUser: CompanyUserModel | null = await CompanyUserModel.findOne({where: {companyId: companyId, userId: userId}});
       if (companyUser == null) {
         throw new UserInputError("User not found");
@@ -212,6 +217,6 @@ export default {
       CompanyUserRoleModel.destroy({where: {companyUserId: companyUser.id}});
       companyUser.destroy();
       return CompanyModel.findByPk(companyId);
-    }
+    })
   }
 };
