@@ -115,9 +115,18 @@ export default {
       });
     },
     getCompanies: async (_: any, __: any, { user }: { user: UserModel }): Promise<CompanyModel[]> => {
-      return user.companies.map(companyInfo => {
-        return companyInfo.company;
-      })
+      let userFetched: UserModel | null = await UserModel.findByPk(user.id, {
+        include: [{
+          model: CompanyUserModel,
+          include: [CompanyModel]
+        }]
+      });
+      if (userFetched) {
+        return userFetched.companies.map(companyInfo => {
+          return companyInfo.company;
+        })
+      }
+      throw new ApolloError("User not found");
     },
     getCompaniesByUser: async (_: any, {userId}: {userId: string}): Promise<CompanyUserModel[] | undefined> => {
       return (await UserModel.findByPk(userId, {
