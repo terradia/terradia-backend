@@ -16,7 +16,7 @@ exports.setup = function(options, seedLink) {
 
 exports.up = function(db) {
   return db
-    .createTable("BasketProducts", {
+    .createTable("CartProducts", {
       id: {
         type: "uuid",
         primaryKey: true,
@@ -31,13 +31,19 @@ exports.up = function(db) {
         type: "uuid",
         allowNull: false
       },
-      basketId: {
+      cartId: {
         type: "uuid",
         allowNull: false
       }
     })
     .then(() => {
-      return db.createTable("Baskets", {
+      db.addColumn("Customers", "cartId", {
+        type: "uuid",
+        allowNull: true
+      });
+    })
+    .then(() => {
+      return db.createTable("Carts", {
         id: {
           type: "uuid",
           primaryKey: true,
@@ -55,14 +61,28 @@ exports.up = function(db) {
         expirationDate: {
           type: "date",
           allowNull: true
+        },
+        totalPrice: {
+          type: "float"
+        },
+        createdAt: {
+          notNull: true,
+          type: new String("TIMESTAMPTZ"),
+          defaultValue: new String("now()")
+        },
+        updatedAt: {
+          notNull: true,
+          type: new String("TIMESTAMPTZ"),
+          defaultValue: new String("now()")
         }
       });
     });
 };
 
 exports.down = function(db) {
-  db.dropTable("BasketProducts");
-  return db.dropTable("Baskets");
+  db.dropTable("CartProducts");
+  db.removeColumn("Customers", "cartId");
+  return db.dropTable("Carts");
 };
 
 exports._meta = {

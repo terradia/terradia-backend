@@ -21,6 +21,7 @@ export default gql`
         leaveCompany(companyId: String!, userId: String!): Company!
     }
     type Company {
+        # Resource related information
         id: ID!
         name: String!
         description: String
@@ -28,17 +29,27 @@ export default gql`
         phone: String
         logo: String
         cover: String
-        products: [Product]
-        productsCategories: [CompanyProductsCategory]
-        reviews: [CompanyReview]
-        averageMark: Float
-        numberOfMarks: Int
-        address: String!
-        distance: Float
-        position: GeographicPoint
         createdAt: Date
         updatedAt: Date
+        
+        # Products related data
+        products: [Product]
+        productsCategories: [CompanyProductsCategory]
+        
+        # Geolocalization
+        address: String!
+        position: GeographicPoint
+        distance: Float # field added when returning the data form the resolvers
+        
+        # Users
         users: [CompanyUser]
+        
+        # Customers
+        customerCarts: [Cart]
+        averageMark: Float
+        numberOfMarks: Int
+        reviews: [CompanyReview]
+        
     }
     type GeographicPoint {
         coordinates: [Float]
