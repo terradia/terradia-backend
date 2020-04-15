@@ -17,17 +17,16 @@ exports.setup = function(options, seedLink) {
 exports.up = function(db) {
   return db.createTable("TagCompany", {
     id: {
-      type: "int",
+      type: "uuid",
       primaryKey: true,
-      autoIncrement: true,
       notNull: true,
-      unsigned: true
+      defaultValue: new String("uuid_generate_v4()")
     },
     companyId: {
       type: "uuid",
       notNull: true
     },
-    tag: {
+    tagName: {
       type: "string",
       notNull: true
     }

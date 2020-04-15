@@ -18,10 +18,8 @@ export default [
     customer,
     companyReview,
     productReview,
-    role,
     companyProductsCategory,
     role,
+    tagCompanyCategory,
     customerAddress
-    companyProductsCategory,
-    tagCompanyCategory
 ];

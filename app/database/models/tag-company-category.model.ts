@@ -9,14 +9,13 @@ import {
   PrimaryKey,
   Table
 } from "sequelize-typescript";
-import CompanyModel from "./company.model";
-import TagCompanyModel from "./tag-company.model";
 
 @Table({
   tableName: "TagCompanyCategory",
   timestamps: false
 })
-export default class TagCompanyCategoryModel extends Model<TagCompanyCategoryModel> {
+
+export default class TagModel extends Model<TagModel> {
   @IsUUID(4)
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -25,14 +24,4 @@ export default class TagCompanyCategoryModel extends Model<TagCompanyCategoryMod
 
   @Column
   public name!: string;
-
-  @AllowNull(true)
-  @Column
-  public parentCategoryId!: number;
-
-  @BelongsToMany(() => CompanyModel, {
-    onDelete: "CASCADE",
-    through: () => TagCompanyModel
-  })
-  company!: CompanyModel[];
 }

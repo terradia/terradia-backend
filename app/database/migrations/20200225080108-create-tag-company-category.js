@@ -24,18 +24,6 @@ exports.up = function(db) {
         defaultValue: new String("uuid_generate_v4()")
       },
       name: "string",
-      parentCategoryId: "int"
-    })
-    .then(() => {
-      db.runSql(
-        `INSERT INTO public."Categories" ("name", "parentCategoryId") VALUES
-                        ('FROMAGER', null),
-                        ('MARAICHER', null),
-                        ('BRASSEUR', null)
-                ;`
-      ).catch(error => {
-        throw new Error(error);
-      });
     })
     .catch(error => {
       throw new Error(error);

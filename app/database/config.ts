@@ -8,8 +8,8 @@ export default {
     username: "postgres",
     password: "postgres",
     database: "terradia_db",
-    host: "localhost",
-    port: 5432,
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
     dialect: "postgres"
   },
   production: {

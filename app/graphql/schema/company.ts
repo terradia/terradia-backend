@@ -17,7 +17,6 @@ export default gql`
         ): Company!
         joinCompany(companyId: String!, userId: String!): Company!
         leaveCompany(companyId: String!, userId: String!): Company!
-        addTagCategoryToCompany(tagName: String!, companyId: String!): Company!
     }
     type Company {
         id: ID!

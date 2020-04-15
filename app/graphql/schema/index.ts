@@ -12,7 +12,7 @@ import companyUserSchema from "./companyUser";
 import roleSchema from "./role";
 import userPermissionsSchema from './userPermissions'
 import customerAddressSchema from './customerAddress'
-import tagCompanyCategory from "./tagCompanyCategory";
+import tagCompanyCategorySchema from './tagCompanyCategory'
 
 const linkSchema = gql`
   scalar Date
@@ -41,6 +41,6 @@ export default [
   companyUserSchema,
   roleSchema,
   userPermissionsSchema,
-  customerAddressSchema
-  tagCompanyCategory
+  customerAddressSchema,
+  tagCompanyCategorySchema
 ];

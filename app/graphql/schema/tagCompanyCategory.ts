@@ -2,17 +2,17 @@ import { gql } from "apollo-server";
 
 export default gql`
   extend type Query {
-    getAllTagCompanyCategories: [TagCompany]!
-    getTagCompanyCategoryByName(name: String!): TagCompany
+    getAllTagCompany: [TagCompany]!
+    getTagCompanyByName(name: String!): TagCompany
   }
   extend type Mutation {
-    createTagCompanyCategory(name: String!, parentCategoryId: String): TagCompany!
-    deleteTagCompanyCategory(id: String!): TagCompany!
+    createTagCompany(name: String!): TagCompany!
+    deleteTagCompany(id: String!): TagCompany!
+    addTagToCompany(tagName: String!, companyId: String!): Company!
   }
   type TagCompany {
     id: String!
     name: String!
-    parentCategoryId: String
     company: [Company]
   }
 `;

@@ -9,7 +9,7 @@ import {
   Table
 } from "sequelize-typescript";
 import CompanyModel from "./company.model";
-import TagCompanyCategoryModel from "./tag-company-category.model";
+import TagModel from "./tag-company-category.model";
 
 @Table({
   tableName: "TagCompany",
@@ -26,7 +26,7 @@ export default class TagCompanyModel extends Model<TagCompanyModel> {
   @Column
   companyId!: string;
 
-  @ForeignKey(() => TagCompanyCategoryModel)
+  @ForeignKey(() => TagModel)
   @Column
-  tagId!: string;
+  tagName!: string;
 }

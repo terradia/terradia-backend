@@ -9,18 +9,7 @@ import { UserInputError } from "apollo-server-express";
 import sequelize from "../../database/models";
 import NodeGeocoder from "node-geocoder";
 import { ApolloError } from "apollo-server-errors";
-import TagCompanyCategoryModel from "../../database/models/tag-company-category.model";
-import TagCompanyModel from "../../database/models/tag-company.model";
 
-interface addTagCategoryToCompanyArgs {
-  companyId: string;
-  tagName: string;
-}
-
-interface getAllCompaniesArguments {
-  page: number;
-  pageSize: number;
-}
 
 export default {
   Query: {
@@ -192,32 +181,14 @@ export default {
         where: {
           userId
         }
-      );
-      return newCompany.toJSON();
-    },
-    addTagCategoryToCompany: async (
-      _parent: any,
-      { companyId, tagName }: addTagCategoryToCompanyArgs
-    ) => {
-      let tagCompany = await TagCompanyModel.findOne({
-        where: { name: tagName }
-      });
-      if (tagCompany) {
-        // findOrCreate so that it doesn't add multiple times the tagCompany to a product.
-        await TagCompanyCategoryModel.findOrCreate({
-          where: {
-            companyId,
-            categoryId: tagCompany.id
-          }
+      })
+        .then(data => {
+          if (data === 0) throw new UserInputError("User not found in company");
+        })
+        .error(error => {
+          throw new UserInputError(error);
         });
-      } else {
-        throw new Error(`The tagCompany ${tagName} doesn't exists.`);
-      }
-      let company = await CompanyModel.findOne({
-        where: { id: companyId },
-        include: [TagCompanyModel]
-      });
-      return company ? company.toJSON() : null;
+      return CompanyModel.findByPk(companyId);
     }
   }
 };
