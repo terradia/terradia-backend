@@ -15,6 +15,7 @@ import CustomerModel from "./customer.model";
 import CustomersFavoriteCompaniesModel from "./customers-favorite-companies.model";
 import CompanyProductsCategoryModel from "./company-products-category.model";
 import CompanyUserModel from "./company-user.model";
+import CartModel from "./cart.model";
 
 @Table({
   tableName: "Companies",
@@ -74,7 +75,10 @@ export default class CompanyModel extends Model<CompanyModel> {
 
   // all the users that made favorite this company => could be usefull for big companies to find
   // people to do promotions of their companies (if the users said he want to do that or other...)
-  @BelongsToMany(() => CustomerModel, () => CustomersFavoriteCompaniesModel)
+  @BelongsToMany(
+    () => CustomerModel,
+    () => CustomersFavoriteCompaniesModel
+  )
   public customersFavorites!: CustomerModel[];
 
   // Mark average the company get from the customers reviews.
@@ -92,6 +96,9 @@ export default class CompanyModel extends Model<CompanyModel> {
 
   @Column(DataType.STRING)
   public address!: string;
+
+  @HasMany(() => CartModel, "companyId")
+  public customersCarts!: CartModel[];
 
   @Column
   public createdAt!: Date;

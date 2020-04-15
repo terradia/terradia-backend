@@ -25,7 +25,10 @@ async function generateProducts(companyId: string): Promise<products[]> {
       companyId,
       averageMark: parseFloat((Math.random() * 5).toFixed(2)),
       numberOfMarks: Math.floor(Math.random() * 99) + 1,
-      companyProductsCategoryId: companyProductCategories[rand].id
+      companyProductsCategoryId: companyProductCategories[rand].id,
+      price: Math.random() * 100,
+      quantityForUnit: Math.round(Math.random() * 3),
+      unitId: "029d2554-7918-11ea-bc55-0242ac130003"
     });
   }
   return productsGenerated;
