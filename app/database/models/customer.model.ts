@@ -1,8 +1,9 @@
 import {
+  AllowNull,
   BelongsTo, BelongsToMany,
   Column, DataType, Default,
   ForeignKey,
-  HasMany, IsUUID,
+  HasMany, HasOne, IsUUID,
   Model, PrimaryKey,
   Table
 } from "sequelize-typescript";
@@ -12,6 +13,7 @@ import CustomersFavoriteCompaniesModel from "./customers-favorite-companies.mode
 import CompanyModel from "./company.model";
 import CompanyAddressModel from './customer-address.model'
 import ProductReviewModel from "./product-review.model";
+import BasketModel from "./basket.model";
 
 // Customer :
 // Contains the information of the customer, relating to his orders, payements, reviews etc...
@@ -44,4 +46,12 @@ export default class CustomerModel extends Model<CustomerModel> {
 
   @BelongsToMany(() => CompanyModel, () => CustomersFavoriteCompaniesModel)
   public favoriteCompanies!: CompanyModel[];
+
+  @ForeignKey(() => BasketModel)
+  @AllowNull(true)
+  @Column(DataType.UUID)
+  public basketId!: string | null;
+
+  @HasOne(() => BasketModel, "customerId")
+  public basket!: BasketModel;
 }

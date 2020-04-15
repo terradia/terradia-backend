@@ -13,32 +13,38 @@ export default {
   Query: {
     getAllProducts: async () => {
       return ProductModel.findAll({
-        include: [CategoryModel, CompanyModel, ProductReviewModel]
+        include: [CategoryModel, ProductReviewModel]
       });
     },
     getProduct: async (
-        _: any,
-        { id }: { id: string }
-        ): Promise<ProductModel | null> => {
+      _: any,
+      { id }: { id: string }
+    ): Promise<ProductModel | null> => {
       return ProductModel.findByPk(id, {
-        include: [CategoryModel, CompanyModel, {
-          model: ProductReviewModel,
-          include: [{model: CustomerModel, include: [UserModel]}]
-        }]
+        include: [
+          CategoryModel,
+          CompanyModel,
+          {
+            model: ProductReviewModel,
+            include: [{ model: CustomerModel, include: [UserModel] }]
+          }
+        ]
       });
     },
     getProductsByCompany: async (
-        _: any,
+      _: any,
       { companyId }: { companyId: string }
     ): Promise<ProductModel[]> => {
-      const company: CompanyModel | null = await CompanyModel.findOne({ where: { id: companyId } });
+      const company: CompanyModel | null = await CompanyModel.findOne({
+        where: { id: companyId }
+      });
       if (!company) throw new ApolloError("This company does not exist", "404");
       return ProductModel.findAll({
         where: { companyId }
       });
     },
     getProductsByCompanyByCategory: async (
-        _: any,
+      _: any,
       { companyId }: { companyId: string }
     ): Promise<CategoryModel[]> => {
       const company = CompanyModel.findOne({ where: { id: companyId } });
@@ -86,10 +92,20 @@ export default {
   },
   Mutation: {
     createProduct: async (
-        _: any,
-      args: { name: string; description: string; companyId: string }
+      _: any,
+      args: {
+        name: string;
+        description: string;
+        companyId: string;
+        price: number;
+        quantityForUnit?: number;
+        unitId?: string;
+        companyProductsCategoryId?: string;
+      }
     ): Promise<Partial<ProductModel>> => {
-      const company: CompanyModel | null = await CompanyModel.findOne({ where: { id: args.companyId } });
+      const company: CompanyModel | null = await CompanyModel.findOne({
+        where: { id: args.companyId }
+      });
       if (company) {
         let product: ProductModel = await ProductModel.create({
           ...args

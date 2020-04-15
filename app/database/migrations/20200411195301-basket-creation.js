@@ -37,6 +37,12 @@ exports.up = function(db) {
       }
     })
     .then(() => {
+      db.addColumn("Customers", "basketId", {
+        type: "uuid",
+        allowNull: true
+      });
+    })
+    .then(() => {
       return db.createTable("Baskets", {
         id: {
           type: "uuid",
@@ -55,6 +61,19 @@ exports.up = function(db) {
         expirationDate: {
           type: "date",
           allowNull: true
+        },
+        totalPrice: {
+          type: "float"
+        },
+        createdAt: {
+          notNull: true,
+          type: new String("TIMESTAMPTZ"),
+          defaultValue: new String("now()")
+        },
+        updatedAt: {
+          notNull: true,
+          type: new String("TIMESTAMPTZ"),
+          defaultValue: new String("now()")
         }
       });
     });
@@ -62,6 +81,7 @@ exports.up = function(db) {
 
 exports.down = function(db) {
   db.dropTable("BasketProducts");
+  db.removeColumn("Customers", "basketId");
   return db.dropTable("Baskets");
 };
 

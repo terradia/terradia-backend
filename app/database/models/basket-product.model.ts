@@ -1,12 +1,17 @@
 import {
-  AllowNull,
-  Column, DataType, Default,
-  ForeignKey, HasOne, IsUUID,
-  Model, PrimaryKey,
+  AllowNull, BelongsTo,
+  Column,
+  DataType,
+  Default,
+  ForeignKey, HasMany,
+  HasOne,
+  IsUUID,
+  Model,
+  PrimaryKey,
   Table
 } from "sequelize-typescript";
 import ProductModel from "./product.model";
-import BasketModel from "./basket";
+import BasketModel from "./basket.model";
 
 @Table({
   tableName: "BasketProducts",
@@ -19,23 +24,23 @@ export default class BasketProductModel extends Model<BasketProductModel> {
   @Column(DataType.UUID)
   public id!: string;
 
-  @Column(DataType.INTEGER)
   @AllowNull(false)
+  @Column(DataType.INTEGER)
   quantity!: number;
 
   @ForeignKey(() => ProductModel)
-  @Column(DataType.UUID)
   @AllowNull(false)
+  @Column(DataType.UUID)
   productId!: string;
 
-  @HasOne(() => ProductModel)
+  @BelongsTo(() => ProductModel)
   product!: ProductModel;
 
   @ForeignKey(() => BasketModel)
-  @Column(DataType.UUID)
   @AllowNull(false)
+  @Column(DataType.UUID)
   basketId!: string;
 
-  @HasOne(() => BasketModel)
+  @BelongsTo(() => BasketModel)
   basket!: BasketModel;
 }
