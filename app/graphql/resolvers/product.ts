@@ -10,6 +10,14 @@ import UnitModel from "../../database/models/unit.model";
 import { Op } from "sequelize";
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
+import CompanyProductsCategoryModel from "../../database/models/company-products-category.model";
+
+interface ProductsPositionsData {
+  productId: string;
+  position: number;
+  categoryId: string;
+  type: string;
+}
 
 export default {
   Query: {
@@ -26,6 +34,10 @@ export default {
         include: [
           CategoryModel,
           CompanyModel,
+          {
+            model: CompanyProductsCategoryModel,
+            include: [CompanyModel]
+          },
           {
             model: ProductReviewModel,
             include: [{ model: CustomerModel, include: [UserModel] }]
@@ -95,55 +107,101 @@ export default {
   Mutation: {
     createProduct: combineResolvers(isAuthenticated,
       async (
-      _: any,
-      args: {
-        name: string;
-        description: string;
-        companyId: string;
-        price: number;
-        quantityForUnit?: number;
-        unitId?: string;
-        companyProductsCategoryId?: string;
-      }
-    ): Promise<Partial<ProductModel>> => {
-      const company: CompanyModel | null = await CompanyModel.findOne({
-        where: { id: args.companyId }
-      });
-      if (company) {
-        let product: ProductModel = await ProductModel.create({
-          ...args
-        }).then(product => {
-          return product;
+        _: any,
+        args: {
+          name: string;
+          description: string;
+          companyId: string;
+          price: number;
+          quantityForUnit?: number;
+          unitId?: string;
+          companyProductsCategoryId?: string;
+        }
+      ): Promise<Partial<ProductModel>> => {
+        const company: CompanyModel | null = await CompanyModel.findOne({
+          where: { id: args.companyId }
         });
-        return product.toJSON();
-      } else throw new ApolloError("This company does not exist", "404");
-    }),
+        const productsSameCategory = await ProductModel.findAll({where: {
+            companyProductsCategoryId: args.companyProductsCategoryId ? args.companyProductsCategoryId: null
+          }});
+        let pos = productsSameCategory.length;
+        if (company) {
+          let product: ProductModel = await ProductModel.create({
+            ...args,
+            position: pos
+          }).then(product => {
+            return product;
+          });
+          return product.toJSON();
+        } else throw new ApolloError("This company does not exist", "404");
+      }),
     addCategoryToProduct: combineResolvers(isAuthenticated,
       async (
-      _: any,
-      { productId, categoryName }: { productId: string; categoryName: string }
-    ): Promise<Partial<ProductModel> | null> => {
-      let category: CategoryModel | null = await CategoryModel.findOne({
-        where: { name: categoryName }
-      });
-      if (category) {
-        // findOrCreate so that it doesn't add multiple times the category to a product.
-        await ProductCategoryModel.findOrCreate({
-          where: {
-            productId,
-            categoryId: category.id
+        _: any,
+        { productId, categoryName }: { productId: string; categoryName: string }
+      ): Promise<Partial<ProductModel> | null> => {
+        let category: CategoryModel | null = await CategoryModel.findOne({
+          where: { name: categoryName }
+        });
+        if (category) {
+          // findOrCreate so that it doesn't add multiple times the category to a product.
+          await ProductCategoryModel.findOrCreate({
+            where: {
+              productId,
+              categoryId: category.id
+            }
+          });
+        } else
+          throw new ApolloError(
+            `The category ${categoryName} doesn't exists.`,
+            "404"
+          );
+        let product: ProductModel | null = await ProductModel.findOne({
+          where: { id: productId },
+          include: [CategoryModel]
+        });
+        return product ? product.toJSON() : null;
+      }),
+    updateProductsPosition: combineResolvers(isAuthenticated,
+      async (
+        _: any,
+        { productsPositions }: { productsPositions: [ProductsPositionsData] }
+      ): Promise<boolean> => {
+        productsPositions.forEach(async (productPosition: ProductsPositionsData) => {
+          if (productPosition.type === "addCategory") {
+            ProductModel.update({
+              companyProductsCategoryId: productPosition.categoryId,
+              position: productPosition.position
+            }, {
+              where: {
+                id: productPosition.productId
+              }})
+          } else if (productPosition.type === "deleteCategory") {
+            ProductModel.update({
+              companyProductsCategoryId: null,
+              position: productPosition.position
+            }, {
+              where: {
+                id: productPosition.productId
+              }})
+          } else if (productPosition.type === "moveCategory") {
+            ProductModel.update({
+              companyProductsCategoryId: productPosition.categoryId,
+              position: productPosition.position
+            }, {
+              where: {
+                id: productPosition.productId
+              }})
+          } else  {
+            ProductModel.update({
+              position: productPosition.position
+            }, {
+              where: {
+                id: productPosition.productId
+              }})
           }
         });
-      } else
-        throw new ApolloError(
-          `The category ${categoryName} doesn't exists.`,
-          "404"
-        );
-      let product: ProductModel | null = await ProductModel.findOne({
-        where: { id: productId },
-        include: [CategoryModel]
-      });
-      return product ? product.toJSON() : null;
-    })
+        return true;
+      })
   }
 };

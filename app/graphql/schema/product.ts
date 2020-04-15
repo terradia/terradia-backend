@@ -20,7 +20,16 @@ export default gql`
             companyProductsCategoryId: String
         ): Product!
         addCategoryToProduct(categoryName: String!, productId: String!): Product!
+        updateProductsPosition(productsPositions: [ProductPosition!]): Boolean
     }
+    #Type => ['addCategory', 'deleteCategory', 'moveCategory']
+    input ProductPosition {
+        productId: ID!
+        position: Int!
+        categoryId: ID
+        type: String
+    }
+    
     type Product {
         # Resouce related data
         id: ID!

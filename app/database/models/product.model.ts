@@ -95,6 +95,9 @@ export default class ProductModel extends Model<ProductModel> {
   @Column(DataType.INTEGER)
   public quantityForUnit!: number;
 
+  @Column(DataType.INTEGER)
+  public position!: number;
+
   @ForeignKey(() => UnitModel)
   @AllowNull(true)
   @Column(DataType.UUID)
