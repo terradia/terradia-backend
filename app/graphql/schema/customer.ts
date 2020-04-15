@@ -5,15 +5,12 @@ export default gql`
         getAllCustomers: [Customer]
         getCustomer(userId: String!): Customer
         getCustomerFavoriteCompanies(userId: String): [Company]
-        getBasket: Basket
     }
 
     extend type Mutation {
         defineUserAsCustomer(userId: String!): Customer
         addFavoriteCompany(companyId: String!): Customer
         removeFavoriteCompany(companyId: String!): Customer
-        addProductToBasket(productId: ID!, quantity: Int!): BasketProduct
-        removeProductFromBasket(basketProductId: ID, productId: ID, quantity: Int!): Int
     }
 
     type Customer {
@@ -23,7 +20,7 @@ export default gql`
         favoriteCompanies: [Company]
       
         # Ordering related data
-        basket: Basket
+        basket: Cart
         # orders
         # receipts
     }

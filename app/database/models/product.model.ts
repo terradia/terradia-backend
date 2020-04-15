@@ -9,17 +9,16 @@ import {
   BelongsTo,
   Table,
   ForeignKey,
-  HasMany, HasOne, AllowNull
+  HasMany,
+  AllowNull
 } from "sequelize-typescript";
 import CategoryModel from "./category.model";
 import ProductCategoryModel from "./product-category.model";
 import ProductReviewModel from "./product-review.model";
 import CompanyModel from "./company.model";
 import CompanyProductsCategoryModel from "./company-products-category.model";
-import BasketModel from "./basket.model";
-import BasketProductModel from "./basket-product.model";
+import CartProductModel from "./cart-product.model";
 import UnitModel from "./unit.model";
-import { Col } from "sequelize/types/lib/utils";
 
 @Table({
   tableName: "Products",
@@ -85,10 +84,10 @@ export default class ProductModel extends Model<ProductModel> {
   @Column(DataType.NUMBER)
   public numberOfMarks!: number;
 
-  // With this element you can get all the BasketProducts created from this product
-  // so know how much people got this product in their basket
-  @HasMany(() => BasketProductModel, "productId")
-  public customerBasketProducts!: BasketProductModel[];
+  // With this element you can get all the CartProducts created from this product
+  // so know how much people got this product in their cart
+  @HasMany(() => CartProductModel, "productId")
+  public customerCartProducts!: CartProductModel[];
 
   @Column(DataType.FLOAT)
   public price!: number;

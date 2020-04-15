@@ -16,7 +16,7 @@ import CustomerModel from "./customer.model";
 import CustomersFavoriteCompaniesModel from "./customers-favorite-companies.model";
 import CompanyProductsCategoryModel from "./company-products-category.model";
 import CompanyUserModel from "./company-user.model";
-import BasketModel from "./basket.model";
+import CartModel from "./cart.model";
 
 @Table({
   tableName: "Companies",
@@ -98,8 +98,8 @@ export default class CompanyModel extends Model<CompanyModel> {
   @Column(DataType.STRING)
   public address!: string;
 
-  @HasMany(() => BasketModel, "companyId")
-  public customersBaskets!: BasketModel[];
+  @HasMany(() => CartModel, "companyId")
+  public customersCarts!: CartModel[];
 
   @Column
   public createdAt!: Date;

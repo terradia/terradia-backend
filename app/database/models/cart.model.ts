@@ -6,29 +6,28 @@ import {
   Default,
   ForeignKey,
   HasMany,
-  HasOne,
   IsUUID,
   Model,
   PrimaryKey,
   Table
 } from "sequelize-typescript";
-import BasketProductModel from "./basket-product.model";
+import CartProductModel from "./cart-product.model";
 import CompanyModel from "./company.model";
 import CustomerModel from "./customer.model";
 
 @Table({
-  tableName: "Baskets",
+  tableName: "Carts",
   timestamps: true
 })
-export default class BasketModel extends Model<BasketModel> {
+export default class CartModel extends Model<CartModel> {
   @IsUUID(4)
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
   public id!: string;
 
-  @HasMany(() => BasketProductModel, "basketId")
-  products!: BasketProductModel[];
+  @HasMany(() => CartProductModel, "cartId")
+  products!: CartProductModel[];
 
   @ForeignKey(() => CompanyModel)
   @AllowNull(false)

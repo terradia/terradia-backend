@@ -13,7 +13,7 @@ import CustomersFavoriteCompaniesModel from "./customers-favorite-companies.mode
 import CompanyModel from "./company.model";
 import CompanyAddressModel from './customer-address.model'
 import ProductReviewModel from "./product-review.model";
-import BasketModel from "./basket.model";
+import CartModel from "./cart.model";
 
 // Customer :
 // Contains the information of the customer, relating to his orders, payements, reviews etc...
@@ -47,11 +47,11 @@ export default class CustomerModel extends Model<CustomerModel> {
   @BelongsToMany(() => CompanyModel, () => CustomersFavoriteCompaniesModel)
   public favoriteCompanies!: CompanyModel[];
 
-  @ForeignKey(() => BasketModel)
+  @ForeignKey(() => CartModel)
   @AllowNull(true)
   @Column(DataType.UUID)
-  public basketId!: string | null;
+  public cartId!: string | null;
 
-  @HasOne(() => BasketModel, "customerId")
-  public basket!: BasketModel;
+  @HasOne(() => CartModel, "customerId")
+  public cart!: CartModel;
 }

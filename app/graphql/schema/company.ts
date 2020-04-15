@@ -45,7 +45,7 @@ export default gql`
         users: [CompanyUser]
         
         # Customers
-        customerBaskets: [Basket]
+        customerCarts: [Cart]
         averageMark: Float
         numberOfMarks: Int
         reviews: [CompanyReview]

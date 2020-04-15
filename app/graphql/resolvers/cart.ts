@@ -1,11 +1,8 @@
-import CompanyUserModel from "../../database/models/company-user.model";
 import UserModel from "../../database/models/user.model";
-import CompanyModel from "../../database/models/company.model";
 import {ApolloError} from "apollo-server";
-import RoleModel from "../../database/models/role.model";
-import BasketModel from "../../database/models/basket.model";
+import CartModel from "../../database/models/cart.model";
 import CustomerModel from "../../database/models/customer.model";
-import BasketProductModel from "../../database/models/basket-product.model";
+import CartProductModel from "../../database/models/cart-product.model";
 import ProductModel from "../../database/models/product.model";
 
 declare interface UserCompanyRoleProps {
@@ -19,33 +16,38 @@ interface Context {
 
 export default {
   Query: {
-    getBasket: (
+    getCart: (
       _: any,
       __: any,
       { user }: Context
-    ): Promise<BasketModel | null> => {
+    ): Promise<CartModel | null> => {
       // TODO : Check if the products are available
       const customer: CustomerModel = user.customer;
       if (!customer) {
         throw new ApolloError("this user is not a customer", "400");
       }
-      if (customer.basket === null) {
-        throw new ApolloError("this customer does not have a basket", "400");
+      if (customer.cart === null) {
+        throw new ApolloError("this customer does not have a cart", "400");
       }
-      return BasketModel.findOne({
+      return CartModel.findOne({
         where: {
           customerId: user.customer.id
         },
-        include: [BasketProductModel]
+        include: [
+          {
+            model: CartProductModel,
+            include: [ProductModel]
+          }
+          ]
       });
     }
   },
   Mutation: {
-    addProductToBasket: async (
+    addProductToCart: async (
       _: any,
       { productId, quantity }: { productId: string; quantity: number },
       { user }: Context
-    ): Promise<BasketProductModel> => {
+    ): Promise<CartProductModel> => {
       const customer: CustomerModel | null = user.customer;
       const product: ProductModel | null = await ProductModel.findOne({
         where: { id: productId }
@@ -60,59 +62,65 @@ export default {
           "400"
         );
 
-      let basket: BasketModel | null = await BasketModel.findOne({
+      let cart: CartModel | null = await CartModel.findOne({
         where: { customerId: customer.id }
       });
-      if (basket && basket.companyId !== product.companyId) {
-        await BasketModel.destroy({
+      if (cart && cart.companyId !== product.companyId) {
+        await CartModel.destroy({
           where: { customerId: customer.id }
         });
-        basket = null;
+        cart = null;
       }
-      if (basket === null) {
-        basket = await BasketModel.create({
+      if (cart === null) {
+        cart = await CartModel.create({
           customerId: customer.id,
           companyId: product.companyId,
           totalPrice: 0
         });
       }
-      const basketProduct: BasketProductModel | null = await BasketProductModel.findOne(
+      const cartProduct: CartProductModel | null = await CartProductModel.findOne(
         {
-          where: { basketId: basket.id, productId: product.id }
+          where: { cartId: cart.id, productId: product.id }
         }
       );
-      await BasketModel.update(
+      await CartModel.update(
         {
-          totalPrice: basket.totalPrice + quantity * product.price
+          totalPrice: cart.totalPrice + quantity * product.price
         },
-        { where: { id: basket.id } }
+        { where: { id: cart.id } }
       );
-      if (basketProduct !== null) {
-        const prodTmp = await BasketProductModel.update(
-          { quantity: basketProduct.quantity + quantity },
+      if (cartProduct !== null) {
+        const prodTmp = await CartProductModel.update(
+          { quantity: cartProduct.quantity + quantity },
           {
-            where: { id: basketProduct.id },
+            where: { id: cartProduct.id },
             returning: true
           }
         );
-        if (prodTmp[0] !== 0) return prodTmp[1][0]; // At pos 1 of prodTmp there is the list of objects updated, 0 is ths first of them.
+        let existingCartProduct = prodTmp[1][0];
+        existingCartProduct.product = product;
+        if (prodTmp[0] !== 0) return existingCartProduct; // At pos 1 of prodTmp there is the list of objects updated, 0 is ths first of them.
       }
-      return BasketProductModel.create(
+      /**
+       * Cannot include model in create !
+       */
+      let cartProductCreated = await  CartProductModel.create(
         {
-          basketId: basket.id,
+          cartId: cart.id,
           productId: product.id,
           quantity: quantity
-        },
-        { include: [ProductModel] }
+        }
       );
+      cartProductCreated.product = product;
+      return cartProductCreated;
     },
-    removeProductFromBasket: async (
+    removeProductFromCart: async (
       _: any,
       {
-        basketProductId,
+        cartProductId,
         productId,
         quantity
-      }: { basketProductId: string; productId: string; quantity: number },
+      }: { cartProductId: string; productId: string; quantity: number },
       { user }: Context
     ): Promise<number> => {
       const customer: CustomerModel | null = user.customer;
@@ -121,9 +129,9 @@ export default {
           "This user is not a customer",
           "RESOURCE_NOT_FOUND"
         );
-      if (!basketProductId && !productId)
+      if (!cartProductId && !productId)
         throw new ApolloError(
-          "You should precise at least a basketProduct of a productId",
+          "You should precise at least a cartProduct of a productId",
           "400"
         );
       if (quantity < 0)
@@ -132,46 +140,46 @@ export default {
           "400"
         );
 
-      let basket: BasketModel | null = await BasketModel.findOne({
+      let cart: CartModel | null = await CartModel.findOne({
         where: { customerId: customer.id }
       });
-      if (basket === null)
+      if (cart === null)
         throw new ApolloError(
-          "This customer does not have a Basket",
+          "This customer does not have a Cart",
           "RESOURCE_NOT_FOUND"
         );
 
-      let product: BasketProductModel | null;
-      product = await BasketProductModel.findOne({
+      let product: CartProductModel | null;
+      product = await CartProductModel.findOne({
         where: productId
-          ? { productId: productId, basketId: basket.id }
-          : { id: basketProductId, basketId: basket.id },
+          ? { productId: productId, cartId: cart.id }
+          : { id: cartProductId, cartId: cart.id },
         include: [ProductModel]
       });
       if (!product)
         throw new ApolloError(
-          "Cannot find this product in Basket",
+          "Cannot find this product in Cart",
           "RESOURCE_NOT_FOUND"
         );
-      await BasketModel.update(
+      await CartModel.update(
         {
           totalPrice:
-            basket.totalPrice -
-            // the quantity to remove is superior or equal than the quantity in the Basket
+            cart.totalPrice -
+            // the quantity to remove is superior or equal than the quantity in the Cart
             (quantity >= product.quantity ? product.quantity : quantity) *
             product.product.price
         },
-        { where: { id: basket.id } }
+        { where: { id: cart.id } }
       );
 
-      // the quantity to remove is superior or equal than the quantity in the Basket
+      // the quantity to remove is superior or equal than the quantity in the cart
       if (quantity >= product.quantity) {
-        // remove the BasketProduct from DB
-        await BasketProductModel.destroy({ where: { id: product.id } });
+        // remove the CartProduct from DB
+        await CartProductModel.destroy({ where: { id: product.id } });
         return product.quantity;
       } else {
-        // remove the quantity from the BasketProduct
-        await BasketProductModel.update(
+        // remove the quantity from the CartProduct
+        await CartProductModel.update(
           { quantity: product.quantity - quantity },
           { where: { id: product.id } }
         );

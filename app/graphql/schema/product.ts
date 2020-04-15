@@ -40,7 +40,7 @@ export default gql`
         reviews: [ProductReview]
         averageMark: Float
         numberOfMarks: Int
-        customerBasketProducts: [BasketProduct]
+        customerBasketProducts: [CartProduct]
         
         # Pricing
         unit: Unit!

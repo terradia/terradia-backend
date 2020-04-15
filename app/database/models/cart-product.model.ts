@@ -3,21 +3,20 @@ import {
   Column,
   DataType,
   Default,
-  ForeignKey, HasMany,
-  HasOne,
+  ForeignKey,
   IsUUID,
   Model,
   PrimaryKey,
   Table
 } from "sequelize-typescript";
 import ProductModel from "./product.model";
-import BasketModel from "./basket.model";
+import CartModel from "./cart.model";
 
 @Table({
-  tableName: "BasketProducts",
+  tableName: "CartProducts",
   timestamps: false
 })
-export default class BasketProductModel extends Model<BasketProductModel> {
+export default class CartProductModel extends Model<CartProductModel> {
   @IsUUID(4)
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -36,11 +35,11 @@ export default class BasketProductModel extends Model<BasketProductModel> {
   @BelongsTo(() => ProductModel)
   product!: ProductModel;
 
-  @ForeignKey(() => BasketModel)
+  @ForeignKey(() => CartModel)
   @AllowNull(false)
   @Column(DataType.UUID)
-  basketId!: string;
+  cartId!: string;
 
-  @BelongsTo(() => BasketModel)
-  basket!: BasketModel;
+  @BelongsTo(() => CartModel)
+  cart!: CartModel;
 }
