@@ -2,7 +2,7 @@ import {gql} from "apollo-server";
 
 export default gql`
     extend type Query {
-        getAllCompanyProductsCategories(companyId: String!): [CompanyProductsCategory]
+        getAllCompanyProductsCategories(companyId: String!): CompanyProductsAllCategories
         getCompanyProductsCategory(companyId: String!, name: String, categoryId: String): CompanyProductsCategory
     }
     extend type Mutation {
@@ -10,6 +10,11 @@ export default gql`
         removeCompanyProductsCategory(categoryId: String!): CompanyProductsCategory
         addProductToCompanyCategory(categoryId: String!, productId: String!): Product
         removeProductFromCompanyCategory(productId: String!): Product
+    }
+
+    type CompanyProductsAllCategories {
+        nonCategories: [Product]
+        categories: [CompanyProductsCategory]
     }
     type CompanyProductsCategory {
         id: ID!
