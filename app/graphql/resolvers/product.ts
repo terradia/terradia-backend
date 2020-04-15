@@ -8,6 +8,8 @@ import CustomerModel from "../../database/models/customer.model";
 import UserModel from "../../database/models/user.model";
 import UnitModel from "../../database/models/unit.model";
 import { Op } from "sequelize";
+import { combineResolvers } from "graphql-resolvers";
+import { isAuthenticated } from "./authorization";
 
 export default {
   Query: {
@@ -91,7 +93,8 @@ export default {
     }
   },
   Mutation: {
-    createProduct: async (
+    createProduct: combineResolvers(isAuthenticated,
+      async (
       _: any,
       args: {
         name: string;
@@ -114,8 +117,9 @@ export default {
         });
         return product.toJSON();
       } else throw new ApolloError("This company does not exist", "404");
-    },
-    addCategoryToProduct: async (
+    }),
+    addCategoryToProduct: combineResolvers(isAuthenticated,
+      async (
       _: any,
       { productId, categoryName }: { productId: string; categoryName: string }
     ): Promise<Partial<ProductModel> | null> => {
@@ -140,6 +144,6 @@ export default {
         include: [CategoryModel]
       });
       return product ? product.toJSON() : null;
-    }
+    })
   }
 };

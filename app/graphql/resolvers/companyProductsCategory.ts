@@ -3,6 +3,8 @@ import CompanyProductsCategoryModel from "../../database/models/company-products
 import { ApolloError } from "apollo-server-errors";
 import CompanyModel from "../../database/models/company.model";
 import {WhereOptions} from "sequelize";
+import { combineResolvers } from "graphql-resolvers";
+import { isAuthenticated } from "./authorization";
 
 export default {
   Query: {
@@ -29,7 +31,8 @@ export default {
     }
   },
   Mutation: {
-    createCompanyProductsCategory: async (
+    createCompanyProductsCategory: combineResolvers(isAuthenticated,
+      async (
         _: any,
       { companyId, name }: { companyId: string; name: string }
     ): Promise<CompanyProductsCategoryModel | null> => {
@@ -48,8 +51,9 @@ export default {
       return CompanyProductsCategoryModel.findByPk(productsCategory.id, {
         include: [CompanyModel, ProductModel]
       });
-    },
-    removeCompanyProductsCategory: async (
+    }),
+    removeCompanyProductsCategory: combineResolvers(isAuthenticated,
+      async (
         _: any,
       { categoryId }: { categoryId: string }
     ): Promise<CompanyProductsCategoryModel | null> => {
@@ -72,8 +76,9 @@ export default {
       } else {
         throw new ApolloError("Cannot find this Category", "404");
       }
-    },
-    addProductToCompanyCategory: async (
+    }),
+    addProductToCompanyCategory: combineResolvers(isAuthenticated,
+      async (
         _: any,
       { categoryId, productId }: { categoryId: string; productId: string }
     ): Promise<ProductModel | null> => {
@@ -95,8 +100,9 @@ export default {
           return product;
         } else throw new ApolloError("Category not found", "404");
       } else throw new ApolloError("Product not found", "404");
-    },
-    removeProductFromCompanyCategory: async (
+    }),
+    removeProductFromCompanyCategory: combineResolvers(isAuthenticated,
+      async (
         _: any,
       { productId }: { productId: string }
     ): Promise<ProductModel | null> => {
@@ -115,6 +121,6 @@ export default {
           "This product is not in any category of products",
           "404"
         );
-    }
+    })
   }
 };

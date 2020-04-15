@@ -5,6 +5,8 @@ import ProductModel from "../../database/models/product.model";
 import ProductReviewModel from "../../database/models/product-review.model";
 import CategoryModel from "../../database/models/category.model";
 import CompanyModel from "../../database/models/company.model";
+import { combineResolvers } from "graphql-resolvers";
+import { isUserAndCustomer } from "./authorization";
 
 interface reviewData {
   title: string;
@@ -35,14 +37,12 @@ export default {
     },
   },
   Mutation: {
-    createProductReview: async (
+    createProductReview: combineResolvers(isUserAndCustomer,
+      async (
         _: any,
       { title, customerMark, description, productId }: reviewData,
-      { user }: argumentsData
+      { user: {customer} }: argumentsData
     ): Promise<ProductReviewModel | null> => {
-      if (!user.customer)
-        throw new ApolloError("User is not a customer", "500");
-      const customer: Partial<CustomerModel> = user.customer.toJSON();
       if (customer && customer.id !== undefined) {
         const product: ProductModel | null = await ProductModel.findByPk(productId);
         if (product) {
@@ -90,6 +90,6 @@ export default {
       } else {
         throw new ApolloError("You need to be a customer review a product.", "403");
       }
-    }
+    })
   }
 };
