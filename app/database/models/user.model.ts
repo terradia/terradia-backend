@@ -1,12 +1,11 @@
 import {
   AllowNull,
   BeforeCreate,
-  BeforeUpdate,
-  BelongsTo,
+  BeforeUpdate, BelongsTo,
   Column,
   DataType,
-  Default,
-  ForeignKey,
+  Default, ForeignKey,
+  HasMany,
   HasOne,
   Is,
   IsEmail,
@@ -18,8 +17,8 @@ import {
 } from "sequelize-typescript";
 
 import bcrypt from "bcrypt";
-import CompanyModel from "./company.model";
 import CustomerModel from "./customer.model";
+import CompanyUserModel from "./company-user.model";
 
 const NAME_REGEX = /^[a-zàâéèëêïîôùüçœ\'’ -]+$/i;
 
@@ -35,43 +34,49 @@ export default class UserModel extends Model<UserModel> {
   public id!: string;
 
   @Is(NAME_REGEX)
-  @Column
+  @Column(DataType.STRING)
   public firstName!: string;
 
   @Is(NAME_REGEX)
-  @Column
+  @Column(DataType.STRING)
   public lastName!: string;
 
   @AllowNull(false)
   @IsEmail
-  @Column
+  @Column(DataType.STRING)
   public email!: string;
 
   @AllowNull(false)
-  @Column
+  @Column(DataType.STRING)
   public password!: string;
 
   @Unique
-  @Column
+  @Column(DataType.STRING)
   public phone!: string;
 
   @Default(false)
-  @Column
+  @Column(DataType.BOOLEAN)
   public validated!: boolean;
 
-  @ForeignKey(() => CompanyModel)
-  @Column
-  public companyId!: string;
+  // TODO: Remove => Not longer used
+  // @ForeignKey(() => CompanyModel)
+  // @Column
+  // public companyId!: string;
+  //
+  // // Not longer used
+  // @BelongsTo(() => CompanyModel)
+  // public company!: CompanyModel;
 
-  @BelongsTo(() => CompanyModel)
-  public company!: CompanyModel;
+  // All companies for each user
+  @HasMany(() => CompanyUserModel)
+  public companies!: CompanyUserModel[];
 
   @HasOne(() => CustomerModel)
   public customer!: CustomerModel;
 
   @BeforeCreate
   @BeforeUpdate
-  public static async hashPassword(user: UserModel) {
+  public static async hashPassword(user: UserModel): Promise<void> {
     if (user.changed("password")) {
       user.password = await bcrypt.hash(user.password, 15);
     }
@@ -88,8 +93,12 @@ export default class UserModel extends Model<UserModel> {
   }
 
   public static async findByLogin(login: string): Promise<UserModel | null> {
-    return UserModel.findOne({
-      where: { email: login }
-    });
+    try {
+      return UserModel.findOne({
+        where: {email: login}
+      });
+    } catch (e) {
+      throw(e);
+    }
   }
 }

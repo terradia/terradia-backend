@@ -5,20 +5,34 @@ import { AuthenticationError } from "apollo-server-express";
 import User from "./database/models/user.model";
 import CompanyModel from "./database/models/company.model";
 import CustomerModel from "./database/models/customer.model";
+import CompanyUserModel from "./database/models/company-user.model";
+import RoleModel from "./database/models/role.model";
+import UserPermissionsModel from "./database/models/userPermissions.model";
 
 export const getUser = async (req: express.Request) => {
   const { authorization } = req.headers;
   let token = authorization;
-  if (authorization && authorization.substring(7, authorization.length) == "Bearer ")
+  if (authorization && authorization.substring(0, 7) == "Bearer ")
     token = authorization.substring(7, authorization.length);
   if (token) {
     try {
-      const decoded: any = await jwt.verify(
+      const decoded: any = jwt.verify(
         token,
         process.env.TOKEN_SECRET!
       );
+
       return await User.findByPk(decoded.id, {
-        include: [CompanyModel, CustomerModel]
+        include: [
+          {
+            model: CompanyUserModel,
+            include: [
+                {model: RoleModel,
+                  include: [UserPermissionsModel]
+                },
+              CompanyModel
+            ]
+          },
+          CustomerModel]
       });
     } catch (e) {
       throw new AuthenticationError(

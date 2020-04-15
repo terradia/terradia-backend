@@ -23,11 +23,12 @@ export default class CategoryModel extends Model<CategoryModel> {
   @Column(DataType.UUID)
   public id!: string;
 
-  @Column
+  @Column(DataType.STRING)
   public name!: string;
 
+  //TODO TO refactor, Id can't be a number
   @AllowNull(true)
-  @Column
+  @Column(DataType.NUMBER)
   public parentCategoryId!: number;
 
   @BelongsToMany(() => ProductModel, {

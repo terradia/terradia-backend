@@ -6,11 +6,16 @@ import categorySchema from "./category";
 import companySchema from "./company";
 import companyReviewSchema from "./companyReview";
 import customerSchema from "./customer";
+import productsReviewSchema from './productReview'
 import companyProductsCategorySchema from "./companyProductsCategory";
+import companyUserSchema from "./companyUser";
+import roleSchema from "./role";
+import userPermissionsSchema from './userPermissions'
+import customerAddressSchema from './customerAddress'
 
 const linkSchema = gql`
   scalar Date
-
+  
   type Query {
     _: Boolean
   }
@@ -29,6 +34,11 @@ export default [
   productSchema,
   companySchema,
   companyReviewSchema,
+  productsReviewSchema,
   customerSchema,
   companyProductsCategorySchema,
+  companyUserSchema,
+  roleSchema,
+  userPermissionsSchema,
+  customerAddressSchema
 ];

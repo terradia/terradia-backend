@@ -15,8 +15,7 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.dropTable("ProductReviews").then(() => {
-    db.createTable("CompanyReviews", {
+  return db.createTable("CompanyReviews", {
       id: {
         type: "uuid",
         primaryKey: true,
@@ -29,25 +28,10 @@ exports.up = function(db) {
       customerMark: { type: "integer", allowNull: false },
       customerId: { type: "uuid", allowNull: false }
     });
-  });
 };
 
 exports.down = function(db) {
-  return db.dropTable("CompanyReviews").then(() => {
-    db.createTable("ProductReviews", {
-      id: {
-        type: "uuid",
-        primaryKey: true,
-        notNull: true,
-        defaultValue: new String("uuid_generate_v4()")
-      },
-      title: { type: "string", allowNull: false },
-      description: { type: "string", allowNull: true },
-      productId: { type: "uuid", allowNull: false },
-      customerMark: { type: "integer", allowNull: false },
-      customerId: { type: "uuid", allowNull: false }
-    });
-  });
+  return db.dropTable("CompanyReviews");
 };
 
 exports._meta = {

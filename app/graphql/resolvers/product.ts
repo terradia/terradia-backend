@@ -2,57 +2,72 @@ import ProductModel from "../../database/models/product.model";
 import CategoryModel from "../../database/models/category.model";
 import ProductCategoryModel from "../../database/models/product-category.model";
 import CompanyModel from "../../database/models/company.model";
+import ProductReviewModel from "../../database/models/product-review.model";
+import { ApolloError } from "apollo-server-errors";
+import CustomerModel from "../../database/models/customer.model";
 import UserModel from "../../database/models/user.model";
-
-interface addCategoryToProductArgs {
-  productId: string;
-  categoryName: string;
-}
-
-interface context {
-  user: UserModel;
-}
 
 export default {
   Query: {
     getAllProducts: async () => {
       return ProductModel.findAll({
-        include: [CategoryModel, CompanyModel]
+        include: [CategoryModel, CompanyModel, ProductReviewModel]
       });
     },
-    getProduct: async (_parent: any, { id }) => {
+    getProduct: async (
+        _: any,
+        { id }: { id: string }
+        ): Promise<ProductModel | null> => {
       return ProductModel.findByPk(id, {
-        include: [CategoryModel, CompanyModel]
+        include: [CategoryModel, CompanyModel, {
+          model: ProductReviewModel,
+          include: [{model: CustomerModel, include: [UserModel]}]
+        }]
       });
     },
-    getProductsByCompany: async (_parent: any, { companyId }) => {
+    getProductsByCompany: async (
+        _: any,
+      { companyId }: { companyId: string }
+    ): Promise<ProductModel[]> => {
+      const company: CompanyModel | null = await CompanyModel.findOne({ where: { id: companyId } });
+      if (!company) throw new ApolloError("This company does not exist", "404");
       return ProductModel.findAll({
         where: { companyId }
       });
     },
-    getProductsByCompanyByCategory: async (_parent: any, { companyId }) => {
+    getProductsByCompanyByCategory: async (
+        _: any,
+      { companyId }: { companyId: string }
+    ): Promise<CategoryModel[]> => {
+      const company = CompanyModel.findOne({ where: { id: companyId } });
+      if (!company) throw new ApolloError("This company does not exist", "404");
       return CategoryModel.findAll({
         include: [
-          { model: ProductModel, where: { companyId }, include: [CompanyModel] }
+          { model: ProductModel, where: { companyId }, include: [CompanyModel, ProductReviewModel] }
         ]
       });
     }
   },
   Mutation: {
-    createProduct: async (_parent: any, _args: any, { user }: context) => {
-      let product = await ProductModel.create({
-        ..._args,
-        companyId: user.companyId
-      }).then(product => {
-        return product;
-      });
-      return product.toJSON();
+    createProduct: async (
+        _: any,
+      args: { name: string; description: string; companyId: string }
+    ): Promise<Partial<ProductModel>> => {
+      const company: CompanyModel | null = await CompanyModel.findOne({ where: { id: args.companyId } });
+      if (company) {
+        let product: ProductModel = await ProductModel.create({
+          ...args
+        }).then(product => {
+          return product;
+        });
+        return product.toJSON();
+      } else throw new ApolloError("This company does not exist", "404");
     },
     addCategoryToProduct: async (
-      _parent: any,
-      { productId, categoryName }: addCategoryToProductArgs
-    ) => {
-      let category = await CategoryModel.findOne({
+      _: any,
+      { productId, categoryName }: { productId: string; categoryName: string }
+    ): Promise<Partial<ProductModel> | null> => {
+      let category: CategoryModel | null = await CategoryModel.findOne({
         where: { name: categoryName }
       });
       if (category) {
@@ -63,10 +78,12 @@ export default {
             categoryId: category.id
           }
         });
-      } else {
-        throw new Error(`The category ${categoryName} doesn't exists.`);
-      }
-      let product = await ProductModel.findOne({
+      } else
+        throw new ApolloError(
+          `The category ${categoryName} doesn't exists.`,
+          "404"
+        );
+      let product: ProductModel | null = await ProductModel.findOne({
         where: { id: productId },
         include: [CategoryModel]
       });

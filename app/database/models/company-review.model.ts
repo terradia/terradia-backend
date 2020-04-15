@@ -5,7 +5,6 @@ import {
   Model, PrimaryKey,
   Table
 } from "sequelize-typescript";
-import ProductModel from "./product.model";
 import CustomerModel from "./customer.model";
 import CompanyModel from "./company.model";
 
@@ -20,13 +19,13 @@ export default class CompanyReviewModel extends Model<CompanyReviewModel> {
   @Column(DataType.UUID)
   public id!: string;
 
-  @Column
+  @Column(DataType.STRING)
   public title!: string;
 
-  @Column
+  @Column(DataType.STRING)
   public description!: string;
 
-  @Column
+  @Column(DataType.STRING)
   public customerMark!: number;
 
   @ForeignKey(() => CustomerModel)

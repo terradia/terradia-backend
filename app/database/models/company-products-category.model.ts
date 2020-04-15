@@ -1,6 +1,5 @@
 import {
-  AllowNull, BelongsTo,
-  BelongsToMany,
+  BelongsTo,
   Column,
   DataType,
   Default, ForeignKey, HasMany,
@@ -10,7 +9,6 @@ import {
   Table
 } from "sequelize-typescript";
 import ProductModel from "./product.model";
-import ProductCategoryModel from "./product-category.model";
 import CompanyModel from "./company.model";
 
 @Table({
@@ -24,7 +22,7 @@ export default class CompanyProductsCategoryModel extends Model<CompanyProductsC
   @Column(DataType.UUID)
   public id!: string;
 
-  @Column
+  @Column(DataType.STRING)
   public name!: string;
 
   @ForeignKey(() => CompanyModel)
