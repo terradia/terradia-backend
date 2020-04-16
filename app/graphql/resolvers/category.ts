@@ -1,37 +1,40 @@
 import CategoryModel from "../../database/models/category.model";
 import ProductModel from "../../database/models/product.model";
-import ProductCategoryModel from "../../database/models/product-cateogry.model";
+import ProductCategoryModel from "../../database/models/product-category.model";
+import {ApolloError} from "apollo-server-errors";
 
 export default {
   Query: {
-    getAllCategories: async (_parent, _args, _context) => {
+    getAllCategories: async (): Promise<CategoryModel[]> => {
       return CategoryModel.findAll({
-        include: [
-          {
-            model: ProductModel,
-            as: "products",
-            required: false,
-            attributes: ["id", "name"],
-            through: { attributes: [] }
-          }
-        ]
+        include: [ProductModel]
+      });
+    },
+    getCategoryByName: async (_: any, { name }: { name: string }): Promise<CategoryModel | null> => {
+      return CategoryModel.findOne({
+        where: { name },
+        include: [ProductModel]
       });
     }
   },
   Mutation: {
-    createCategory: async (_parent, _args, _context) => {
-      let category = await CategoryModel.create(_args);
-      return category.toJSON();
+    createCategory: async (
+        _: any,
+      args: { name: string; parentCategoryId?: string }
+    ): Promise<CategoryModel> => {
+      return CategoryModel.create(args);
     },
-    deleteCategory: async (_parent, _args, _context) => {
-      let category = await CategoryModel.findByPk(_args.id);
-      if (category !== null) {
-        await CategoryModel.destroy({ where: { id: _args.id } });
-        await ProductCategoryModel.destroy({ where: { categoryId: _args.id } });
-        return category.toJSON();
-      } else {
-        throw Error("The category was already deleted or, does not exist");
-      }
+    deleteCategory: async (_: any, { id }: { id: string }): Promise<CategoryModel> => {
+      let category: CategoryModel | null = await CategoryModel.findByPk(id);
+      if (category) {
+        await CategoryModel.destroy({ where: { id } });
+        await ProductCategoryModel.destroy({ where: { categoryId: id } });
+        return category;
+      } else
+        throw new ApolloError(
+          "The category was already deleted or, does not exist",
+          "404"
+        );
     }
   }
 };
