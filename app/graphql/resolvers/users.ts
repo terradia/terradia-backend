@@ -52,7 +52,7 @@ export default {
       {
         email,
         defineUserAsCostumer,
-        ...userInformations,
+        ...userInformations
       }: {
         email: string;
         firstName: string;

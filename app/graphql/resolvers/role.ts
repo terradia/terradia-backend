@@ -3,6 +3,8 @@ import UserModel from "../../database/models/user.model";
 import CompanyModel from "../../database/models/company.model";
 import {ApolloError} from "apollo-server";
 import RoleModel from "../../database/models/role.model";
+import { combineResolvers } from "graphql-resolvers";
+import { isAuthenticated } from "./authorization";
 
 declare interface UserCompanyRoleProps {
   companyUserId: string,
@@ -11,7 +13,8 @@ declare interface UserCompanyRoleProps {
 
 export default {
   Mutation: {
-    addUserCompanyRole: async (
+    addUserCompanyRole: combineResolvers(isAuthenticated,
+      async (
         _: any,
       { companyUserId, roleId }: UserCompanyRoleProps
     ): Promise<CompanyUserModel | null> => {
@@ -25,8 +28,9 @@ export default {
         throw new ApolloError("Can't find the role");
       await companyUser.$add("roles", role);
       return companyUser.reload();
-    },
-    removeUserCompanyRole: async (
+    }),
+    removeUserCompanyRole: combineResolvers(isAuthenticated,
+      async (
         _: any,
       { companyUserId, roleId }: UserCompanyRoleProps
     ): Promise<CompanyUserModel | null> => {
@@ -40,6 +44,6 @@ export default {
         throw new ApolloError("Can't find the role");
       await companyUser.$remove("roles", role);
       return companyUser.reload();
-    }
+    })
   }
 };

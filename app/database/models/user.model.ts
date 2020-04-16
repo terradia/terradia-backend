@@ -4,7 +4,8 @@ import {
   BeforeUpdate, BelongsTo,
   Column,
   DataType,
-  Default, ForeignKey,
+  Default,
+  ForeignKey,
   HasMany,
   HasOne,
   Is,
@@ -16,7 +17,7 @@ import {
   Unique
 } from "sequelize-typescript";
 
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import CustomerModel from "./customer.model";
 import CompanyUserModel from "./company-user.model";
 
@@ -61,20 +62,11 @@ export default class UserModel extends Model<UserModel> {
 
   @Unique
   @Column(DataType.STRING)
-  public facebookId!: string;
+  public exponentPushToken!: string;
 
   @Unique
   @Column(DataType.STRING)
-  public exponentPushToken!: string;
-
-  // TODO: Remove => Not longer used
-  // @ForeignKey(() => CompanyModel)
-  // @Column
-  // public companyId!: string;
-  //
-  // // Not longer used
-  // @BelongsTo(() => CompanyModel)
-  // public company!: CompanyModel;
+  public facebookId!: string;
 
   // All companies for each user
   @HasMany(() => CompanyUserModel)

@@ -1,28 +1,58 @@
 import { gql } from "apollo-server";
 
 export default gql`
-  extend type Query {
-    getAllProducts: [Product]!
-    getProduct(id: ID!): Product!
-    getProductsByCompany(companyId: String): [Product]!
-    getProductsByCompanyByCategory(companyId: String): [Category]!
-  }
-  extend type Mutation {
-    createProduct(name: String!, description: String!, companyId: String!): Product!
-    addCategoryToProduct(categoryName: String!, productId: String!): Product!
-  }
-  type Product {
-    id: ID!
-    name: String!
-    image: String
-    description: String!
-    categories: [Category]
-    createdAt: Date
-    updatedAt: Date
-    company: Company
-    companyProductsCategory: CompanyProductsCategory
-    reviews: [ProductReview]
-    averageMark: Float
-    numberOfMarks: Int
-  }
+    extend type Query {
+        getAllProducts: [Product]!
+        getProduct(id: ID!): Product!
+        getProductsByCompany(companyId: String): [Product]!
+        getProductsByCompanyByCategory(companyId: String): [Category]!
+        getAllUnits(referencesOnly: Boolean): [Unit]!
+        getUnit(id: ID, notation: String, name: String): Unit!
+    }
+    extend type Mutation {
+        createProduct(
+            name: String!
+            description: String!
+            companyId: String!
+            price: Float!
+            quantityForUnit: Int
+            unitId: String
+            companyProductsCategoryId: String
+        ): Product!
+        addCategoryToProduct(categoryName: String!, productId: String!): Product!
+    }
+    type Product {
+        # Resouce related data
+        id: ID!
+        name: String!
+        description: String!
+        image: String
+
+        createdAt: Date
+        updatedAt: Date
+
+        # Classification data
+        categories: [Category]
+        company: Company
+        companyProductsCategory: CompanyProductsCategory
+
+        # Customers filled
+        reviews: [ProductReview]
+        averageMark: Float
+        numberOfMarks: Int
+        customerBasketProducts: [CartProduct]
+        
+        # Pricing
+        unit: Unit!
+        quantityForUnit: Float!
+        price: Float!
+        
+    }
+    type Unit {
+        id: ID!
+        name: String!
+        notation: String!
+        referenceUnit: Unit
+        multiplicationFactor: Float
+    }
 `;
