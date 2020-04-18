@@ -7,8 +7,9 @@ export default gql`
   }
   extend type Mutation {
     createTagCompany(name: String!): TagCompany!
-    deleteTagCompany(id: String!): TagCompany!
+    deleteTag(id: String!): TagCompany!
     addTagToCompany(tagName: String!, companyId: String!): Company!
+    deleteTagToCompany(tagName: String!, companyId: String!): Company!
   }
   type TagCompany {
     id: String!

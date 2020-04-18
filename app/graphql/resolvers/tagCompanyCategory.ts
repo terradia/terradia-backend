@@ -18,11 +18,11 @@ export default {
     },
     getTagCompanyByName: async (_parent: any, { name }: { name: string }) => {
       return TagModel.findOne({
-        where: { name }
+        where: { name },
         // ,
         // include: [CompanyModel]
       });
-    }
+    },
   },
   Mutation: {
     createTagCompany: async (_parent: any, _args: { name: string }) => {
@@ -32,10 +32,15 @@ export default {
         throw Error("The tag company is null");
       }
     },
-    deleteTagCompany: async (_parent: any, { id }: { id: string }) => {
+    deleteTag: async (_parent: any, { id }: { id: string }) => {
       let tag = await TagModel.findByPk(id);
       if (tag !== null) {
         await TagModel.destroy({ where: { id } });
+        await TagCompanyModel.destroy({
+          where: {
+            tagName: tag.name,
+          },
+        });
         return tag.toJSON();
       } else {
         throw Error(
@@ -48,17 +53,15 @@ export default {
       { companyId, tagName }: addTagToCompanyArgs
     ) => {
       let tagCompany = await TagModel.findOne({
-        //TagCompanyModel
-        where: { name: tagName }
+        where: { name: tagName },
       });
 
       if (tagCompany) {
-        // findOrCreate so that it doesn't add multiple times the tagCompany to a product.
         await TagCompanyModel.findOrCreate({
           where: {
             companyId,
-            tagName: tagCompany.name
-          }
+            tagName: tagCompany.name,
+          },
         });
       } else {
         throw new Error(`The tagCompany ${tagName} doesn't exists.`);
@@ -69,6 +72,26 @@ export default {
       // });
       return tagCompany;
       //company ? company.toJSON() : null;
-    }
-  }
+    },
+    deleteTagToCompany: async (
+      _parent: any,
+      { companyId, tagName }: addTagToCompanyArgs
+    ) => {
+      let tagCompany = await TagModel.findOne({
+        where: { name: tagName },
+      });
+
+      if (tagCompany) {
+        await TagCompanyModel.destroy({
+          where: {
+            companyId,
+            tagName: tagCompany.name,
+          },
+        });
+      } else {
+        throw new Error(`The tagCompany ${tagName} doesn't exists.`);
+      }
+      return tagCompany;
+    },
+  },
 };
