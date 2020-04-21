@@ -6,27 +6,26 @@ import {WhereOptions} from "sequelize";
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
 
-interface CompanyProductsAllCategoriesData {
-  nonCategories: ProductModel[]
-  categories: CompanyProductsCategoryModel[]
-}
-
 export default {
   Query: {
     getAllCompanyProductsCategories: async (
         _: any,
-      { companyId }: { companyId: string }): Promise<CompanyProductsAllCategoriesData> => {
-      const categories = await CompanyProductsCategoryModel.findAll({
+      { companyId }: { companyId: string }): Promise<CompanyProductsCategoryModel[]> => {
+      let categories = await CompanyProductsCategoryModel.findAll({
         where: { companyId },
         include: [ProductModel, CompanyModel]
       });
       const nonCategories = await ProductModel.findAll({
         where: {
           companyId,
-          companyProductsCategoryId: null
+          companyProductsCategoryId: null,
         }
       });
-      return {categories, nonCategories}
+      let nonCat: CompanyProductsCategoryModel = CompanyProductsCategoryModel.build({id: "", name: "NonCategories", products: nonCategories}, {
+        include: [ProductModel, CompanyModel]
+      });
+      categories.push(nonCat);
+      return categories;
     },
     getCompanyProductsCategory: async (
         _: any,
