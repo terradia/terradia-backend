@@ -36,6 +36,7 @@ export default gql`
         name: String!
         description: String!
         image: String
+        position: Int
 
         createdAt: Date
         updatedAt: Date

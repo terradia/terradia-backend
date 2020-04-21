@@ -21,7 +21,7 @@ export default {
           companyProductsCategoryId: null,
         }
       });
-      let nonCat: CompanyProductsCategoryModel = CompanyProductsCategoryModel.build({id: "", name: "NonCategories", products: nonCategories}, {
+      let nonCat: CompanyProductsCategoryModel = CompanyProductsCategoryModel.build({id: "nonCat", name: "NonCategories", products: nonCategories}, {
         include: [ProductModel, CompanyModel]
       });
       categories.push(nonCat);
