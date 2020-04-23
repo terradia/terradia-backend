@@ -3,14 +3,14 @@ version: "3"
 services:
   api:
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
 
-  nginx:
-    build:
-      context: nginx/prod/
-      dockerfile: Dockerfile
-    volumes:
-      - ./nginx-letsencrypt:/etc/letsencrypt
+#  nginx:
+#    build:
+#      context: nginx/prod/
+#      dockerfile: Dockerfile
+#    volumes:
+#      - ./nginx-letsencrypt:/etc/letsencrypt
 
 networks:
   postgres:

@@ -30,15 +30,15 @@ services:
     networks:
       - app-network
 
-  nginx:
-    container_name: nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    networks:
-      - app-network
-    depends_on:
-      - api
+#  nginx:
+#    container_name: nginx
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#    networks:
+#      - app-network
+#    depends_on:
+#      - api
 
 networks:
   app-network:
