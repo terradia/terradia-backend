@@ -93,57 +93,108 @@ export default {
     }
   },
   Mutation: {
-    createProduct: combineResolvers(isAuthenticated,
+    createProduct: combineResolvers(
+      isAuthenticated,
       async (
-      _: any,
-      args: {
-        name: string;
-        description: string;
-        companyId: string;
-        price: number;
-        quantityForUnit?: number;
-        unitId?: string;
-        companyProductsCategoryId?: string;
+        _: any,
+        args: {
+          name: string;
+          description: string;
+          companyId: string;
+          price: number;
+          quantityForUnit?: number;
+          unitId?: string;
+          companyProductsCategoryId?: string;
+        }
+      ): Promise<Partial<ProductModel>> => {
+        const company: CompanyModel | null = await CompanyModel.findOne({
+          where: { id: args.companyId }
+        });
+        if (company) {
+          let product: ProductModel = await ProductModel.create({
+            ...args
+          }).then(product => {
+            return product;
+          });
+          return product.toJSON();
+        } else throw new ApolloError("This company does not exist", "404");
       }
-    ): Promise<Partial<ProductModel>> => {
-      const company: CompanyModel | null = await CompanyModel.findOne({
-        where: { id: args.companyId }
-      });
-      if (company) {
-        let product: ProductModel = await ProductModel.create({
-          ...args
-        }).then(product => {
-          return product;
-        });
-        return product.toJSON();
-      } else throw new ApolloError("This company does not exist", "404");
-    }),
-    addCategoryToProduct: combineResolvers(isAuthenticated,
+    ),
+    addCategoryToProduct: combineResolvers(
+      isAuthenticated,
       async (
-      _: any,
-      { productId, categoryName }: { productId: string; categoryName: string }
-    ): Promise<Partial<ProductModel> | null> => {
-      let category: CategoryModel | null = await CategoryModel.findOne({
-        where: { name: categoryName }
-      });
-      if (category) {
-        // findOrCreate so that it doesn't add multiple times the category to a product.
-        await ProductCategoryModel.findOrCreate({
-          where: {
-            productId,
-            categoryId: category.id
-          }
+        _: any,
+        { productId, categoryName }: { productId: string; categoryName: string }
+      ): Promise<Partial<ProductModel> | null> => {
+        let category: CategoryModel | null = await CategoryModel.findOne({
+          where: { name: categoryName }
         });
-      } else
-        throw new ApolloError(
-          `The category ${categoryName} doesn't exists.`,
-          "404"
+        if (category) {
+          // findOrCreate so that it doesn't add multiple times the category to a product.
+          await ProductCategoryModel.findOrCreate({
+            where: {
+              productId,
+              categoryId: category.id
+            }
+          });
+        } else
+          throw new ApolloError(
+            `The category ${categoryName} doesn't exists.`,
+            "404"
+          );
+        let product: ProductModel | null = await ProductModel.findOne({
+          where: { id: productId },
+          include: [CategoryModel]
+        });
+        return product ? product.toJSON() : null;
+      }
+    ),
+    updateProduct: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        args: {
+          productId: string;
+          name?: string;
+          description?: string;
+          image?: string;
+          unitId?: string;
+          quantityForUnit?: number;
+          price?: number;
+        }
+      ): Promise<Partial<ProductModel>> => {
+        if (args.productId === undefined)
+          throw new ApolloError("You need to provide an ID.", "400");
+        const productResult: [
+          number,
+          ProductModel[]
+        ] = await ProductModel.update(
+          {
+            ...args
+          },
+          {
+            where: { id: args.productId },
+            returning: true
+          }
         );
-      let product: ProductModel | null = await ProductModel.findOne({
-        where: { id: productId },
-        include: [CategoryModel]
-      });
-      return product ? product.toJSON() : null;
-    })
+        if (productResult[0] === 0)
+          throw new ApolloError(
+            "Could not update any field in Database, are you sure the product you want to update exists ?",
+            "400"
+          );
+        return productResult[1][0];
+      }
+    ),
+    // returns the number of products deleted : 1 => your product was well deleted.
+    deleteProduct: combineResolvers(
+      isAuthenticated,
+      async (_: any, { productId }: { productId: string }): Promise<number> => {
+        if (productId === undefined)
+          throw new ApolloError("The product you try to delete, does not exist.", "404");
+        return ProductModel.destroy({
+          where: { id: productId }
+        });
+      }
+    )
   }
 };
