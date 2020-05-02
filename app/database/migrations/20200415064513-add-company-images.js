@@ -1,8 +1,8 @@
 "use strict";
 
-var dbm;
-var type;
-var seed;
+let dbm;
+let type;
+let seed;
 
 /**
  * We receive the dbmigrate dependency from dbmigrate initially.
@@ -31,7 +31,7 @@ exports.up = function(db) {
         type: "uuid",
         allowNull: true
       },
-      logoId: {
+      productId: {
         type: "uuid",
         allowNull: true
       },
@@ -45,11 +45,29 @@ exports.up = function(db) {
         type: new String("TIMESTAMPTZ"),
         defaultValue: new String("now()")
       }
+    }).then(() => {
+      return db.addColumn("Companies", "logoId", {
+        type: "uuid",
+        allowNull: false
+      });
+    }).then(() => {
+      return db.addColumn("Companies", "coverId", {
+        type: "uuid",
+        allowNull: false
+      });
+    }).then(() => {
+      return db.addColumn("Products", "coverId", {
+        type: "uuid",
+        allowNull: false
+      });
     });
 };
 
 exports.down = function(db) {
-  return db.dropTable("CompanyImages");
+  return db.dropTable("CompanyImages")
+    .then(() => db.removeColumn("Companies", "logoId"))
+    .then(() => db.removeColumn("Companies", "coverId"))
+    .then(() => db.removeColumn("Products", "coverId"));
 };
 
 exports._meta = {

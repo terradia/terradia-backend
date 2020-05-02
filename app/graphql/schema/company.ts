@@ -13,7 +13,8 @@ export default gql`
         createCompany(
             name: String!
             description: String
-            logo: Upload!
+            logo: Upload
+            cover: Upload
             email: String
             phone: String
             address: String!
@@ -37,7 +38,7 @@ export default gql`
         email: String
         phone: String
         logo: CompanyImages
-        cover: String
+        cover: CompanyImages
         createdAt: Date
         updatedAt: Date
         companyImages: [CompanyImages]

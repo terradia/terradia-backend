@@ -17,6 +17,7 @@ export default gql`
             price: Float!
             quantityForUnit: Int
             unitId: String
+            cover: Upload
             companyProductsCategoryId: String
         ): Product!
         addCategoryToProduct(categoryName: String!, productId: String!): Product!
@@ -45,7 +46,6 @@ export default gql`
         id: ID!
         name: String!
         description: String!
-        image: String
         position: Int
 
         cover: CompanyImages    

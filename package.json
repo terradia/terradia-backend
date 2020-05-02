@@ -45,7 +45,7 @@
     "@types/graphql-resolvers": "^0.2.0",
     "@types/helmet": "^0.0.43",
     "@types/jsonwebtoken": "^8.3.8",
-    "@types/node": "^11.15.7",
+    "@types/node": "^11.15.12",
     "@types/node-geocoder": "^3.24.1",
     "@types/pg": "^7.14.3",
     "@types/validator": "^10.11.3",

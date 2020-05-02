@@ -13,10 +13,9 @@ import { Fn, Literal } from "sequelize/types/lib/utils";
 import CompanyUserRoleModel from "../../database/models/company-user-role.model";
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
-import uploadToS3 from '../../uploadS3';
+import {uploadToS3SaveAsCompanyAvatarOrCover} from "../../uploadS3";
 import * as path from "path";
 import CompanyImagesModel from "../../database/models/company-images.model";
-const md5 = require('md5');
 
 declare interface Point {
   type: string;
@@ -33,13 +32,14 @@ declare interface CreateCompanyProps {
   email: string;
   phone: string;
   address: string;
-  logo: {stream: Body, filename: string, mimetype: string, encoding: string};
+  logo: {stream: Body; filename: string; mimetype: string; encoding: string};
+  cover: {stream: Body; filename: string; mimetype: string; encoding: string};
 }
 
 export default {
   Query: {
     getAllCompanies: async (_: any, { page, pageSize }: { page: number; pageSize: number }): Promise<CompanyModel[]> => {
-      let comp = await CompanyModel.findAll({
+      const comp = await CompanyModel.findAll({
         include: [
           {model: CompanyImagesModel, as: "logo"},
           ProductModel,
@@ -59,10 +59,11 @@ export default {
       return comp;
     },
     getCompany: async (_: any, { companyId }: { companyId: string }): Promise<CompanyModel | null> => {
-      let aa = await  CompanyModel.findByPk(companyId, {
+      return CompanyModel.findByPk(companyId, {
         include: [
-          {model: CompanyImagesModel, as: "companyImages"},
           {model: CompanyImagesModel, as: "logo"},
+          {model: CompanyImagesModel, as: "cover"},
+          {model: CompanyImagesModel, as: "companyImages"},
           ProductModel,
           {
             model: CompanyUserModel,
@@ -75,7 +76,6 @@ export default {
           }
         ]
       });
-      return aa;
     },
     getCompanyByName: async (
       _: any,
@@ -140,7 +140,7 @@ export default {
       __: any,
       { user }: { user: UserModel }
     ): Promise<CompanyModel[]> => {
-      let userFetched: UserModel | null = await UserModel.findByPk(user.id, {
+      const userFetched: UserModel | null = await UserModel.findByPk(user.id, {
         include: [
           {
             model: CompanyUserModel,
@@ -185,7 +185,7 @@ export default {
           type: "",
           coordinates: []
         };
-        let geocoder: Geocoder = NodeGeocoder({ provider: "openstreetmap" });
+        const geocoder: Geocoder = NodeGeocoder({ provider: "openstreetmap" });
         await geocoder.geocode(args.address, function(err, res) {
           if (err)
             throw new ApolloError(
@@ -212,6 +212,14 @@ export default {
           ...args,
           position: point
         });
+        if (args.logo) {
+          const { stream, filename } = await args.logo;
+          uploadToS3SaveAsCompanyAvatarOrCover(filename, stream, newCompany.id, true);
+        }
+        if (args.cover) {
+          const { stream, filename } = await args.cover;
+          uploadToS3SaveAsCompanyAvatarOrCover(filename, stream, newCompany.id, false);
+        }
         await CompanyUserModel.create({
           // @ts-ignore
           companyId: newCompany.id,
