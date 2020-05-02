@@ -1,6 +1,11 @@
 import { gql } from "apollo-server";
 
 export default gql`
+    input ScheduleInput {
+        startTime: Date!
+        endTime: Date!
+    }
+    
     extend type Query {
         getAllCompanies(page: Int, pageSize: Int): [Company]
         getCompany(companyId: ID!): Company
@@ -19,6 +24,13 @@ export default gql`
         ): Company!
         joinCompany(companyId: String!, userId: String!): Company!
         leaveCompany(companyId: String!, userId: String!): Company!
+        
+        # openingDays
+        addOpeningDay(companyId: String!, day: String!, hours: [ScheduleInput]): CompanyOpeningDay!
+        updateOpeningDay(openingDayId: String!, hours: [ScheduleInput]): CompanyOpeningDay!
+        removeOpeningDay(openingDayId: String!): CompanyOpeningDay!
+        updateOpeningHours(hourId: String!, startTime: Date!, endTime: Date!): CompanyOpeningDayHours!
+        removeOpeningHours(hourId: String!): CompanyOpeningDayHours!
     }
     type Company {
         # Resource related information
@@ -50,8 +62,23 @@ export default gql`
         numberOfMarks: Int
         reviews: [CompanyReview]
         
+        # Opening Hours
+        openingDays: [CompanyOpeningDay]
     }
     type GeographicPoint {
         coordinates: [Float]
+    }
+    type CompanyOpeningDay {
+        id: ID!
+        company: Company!
+        dayTranslationKey: String!
+        daySlugName: String!
+        hours: [CompanyOpeningDayHours!]!
+    }
+    type CompanyOpeningDayHours {
+        id: ID!
+        day: CompanyOpeningDay!
+        startTime: Date!
+        endTime: Date!
     }
 `;

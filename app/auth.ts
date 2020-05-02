@@ -4,6 +4,7 @@ import { AuthenticationError } from "apollo-server-express";
 
 import User from "./database/models/user.model";
 import CustomerModel from "./database/models/customer.model";
+import CompanyUserModel from "./database/models/company-user.model";
 
 export const getUser = async (req: express.Request) => {
   const { authorization } = req.headers;
@@ -17,7 +18,7 @@ export const getUser = async (req: express.Request) => {
         process.env.TOKEN_SECRET!
       );
       return await User.findByPk(decoded.id, {
-        include: [CustomerModel]
+        include: [CustomerModel, CompanyUserModel]
       });
     } catch (e) {
       throw new AuthenticationError(
