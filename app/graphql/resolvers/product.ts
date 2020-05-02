@@ -92,7 +92,7 @@ export default {
           "You should at least give one of the three arguments",
           "400"
         );
-      let options: { id?: string; notation?: string; name?: string } = {};
+      const options: { id?: string; notation?: string; name?: string } = {};
       if (id) options["id"] = id;
       else if (notation) options["notation"] = notation;
       else if (name) options["name"] = name;
@@ -157,7 +157,7 @@ export default {
             `The category ${categoryName} doesn't exists.`,
             "404"
           );
-        let product: ProductModel | null = await ProductModel.findOne({
+        const product: ProductModel | null = await ProductModel.findOne({
           where: { id: productId },
           include: [CategoryModel]
         });
