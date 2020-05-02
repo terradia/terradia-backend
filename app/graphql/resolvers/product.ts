@@ -33,7 +33,8 @@ export default {
     ): Promise<ProductModel | null> => {
       let aa = await ProductModel.findByPk(id, {
         include: [
-          {model: CompanyImagesModel, as: 'images'},
+          {model: CompanyImagesModel, as: "cover"},
+          {model: CompanyImagesModel, as: "images"},
           CategoryModel,
           CompanyModel,
           {

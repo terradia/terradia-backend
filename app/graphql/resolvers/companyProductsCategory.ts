@@ -5,24 +5,39 @@ import CompanyModel from "../../database/models/company.model";
 import { WhereOptions } from "sequelize";
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
+import CompanyImagesModel from "../../database/models/company-images.model";
 
 export default {
   Query: {
     getAllCompanyProductsCategories: async (
         _: any,
       { companyId }: { companyId: string }): Promise<CompanyProductsCategoryModel[]> => {
-      let categories = await CompanyProductsCategoryModel.findAll({
+      const categories = await CompanyProductsCategoryModel.findAll({
         where: { companyId },
-        include: [ProductModel, CompanyModel]
+        include: [
+          {model: ProductModel, include: [
+            {model: CompanyImagesModel, as: "cover"},
+            {model: CompanyImagesModel, as: "images"},
+          ]},
+          CompanyModel]
       });
       const nonCategories = await ProductModel.findAll({
         where: {
           companyId,
           companyProductsCategoryId: null,
-        }
+        },
+        include: [
+          {model: CompanyImagesModel, as: "cover"},
+          {model: CompanyImagesModel, as: "images"},
+        ]
       });
-      let nonCat: CompanyProductsCategoryModel = CompanyProductsCategoryModel.build({id: "nonCat", name: "NonCategories", products: nonCategories}, {
-        include: [ProductModel, CompanyModel]
+      const nonCat: CompanyProductsCategoryModel = CompanyProductsCategoryModel.build({id: "nonCat", name: "NonCategories", products: nonCategories}, {
+        include: [
+          {model: ProductModel, include: [
+            {model: CompanyImagesModel, as: "cover"},
+            {model: CompanyImagesModel, as: "images"},
+          ]},
+          CompanyModel]
       });
       categories.push(nonCat);
       return categories;
@@ -52,7 +67,7 @@ export default {
         _: any,
         { companyId, name }: { companyId: string; name: string }
       ): Promise<CompanyProductsCategoryModel | null> => {
-        let [productsCategory]: [
+        const [productsCategory]: [
           CompanyProductsCategoryModel,
           boolean
         ] = await CompanyProductsCategoryModel.findOrCreate({

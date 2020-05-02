@@ -7,7 +7,7 @@ import {
   IsUUID,
   Model,
   PrimaryKey,
-  Table, BelongsToMany, AfterFind, HasOne, ForeignKey
+  Table, BelongsToMany, AfterFind, HasOne, ForeignKey, BelongsTo
 } from "sequelize-typescript";
 import ProductModel from "./product.model";
 import CompanyReviewModel from "./company-review.model";
@@ -49,7 +49,7 @@ export default class CompanyModel extends Model<CompanyModel> {
   logoId!: string;
   // A string because to get the images you should get them from the media server of Terradia
   // https://media.terradia.eu/ + company.logo
-  @HasOne(() => CompanyImagesModel, "companyLogoId")
+  @BelongsTo(() => CompanyImagesModel)
   public logo!: string;
 
   // A string because to get the images you should get them from the media server of Terradia

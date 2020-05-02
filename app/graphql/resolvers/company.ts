@@ -184,9 +184,6 @@ export default {
         let point: Point = {
           type: "",
           coordinates: []
-      const { stream, filename, mimetype, encoding } = await args.logo;
-      const hash = md5(filename) + path.extname(filename);
-      uploadToS3(hash, stream);
         };
         let geocoder: Geocoder = NodeGeocoder({ provider: "openstreetmap" });
         await geocoder.geocode(args.address, function(err, res) {

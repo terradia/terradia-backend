@@ -46,11 +46,12 @@ export default class ProductModel extends Model<ProductModel> {
   @Column
   coverId!: string;
 
-  @HasOne(() => CompanyImagesModel, "productCoverId")
+  @BelongsTo(() => CompanyImagesModel)
   public cover!: string;
 
-  @HasMany(() => CompanyImagesModel, "productImagesId")
+  @HasMany(() => CompanyImagesModel)
   public images!: CompanyImagesModel[];
+
   // categories of the products to make it easier to find it.
   @BelongsToMany(() => CategoryModel, () => ProductCategoryModel)
   public categories!: CategoryModel[];
