@@ -48,6 +48,9 @@ export default gql`
         image: String
         position: Int
 
+        cover: CompanyImages    
+        images: [CompanyImages]
+        
         createdAt: Date
         updatedAt: Date
 

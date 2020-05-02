@@ -7,7 +7,7 @@ import {
   IsUUID,
   Model,
   PrimaryKey,
-  Table, BelongsToMany, AfterFind
+  Table, BelongsToMany, AfterFind, HasOne, ForeignKey
 } from "sequelize-typescript";
 import ProductModel from "./product.model";
 import CompanyReviewModel from "./company-review.model";
@@ -16,6 +16,7 @@ import CustomersFavoriteCompaniesModel from "./customers-favorite-companies.mode
 import CompanyProductsCategoryModel from "./company-products-category.model";
 import CompanyUserModel from "./company-user.model";
 import CartModel from "./cart.model";
+import CompanyImagesModel from "./company-images.model";
 
 @Table({
   tableName: "Companies",
@@ -43,9 +44,12 @@ export default class CompanyModel extends Model<CompanyModel> {
   @Column(DataType.STRING)
   public phone!: string;
 
+  @ForeignKey(() => CompanyImagesModel)
+  @Column
+  logoId!: string;
   // A string because to get the images you should get them from the media server of Terradia
   // https://media.terradia.eu/ + company.logo
-  @Column(DataType.STRING)
+  @HasOne(() => CompanyImagesModel, "companyLogoId")
   public logo!: string;
 
   // A string because to get the images you should get them from the media server of Terradia
@@ -58,6 +62,9 @@ export default class CompanyModel extends Model<CompanyModel> {
 
   // This way we can get all the products independently of their categories
   // the second usage is that we can have projects without categories to "hide them"
+  @HasMany(() => CompanyImagesModel)
+  public companyImages!: CompanyImagesModel[];
+
   @HasMany(() => ProductModel)
   public products!: ProductModel[];
 
@@ -106,16 +113,16 @@ export default class CompanyModel extends Model<CompanyModel> {
   @Column
   public updatedAt!: Date;
 
-  @AfterFind
-  static afterFindHook(result: any): void {
-    if(result.constructor === Array) {
-      let arrayLength = result.length;
-      for (let i = 0; i < arrayLength; i++) {
-        result[i].logo = process.env.__S3_URL__ + result[i].logo;
-      }
-    } else {
-      result.logo = process.env.__S3_URL__ + result.logo;
-    }
-    return result;
-  }
+  // @AfterFind
+  // static afterFindHook(result: any): void {
+  //   if(result.constructor === Array) {
+  //     let arrayLength = result.length;
+  //     for (let i = 0; i < arrayLength; i++) {
+  //       result[i].logo = process.env.__S3_URL__ + result[i].logo;
+  //     }
+  //   } else {
+  //     result.logo = process.env.__S3_URL__ + result.logo;
+  //   }
+  //   return result;
+  // }
 }

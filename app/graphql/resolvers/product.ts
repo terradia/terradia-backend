@@ -11,6 +11,7 @@ import { Op } from "sequelize";
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
 import CompanyProductsCategoryModel from "../../database/models/company-products-category.model";
+import CompanyImagesModel from "../../database/models/company-images.model";
 
 interface ProductsPositionsData {
   productId: string;
@@ -30,8 +31,9 @@ export default {
       _: any,
       { id }: { id: string }
     ): Promise<ProductModel | null> => {
-      return ProductModel.findByPk(id, {
+      let aa = await ProductModel.findByPk(id, {
         include: [
+          {model: CompanyImagesModel, as: 'images'},
           CategoryModel,
           CompanyModel,
           {
@@ -44,6 +46,7 @@ export default {
           }
         ]
       });
+      return aa;
     },
     getProductsByCompany: async (
       _: any,

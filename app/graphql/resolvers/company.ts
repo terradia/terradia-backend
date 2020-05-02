@@ -15,6 +15,7 @@ import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
 import uploadToS3 from '../../uploadS3';
 import * as path from "path";
+import CompanyImagesModel from "../../database/models/company-images.model";
 const md5 = require('md5');
 
 declare interface Point {
@@ -37,12 +38,10 @@ declare interface CreateCompanyProps {
 
 export default {
   Query: {
-    getAllCompanies: async (
-      _: any,
-      { page, pageSize }: { page: number; pageSize: number }
-    ): Promise<CompanyModel[]> => {
-      return CompanyModel.findAll({
+    getAllCompanies: async (_: any, { page, pageSize }: { page: number; pageSize: number }): Promise<CompanyModel[]> => {
+      let comp = await CompanyModel.findAll({
         include: [
+          {model: CompanyImagesModel, as: "logo"},
           ProductModel,
           {
             model: CompanyUserModel,
@@ -57,13 +56,13 @@ export default {
         offset: page,
         limit: pageSize
       });
+      return comp;
     },
-    getCompany: async (
-      _: any,
-      { companyId }: { companyId: string }
-    ): Promise<CompanyModel | null> => {
-      return CompanyModel.findByPk(companyId, {
+    getCompany: async (_: any, { companyId }: { companyId: string }): Promise<CompanyModel | null> => {
+      let aa = await  CompanyModel.findByPk(companyId, {
         include: [
+          {model: CompanyImagesModel, as: "companyImages"},
+          {model: CompanyImagesModel, as: "logo"},
           ProductModel,
           {
             model: CompanyUserModel,
@@ -76,6 +75,7 @@ export default {
           }
         ]
       });
+      return aa;
     },
     getCompanyByName: async (
       _: any,
