@@ -105,7 +105,8 @@ export default {
     }
   },
   Mutation: {
-    createProduct: combineResolvers(isAuthenticated,
+    createProduct: combineResolvers(
+      isAuthenticated,
       async (
         _: any,
         args: {
@@ -200,8 +201,55 @@ export default {
                 id: productPosition.productId
               }})
           }
+      });
+      return true;
+      }),
+    updateProduct: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        args: {
+          productId: string;
+          name?: string;
+          description?: string;
+          image?: string;
+          unitId?: string;
+          quantityForUnit?: number;
+          price?: number;
+        }
+      ): Promise<Partial<ProductModel>> => {
+        if (args.productId === undefined)
+          throw new ApolloError("You need to provide an ID.", "400");
+        const productResult: [
+          number,
+          ProductModel[]
+          ] = await ProductModel.update(
+          {
+            ...args
+          },
+          {
+            where: { id: args.productId },
+            returning: true
+          }
+        );
+        if (productResult[0] === 0)
+          throw new ApolloError(
+            "Could not update any field in Database, are you sure the product you want to update exists ?",
+            "400"
+          );
+        return productResult[1][0];
+      }
+    ),
+    // returns the number of products deleted : 1 => your product was well deleted.
+    deleteProduct: combineResolvers(
+      isAuthenticated,
+      async (_: any, { productId }: { productId: string }): Promise<number> => {
+        if (productId === undefined)
+          throw new ApolloError("The product you try to delete, does not exist.", "404");
+        return ProductModel.destroy({
+          where: { id: productId }
         });
-        return true;
-      })
+      }
+    )
   }
 };
