@@ -12,6 +12,7 @@ export default gql`
         removeProductFromCompanyCategory(productId: String!): Product
         updateCompanyProductsCategory(categoryId: String!, name: String): CompanyProductsCategory
     }
+
     type CompanyProductsCategory {
         id: ID!
         name: String!

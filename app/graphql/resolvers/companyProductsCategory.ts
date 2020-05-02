@@ -9,13 +9,23 @@ import { isAuthenticated } from "./authorization";
 export default {
   Query: {
     getAllCompanyProductsCategories: async (
-      _: any,
-      { companyId }: { companyId: string }
-    ): Promise<CompanyProductsCategoryModel[]> => {
-      return CompanyProductsCategoryModel.findAll({
+        _: any,
+      { companyId }: { companyId: string }): Promise<CompanyProductsCategoryModel[]> => {
+      let categories = await CompanyProductsCategoryModel.findAll({
         where: { companyId },
         include: [ProductModel, CompanyModel]
       });
+      const nonCategories = await ProductModel.findAll({
+        where: {
+          companyId,
+          companyProductsCategoryId: null,
+        }
+      });
+      let nonCat: CompanyProductsCategoryModel = CompanyProductsCategoryModel.build({id: "nonCat", name: "NonCategories", products: nonCategories}, {
+        include: [ProductModel, CompanyModel]
+      });
+      categories.push(nonCat);
+      return categories;
     },
     getCompanyProductsCategory: async (
       _: any,

@@ -30,13 +30,23 @@ export default gql`
             price: Float
         ): Product
         deleteProduct(productId: String!): Int
+        updateProductsPosition(productsPositions: [ProductPosition!]): Boolean
     }
+    #Type => ['addCategory', 'deleteCategory', 'moveCategory']
+    input ProductPosition {
+        productId: ID!
+        position: Int!
+        categoryId: ID
+        type: String
+    }
+    
     type Product {
         # Resouce related data
         id: ID!
         name: String!
         description: String!
         image: String
+        position: Int
 
         createdAt: Date
         updatedAt: Date

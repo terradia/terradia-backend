@@ -10,6 +10,14 @@ import UnitModel from "../../database/models/unit.model";
 import { Op } from "sequelize";
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
+import CompanyProductsCategoryModel from "../../database/models/company-products-category.model";
+
+interface ProductsPositionsData {
+  productId: string;
+  position: number;
+  categoryId: string;
+  type: string;
+}
 
 export default {
   Query: {
@@ -26,6 +34,10 @@ export default {
         include: [
           CategoryModel,
           CompanyModel,
+          {
+            model: CompanyProductsCategoryModel,
+            include: [CompanyModel]
+          },
           {
             model: ProductReviewModel,
             include: [{ model: CustomerModel, include: [UserModel] }]
@@ -80,7 +92,7 @@ export default {
           "You should at least give one of the three arguments",
           "400"
         );
-      let options: { id?: string; notation?: string; name?: string } = {};
+      const options: { id?: string; notation?: string; name?: string } = {};
       if (id) options["id"] = id;
       else if (notation) options["notation"] = notation;
       else if (name) options["name"] = name;
@@ -110,18 +122,21 @@ export default {
         const company: CompanyModel | null = await CompanyModel.findOne({
           where: { id: args.companyId }
         });
+        const productsSameCategory = await ProductModel.findAll({where: {
+            companyProductsCategoryId: args.companyProductsCategoryId ? args.companyProductsCategoryId: null
+          }});
+        let pos = productsSameCategory.length;
         if (company) {
           let product: ProductModel = await ProductModel.create({
-            ...args
+            ...args,
+            position: pos
           }).then(product => {
             return product;
           });
           return product.toJSON();
         } else throw new ApolloError("This company does not exist", "404");
-      }
-    ),
-    addCategoryToProduct: combineResolvers(
-      isAuthenticated,
+      }),
+    addCategoryToProduct: combineResolvers(isAuthenticated,
       async (
         _: any,
         { productId, categoryName }: { productId: string; categoryName: string }
@@ -142,13 +157,53 @@ export default {
             `The category ${categoryName} doesn't exists.`,
             "404"
           );
-        let product: ProductModel | null = await ProductModel.findOne({
+        const product: ProductModel | null = await ProductModel.findOne({
           where: { id: productId },
           include: [CategoryModel]
         });
         return product ? product.toJSON() : null;
-      }
-    ),
+      }),
+    updateProductsPosition: combineResolvers(isAuthenticated,
+      async (
+        _: any,
+        { productsPositions }: { productsPositions: [ProductsPositionsData] }
+      ): Promise<boolean> => {
+        productsPositions.forEach(async (productPosition: ProductsPositionsData) => {
+          if (productPosition.type === "addCategory") {
+            ProductModel.update({
+              companyProductsCategoryId: productPosition.categoryId,
+              position: productPosition.position
+            }, {
+              where: {
+                id: productPosition.productId
+              }})
+          } else if (productPosition.type === "deleteCategory") {
+            ProductModel.update({
+              companyProductsCategoryId: null,
+              position: productPosition.position
+            }, {
+              where: {
+                id: productPosition.productId
+              }})
+          } else if (productPosition.type === "moveCategory") {
+            ProductModel.update({
+              companyProductsCategoryId: productPosition.categoryId,
+              position: productPosition.position
+            }, {
+              where: {
+                id: productPosition.productId
+              }})
+          } else  {
+            ProductModel.update({
+              position: productPosition.position
+            }, {
+              where: {
+                id: productPosition.productId
+              }})
+          }
+      });
+      return true;
+      }),
     updateProduct: combineResolvers(
       isAuthenticated,
       async (
@@ -168,7 +223,7 @@ export default {
         const productResult: [
           number,
           ProductModel[]
-        ] = await ProductModel.update(
+          ] = await ProductModel.update(
           {
             ...args
           },
