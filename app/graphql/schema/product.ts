@@ -20,13 +20,33 @@ export default gql`
             companyProductsCategoryId: String
         ): Product!
         addCategoryToProduct(categoryName: String!, productId: String!): Product!
+        updateProduct(
+            productId: String
+            name: String
+            description: String
+            image: String
+            unitId: String
+            quantityForUnit: Float
+            price: Float
+        ): Product
+        deleteProduct(productId: String!): Int
+        updateProductsPosition(productsPositions: [ProductPosition!]): Boolean
     }
+    #Type => ['addCategory', 'deleteCategory', 'moveCategory']
+    input ProductPosition {
+        productId: ID!
+        position: Int!
+        categoryId: ID
+        type: String
+    }
+    
     type Product {
         # Resouce related data
         id: ID!
         name: String!
         description: String!
         image: String
+        position: Int
 
         createdAt: Date
         updatedAt: Date
@@ -41,12 +61,11 @@ export default gql`
         averageMark: Float
         numberOfMarks: Int
         customerBasketProducts: [CartProduct]
-        
+
         # Pricing
         unit: Unit!
         quantityForUnit: Float!
         price: Float!
-        
     }
     type Unit {
         id: ID!

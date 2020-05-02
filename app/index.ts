@@ -46,7 +46,8 @@ const noCache = (
 
 const whitelist: WhiteList = [
     "https://terradia.eu",
-    "http://localhost:3000"
+    "http://localhost:3000",
+  "https://producteurs.terradia.eu"
 ];
 
 const corsOptions: CorsOptions = {

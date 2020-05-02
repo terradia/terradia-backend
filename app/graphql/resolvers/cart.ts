@@ -4,6 +4,8 @@ import CartModel from "../../database/models/cart.model";
 import CustomerModel from "../../database/models/customer.model";
 import CartProductModel from "../../database/models/cart-product.model";
 import ProductModel from "../../database/models/product.model";
+import { combineResolvers } from "graphql-resolvers";
+import { isAuthenticated, isUserAndCustomer } from "./authorization";
 
 declare interface UserCompanyRoleProps {
   companyUserId: string,
@@ -16,34 +18,33 @@ interface Context {
 
 export default {
   Query: {
-    getCart: (
-      _: any,
-      __: any,
-      { user }: Context
-    ): Promise<CartModel | null> => {
-      // TODO : Check if the products are available
-      const customer: CustomerModel = user.customer;
-      if (!customer) {
-        throw new ApolloError("this user is not a customer", "400");
-      }
-      if (customer.cart === null) {
-        throw new ApolloError("this customer does not have a cart", "400");
-      }
-      return CartModel.findOne({
-        where: {
-          customerId: user.customer.id
-        },
-        include: [
-          {
-            model: CartProductModel,
-            include: [ProductModel]
-          }
+    getCart: combineResolvers(
+      isUserAndCustomer,
+      (_: any, __: any, { user }: Context): Promise<CartModel | null> => {
+        // TODO : Check if the products are available
+        const customer: CustomerModel = user.customer;
+        if (!customer) {
+          throw new ApolloError("this user is not a customer", "400");
+        }
+        if (customer.cart === null) {
+          throw new ApolloError("this customer does not have a cart", "400");
+        }
+        return CartModel.findOne({
+          where: {
+            customerId: user.customer.id
+          },
+          include: [
+            {
+              model: CartProductModel,
+              include: [ProductModel]
+            }
           ]
-      });
-    }
+        });
+      })
   },
   Mutation: {
-    addProductToCart: async (
+    addProductToCart: combineResolvers(isUserAndCustomer,
+      async (
       _: any,
       { productId, quantity }: { productId: string; quantity: number },
       { user }: Context
@@ -113,8 +114,9 @@ export default {
       );
       cartProductCreated.product = product;
       return cartProductCreated;
-    },
-    removeProductFromCart: async (
+    }),
+    removeProductFromCart: combineResolvers(isUserAndCustomer,
+      async (
       _: any,
       {
         cartProductId,
@@ -185,6 +187,6 @@ export default {
         );
         return quantity;
       }
-    }
+    })
   }
 };

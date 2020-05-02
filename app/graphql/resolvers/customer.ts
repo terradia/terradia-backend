@@ -4,6 +4,8 @@ import CompanyReviewModel from "../../database/models/company-review.model";
 import CompanyModel from "../../database/models/company.model";
 import CustomersFavoriteCompaniesModel from "../../database/models/customers-favorite-companies.model";
 import { ApolloError } from "apollo-server";
+import { combineResolvers } from "graphql-resolvers";
+import { isAuthenticated, isUserAndCustomer } from "./authorization";
 
 interface FavoriteArgs {
   companyId: string;
@@ -55,7 +57,8 @@ export default {
         include: [UserModel]
       });
     },
-    addFavoriteCompany: async (
+    addFavoriteCompany: combineResolvers(isUserAndCustomer,
+      async (
       _: any,
       { companyId }: FavoriteArgs,
       { user }: Context
@@ -77,8 +80,9 @@ export default {
       return CustomerModel.findByPk(customerId, {
         include: [CompanyModel, CompanyReviewModel, UserModel]
       });
-    },
-    removeFavoriteCompany: async (
+    }),
+    removeFavoriteCompany: combineResolvers(isUserAndCustomer,
+      async (
       _: any,
       { companyId }: FavoriteArgs,
       { user }: Context
@@ -99,6 +103,6 @@ export default {
       return CustomerModel.findByPk(customerId, {
         include: [CompanyModel, CompanyReviewModel, UserModel]
       });
-    }
+    })
   }
 };
