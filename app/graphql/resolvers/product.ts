@@ -124,7 +124,9 @@ export default {
         });
         const productsSameCategory = await ProductModel.findAll({
           where: {
-            companyProductsCategoryId: args.companyProductsCategoryId ? args.companyProductsCategoryId : null
+            companyProductsCategoryId: args.companyProductsCategoryId
+              ? args.companyProductsCategoryId
+              : null
           }
         });
         const pos = productsSameCategory.length;
@@ -137,8 +139,10 @@ export default {
           });
           return product.toJSON();
         } else throw new ApolloError("This company does not exist", "404");
-      }),
-    addCategoryToProduct: combineResolvers(isAuthenticated,
+      }
+    ),
+    addCategoryToProduct: combineResolvers(
+      isAuthenticated,
       async (
         _: any,
         { productId, categoryName }: { productId: string; categoryName: string }
@@ -164,52 +168,67 @@ export default {
           include: [CategoryModel]
         });
         return product ? product.toJSON() : null;
-      }),
-    updateProductsPosition: combineResolvers(isAuthenticated,
+      }
+    ),
+    updateProductsPosition: combineResolvers(
+      isAuthenticated,
       async (
         _: any,
         { productsPositions }: { productsPositions: [ProductsPositionsData] }
       ): Promise<boolean> => {
         for (const productPosition of productsPositions) {
           if (productPosition.type === "addCategory") {
-            ProductModel.update({
-              companyProductsCategoryId: productPosition.categoryId,
-              position: productPosition.position
-            }, {
-              where: {
-                id: productPosition.productId
+            ProductModel.update(
+              {
+                companyProductsCategoryId: productPosition.categoryId,
+                position: productPosition.position
+              },
+              {
+                where: {
+                  id: productPosition.productId
+                }
               }
-            });
+            );
           } else if (productPosition.type === "deleteCategory") {
-            ProductModel.update({
-              companyProductsCategoryId: null,
-              position: productPosition.position
-            }, {
-              where: {
-                id: productPosition.productId
+            ProductModel.update(
+              {
+                companyProductsCategoryId: null,
+                position: productPosition.position
+              },
+              {
+                where: {
+                  id: productPosition.productId
+                }
               }
-            });
+            );
           } else if (productPosition.type === "moveCategory") {
-            ProductModel.update({
-              companyProductsCategoryId: productPosition.categoryId,
-              position: productPosition.position
-            }, {
-              where: {
-                id: productPosition.productId
+            ProductModel.update(
+              {
+                companyProductsCategoryId: productPosition.categoryId,
+                position: productPosition.position
+              },
+              {
+                where: {
+                  id: productPosition.productId
+                }
               }
-            });
+            );
           } else {
-            ProductModel.update({
-              position: productPosition.position
-            }, {
-              where: {
-                id: productPosition.productId
+            ProductModel.update(
+              {
+                position: productPosition.position
+              },
+              {
+                where: {
+                  id: productPosition.productId
+                }
               }
-            });
+            );
           }
         }
         return true;
-      }),
+      }
+    ),
     updateProduct: combineResolvers(
       isAuthenticated,
       async (
@@ -251,7 +270,10 @@ export default {
       isAuthenticated,
       async (_: any, { productId }: { productId: string }): Promise<number> => {
         if (productId === undefined)
-          throw new ApolloError("The product you try to delete, does not exist.", "404");
+          throw new ApolloError(
+            "The product you try to delete, does not exist.",
+            "404"
+          );
         return ProductModel.destroy({
           where: { id: productId }
         });
