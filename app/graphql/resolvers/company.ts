@@ -232,10 +232,8 @@ export default {
       isAuthenticated,
       async (
         _: any,
-        { companyId }: { companyId: string },
-        { user }: Context
+        { companyId, userId }: { companyId: string; userId: string }
       ): Promise<CompanyModel | null> => {
-        const userId = user.id;
         const company: CompanyModel | null = await CompanyModel.findOne({
           where: { id: companyId }
         });
@@ -467,8 +465,7 @@ export default {
         const h: CompanyOpeningDayHoursModel | null = await CompanyOpeningDayHoursModel.findOne(
           { where: { id: hourId }, include: [CompanyOpeningDayModel] }
         );
-        if (!h)
-          throw new ApolloError("Cannot find this resource", "404");
+        if (!h) throw new ApolloError("Cannot find this resource", "404");
         await CompanyOpeningDayHoursModel.destroy({
           where: { id: hourId }
         });
