@@ -128,12 +128,16 @@ export default {
         const company: CompanyModel | null = await CompanyModel.findOne({
           where: { id: args.companyId }
         });
-        const productsSameCategory = await ProductModel.findAll({where: {
-            companyProductsCategoryId: args.companyProductsCategoryId ? args.companyProductsCategoryId: null
-          }});
-        let pos = productsSameCategory.length;
+        const productsSameCategory = await ProductModel.findAll({
+          where: {
+            companyProductsCategoryId: args.companyProductsCategoryId
+              ? args.companyProductsCategoryId
+              : null
+          }
+        });
+        const pos = productsSameCategory.length;
         if (company) {
-          let product: ProductModel = await ProductModel.create({
+          const product: ProductModel = await ProductModel.create({
             ...args,
             position: pos
           }).then(product => {
@@ -145,13 +149,15 @@ export default {
           }
           return product.toJSON();
         } else throw new ApolloError("This company does not exist", "404");
-      }),
-    addCategoryToProduct: combineResolvers(isAuthenticated,
+      }
+    ),
+    addCategoryToProduct: combineResolvers(
+      isAuthenticated,
       async (
         _: any,
         { productId, categoryName }: { productId: string; categoryName: string }
       ): Promise<Partial<ProductModel> | null> => {
-        let category: CategoryModel | null = await CategoryModel.findOne({
+        const category: CategoryModel | null = await CategoryModel.findOne({
           where: { name: categoryName }
         });
         if (category) {
@@ -172,48 +178,67 @@ export default {
           include: [CategoryModel]
         });
         return product ? product.toJSON() : null;
-      }),
-    updateProductsPosition: combineResolvers(isAuthenticated,
+      }
+    ),
+    updateProductsPosition: combineResolvers(
+      isAuthenticated,
       async (
         _: any,
         { productsPositions }: { productsPositions: [ProductsPositionsData] }
       ): Promise<boolean> => {
-        productsPositions.forEach(async (productPosition: ProductsPositionsData) => {
+        for (const productPosition of productsPositions) {
           if (productPosition.type === "addCategory") {
-            ProductModel.update({
-              companyProductsCategoryId: productPosition.categoryId,
-              position: productPosition.position
-            }, {
-              where: {
-                id: productPosition.productId
-              }})
+            ProductModel.update(
+              {
+                companyProductsCategoryId: productPosition.categoryId,
+                position: productPosition.position
+              },
+              {
+                where: {
+                  id: productPosition.productId
+                }
+              }
+            );
           } else if (productPosition.type === "deleteCategory") {
-            ProductModel.update({
-              companyProductsCategoryId: null,
-              position: productPosition.position
-            }, {
-              where: {
-                id: productPosition.productId
-              }})
+            ProductModel.update(
+              {
+                companyProductsCategoryId: null,
+                position: productPosition.position
+              },
+              {
+                where: {
+                  id: productPosition.productId
+                }
+              }
+            );
           } else if (productPosition.type === "moveCategory") {
-            ProductModel.update({
-              companyProductsCategoryId: productPosition.categoryId,
-              position: productPosition.position
-            }, {
-              where: {
-                id: productPosition.productId
-              }})
-          } else  {
-            ProductModel.update({
-              position: productPosition.position
-            }, {
-              where: {
-                id: productPosition.productId
-              }})
+            ProductModel.update(
+              {
+                companyProductsCategoryId: productPosition.categoryId,
+                position: productPosition.position
+              },
+              {
+                where: {
+                  id: productPosition.productId
+                }
+              }
+            );
+          } else {
+            ProductModel.update(
+              {
+                position: productPosition.position
+              },
+              {
+                where: {
+                  id: productPosition.productId
+                }
+              }
+            );
           }
-      });
-      return true;
-      }),
+        }
+        return true;
+      }
+    ),
     updateProduct: combineResolvers(
       isAuthenticated,
       async (
@@ -234,7 +259,7 @@ export default {
         const productResult: [
           number,
           ProductModel[]
-          ] = await ProductModel.update(
+        ] = await ProductModel.update(
           {
             ...args
           },
@@ -267,7 +292,10 @@ export default {
       isAuthenticated,
       async (_: any, { productId }: { productId: string }): Promise<number> => {
         if (productId === undefined)
-          throw new ApolloError("The product you try to delete, does not exist.", "404");
+          throw new ApolloError(
+            "The product you try to delete, does not exist.",
+            "404"
+          );
         return ProductModel.destroy({
           where: { id: productId }
         });

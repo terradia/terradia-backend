@@ -99,11 +99,20 @@ export default {
             include: [ProductModel, CompanyModel]
           }
         );
-        if (category) {
-          // remove the category to all the Products that was linked to it.
+        if (!category) {
+          throw new ApolloError("Cannot find this Category", "404");
+        }
+        const nonCategories = await ProductModel.findAll({
+          where: {
+            companyId: category.companyId,
+            companyProductsCategoryId: null,
+          }
+        });
+        let currentLength = nonCategories.length;
           category.products.forEach((element: ProductModel) => {
+            currentLength++;
             ProductModel.update(
-              { companyProductsCategoryId: null },
+              { companyProductsCategoryId: null, position: currentLength },
               { where: { id: element.id } }
             );
           });
@@ -111,9 +120,6 @@ export default {
             where: { id: categoryId }
           });
           return category;
-        } else {
-          throw new ApolloError("Cannot find this Category", "404");
-        }
       }
     ),
     addProductToCompanyCategory: combineResolvers(
