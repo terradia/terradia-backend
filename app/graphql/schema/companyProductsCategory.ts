@@ -10,7 +10,9 @@ export default gql`
         removeCompanyProductsCategory(categoryId: String!): CompanyProductsCategory
         addProductToCompanyCategory(categoryId: String!, productId: String!): Product
         removeProductFromCompanyCategory(productId: String!): Product
+        updateCompanyProductsCategory(categoryId: String!, name: String): CompanyProductsCategory
     }
+
     type CompanyProductsCategory {
         id: ID!
         name: String!

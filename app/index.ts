@@ -15,7 +15,6 @@ import userController from "./controllers/user";
 import bodyParser = require("body-parser");
 import logger from "./logger";
 import { getUser } from "./auth";
-import {strict} from "assert";
 
 declare type WhiteList = string[]
 
@@ -46,7 +45,8 @@ const noCache = (
 
 const whitelist: WhiteList = [
     "https://terradia.eu",
-    "http://localhost:3000"
+    "http://localhost:3000",
+  "https://producteurs.terradia.eu"
 ];
 
 const corsOptions: CorsOptions = {
