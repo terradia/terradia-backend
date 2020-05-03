@@ -25,17 +25,12 @@
   "bugs": {
     "url": "https://github.com/terradia/terradia-backend/issues"
   },
-  "prettier": {
-    "semi": true,
-    "tabWidth": 2,
-    "rangeEnd": 120
-  },
   "homepage": "https://github.com/terradia/terradia-backend#readme",
   "devDependencies": {
     "@types/bcrypt": "^3.0.0",
     "@types/bcryptjs": "^2.4.2",
-    "@types/body-parser": "^1.17.0",
     "@types/bluebird": "^3.5.30",
+    "@types/body-parser": "^1.17.0",
     "@types/compression": "^0.0.36",
     "@types/cookie-parser": "^1.4.1",
     "@types/cors": "^2.8.4",
@@ -49,6 +44,8 @@
     "@types/node-geocoder": "^3.24.1",
     "@types/pg": "^7.14.3",
     "@types/validator": "^10.11.3",
+    "@typescript-eslint/eslint-plugin": "^2.30.0",
+    "@typescript-eslint/parser": "^2.30.0",
     "chalk": "^2.4.2",
     "cross-env": "^5.2.0",
     "cz-conventional-changelog": "^2.1.0",
@@ -56,6 +53,8 @@
     "db-migrate-pg": "^0.5.0",
     "debug": "^4.1.1",
     "dotenv": "^8.2.0",
+    "eslint": "^6.8.0",
+    "eslint-plugin-prettier": "^3.1.2",
     "faker": "latest",
     "ts-node-dev": "^1.0.0-pre.44"
   },
@@ -72,6 +71,8 @@
     "bcryptjs": "^2.4.3",
     "compression": "latest",
     "cookie-parser": "latest",
+    "eslint-config-airbnb-typescript": "^6.3.1",
+    "eslint-config-prettier": "^6.9.0",
     "graphql": "^14.6.0",
     "graphql-resolvers": "^0.4.2",
     "helmet": "latest",

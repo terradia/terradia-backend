@@ -9,13 +9,23 @@ import { isAuthenticated } from "./authorization";
 export default {
   Query: {
     getAllCompanyProductsCategories: async (
-      _: any,
-      { companyId }: { companyId: string }
-    ): Promise<CompanyProductsCategoryModel[]> => {
-      return CompanyProductsCategoryModel.findAll({
+        _: any,
+      { companyId }: { companyId: string }): Promise<CompanyProductsCategoryModel[]> => {
+      const categories = await CompanyProductsCategoryModel.findAll({
         where: { companyId },
         include: [ProductModel, CompanyModel]
       });
+      const nonCategories = await ProductModel.findAll({
+        where: {
+          companyId,
+          companyProductsCategoryId: null,
+        }
+      });
+      const nonCat: CompanyProductsCategoryModel = CompanyProductsCategoryModel.build({id: "nonCat", name: "NonCategories", products: nonCategories}, {
+        include: [ProductModel, CompanyModel]
+      });
+      categories.push(nonCat);
+      return categories;
     },
     getCompanyProductsCategory: async (
       _: any,
@@ -42,7 +52,7 @@ export default {
         _: any,
         { companyId, name }: { companyId: string; name: string }
       ): Promise<CompanyProductsCategoryModel | null> => {
-        let [productsCategory]: [
+        const [productsCategory]: [
           CompanyProductsCategoryModel,
           boolean
         ] = await CompanyProductsCategoryModel.findOrCreate({
@@ -74,11 +84,20 @@ export default {
             include: [ProductModel, CompanyModel]
           }
         );
-        if (category) {
-          // remove the category to all the Products that was linked to it.
+        if (!category) {
+          throw new ApolloError("Cannot find this Category", "404");
+        }
+        const nonCategories = await ProductModel.findAll({
+          where: {
+            companyId: category.companyId,
+            companyProductsCategoryId: null,
+          }
+        });
+        let currentLength = nonCategories.length;
           category.products.forEach((element: ProductModel) => {
+            currentLength++;
             ProductModel.update(
-              { companyProductsCategoryId: null },
+              { companyProductsCategoryId: null, position: currentLength },
               { where: { id: element.id } }
             );
           });
@@ -86,9 +105,6 @@ export default {
             where: { id: categoryId }
           });
           return category;
-        } else {
-          throw new ApolloError("Cannot find this Category", "404");
-        }
       }
     ),
     addProductToCompanyCategory: combineResolvers(

@@ -17,10 +17,11 @@ import CustomersFavoriteCompaniesModel from "./customers-favorite-companies.mode
 import CompanyProductsCategoryModel from "./company-products-category.model";
 import CompanyUserModel from "./company-user.model";
 import CartModel from "./cart.model";
+import CompanyOpeningDayModel from "./company-opening-day.model";
 
 @Table({
   tableName: "Companies",
-  timestamps: false
+  timestamps: true
 })
 export default class CompanyModel extends Model<CompanyModel> {
   @IsUUID(4)
@@ -92,7 +93,6 @@ export default class CompanyModel extends Model<CompanyModel> {
   public numberOfMarks!: number;
 
   @Column(DataType.GEOMETRY)
-  // @ts-ignore
   public position!: any;
 
   @Column(DataType.STRING)
@@ -100,6 +100,10 @@ export default class CompanyModel extends Model<CompanyModel> {
 
   @HasMany(() => CartModel, "companyId")
   public customersCarts!: CartModel[];
+
+  // the opening days of the company
+  @HasMany(() => CompanyOpeningDayModel, "companyId")
+  public openingDays!: CompanyOpeningDayModel[];
 
   @Column
   public createdAt!: Date;

@@ -1,11 +1,11 @@
 import {
   AllowNull,
+  BeforeBulkUpdate,
   BeforeCreate,
-  BeforeUpdate, BelongsTo,
+  BeforeUpdate,
   Column,
   DataType,
   Default,
-  ForeignKey,
   HasMany,
   HasOne,
   Is,
@@ -73,6 +73,15 @@ export default class UserModel extends Model<UserModel> {
       user.password = await bcrypt.hash(user.password, 15);
     }
   }
+  @BeforeBulkUpdate
+  public static async hashUpdatedPassword(user: any): Promise<void> {
+    if (user.attributes.password) {
+      user.attributes.password = await bcrypt.hash(
+        user.attributes.password,
+        15
+      );
+    }
+  }
 
   public static comparePasswords(pass: string, hash: string): Promise<boolean> {
     return bcrypt.compare(pass, hash);
@@ -80,17 +89,17 @@ export default class UserModel extends Model<UserModel> {
 
   public static async userExist(email: string): Promise<boolean> {
     return !!UserModel.findOne({
-        where: {email}
+      where: { email }
     });
   }
 
   public static async findByLogin(login: string): Promise<UserModel | null> {
     try {
       return UserModel.findOne({
-        where: {email: login}
+        where: { email: login }
       });
     } catch (e) {
-      throw(e);
+      throw e;
     }
   }
 }
