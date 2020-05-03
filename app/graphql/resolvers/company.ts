@@ -136,7 +136,7 @@ export default {
       __: any,
       { user }: { user: UserModel }
     ): Promise<CompanyModel[]> => {
-      let userFetched: UserModel | null = await UserModel.findByPk(user.id, {
+      const userFetched: UserModel | null = await UserModel.findByPk(user.id, {
         include: [
           {
             model: CompanyUserModel,
@@ -181,7 +181,7 @@ export default {
           type: "",
           coordinates: []
         };
-        let geocoder: Geocoder = NodeGeocoder({ provider: "openstreetmap" });
+        const geocoder: Geocoder = NodeGeocoder({ provider: "openstreetmap" });
         await geocoder.geocode(args.address, function(err, res) {
           if (err)
             throw new ApolloError(
