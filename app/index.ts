@@ -15,7 +15,6 @@ import userController from "./controllers/user";
 import bodyParser = require("body-parser");
 import logger from "./logger";
 import { getUser } from "./auth";
-import {strict} from "assert";
 
 declare type WhiteList = string[]
 

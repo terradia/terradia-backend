@@ -5,7 +5,6 @@ import CompanyReviewModel from "../../database/models/company-review.model";
 import CompanyProductsCategoryModel from "../../database/models/company-products-category.model";
 import CompanyUserModel from "../../database/models/company-user.model";
 import RoleModel from "../../database/models/role.model";
-import { UserInputError } from "apollo-server-express";
 import NodeGeocoder, { Geocoder } from "node-geocoder";
 import { ApolloError } from "apollo-server-errors";
 import { Sequelize } from "sequelize";
@@ -13,6 +12,8 @@ import { Fn, Literal } from "sequelize/types/lib/utils";
 import CompanyUserRoleModel from "../../database/models/company-user-role.model";
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
+import CompanyOpeningDayModel from "../../database/models/company-opening-day.model";
+import CompanyOpeningDayHoursModel from "../../database/models/company-opening-day-hours.model";
 
 declare interface Point {
   type: string;
@@ -48,6 +49,10 @@ export default {
           {
             model: CompanyProductsCategoryModel,
             include: [ProductModel]
+          },
+          {
+            model: CompanyOpeningDayModel,
+            include: [CompanyOpeningDayHoursModel]
           }
         ],
         offset: page,
@@ -69,6 +74,10 @@ export default {
           {
             model: CompanyProductsCategoryModel,
             include: [ProductModel]
+          },
+          {
+            model: CompanyOpeningDayModel,
+            include: [CompanyOpeningDayHoursModel]
           }
         ]
       });
@@ -166,7 +175,6 @@ export default {
         })
       )?.companies;
     }
-    //TODO create getCompanyUsers
   },
   Mutation: {
     createCompany: combineResolvers(
@@ -226,19 +234,15 @@ export default {
         _: any,
         { companyId, userId }: { companyId: string; userId: string }
       ): Promise<CompanyModel | null> => {
-        const user = UserModel.findOne({ where: { id: userId } });
-        if (!user)
-          throw new ApolloError(
-            "The user does not exists",
-            "404" // TODO : translate
-          );
-        const company = CompanyModel.findOne({ where: { id: companyId } });
+        const company: CompanyModel | null = await CompanyModel.findOne({
+          where: { id: companyId }
+        });
         if (!company)
           throw new ApolloError(
-            "The company does not exists",
-            "404" // TODO : translate
+            "The company does not exists", // TODO : translate
+            "404"
           );
-        const companyUser = CompanyUserModel.findOne({
+        const companyUser = await CompanyUserModel.findOne({
           where: {
             companyId,
             userId
@@ -246,8 +250,8 @@ export default {
         });
         if (companyUser !== null)
           throw new ApolloError(
-            "This user has already joined the company",
-            "403" // TODO : translate
+            "This user has already joined the company", // TODO : translate
+            "403"
           );
         const userRole: RoleModel | null = await RoleModel.findOne({
           where: { slugName: "member" }
@@ -271,19 +275,201 @@ export default {
       isAuthenticated,
       async (
         _: any,
-        { companyId, userId }: { companyId: string; userId: string }
+        { companyId }: { companyId: string },
+        { user }: Context
       ): Promise<CompanyModel | null> => {
+        const userId: string = user.id;
+        const company: CompanyModel | null = await CompanyModel.findOne({
+          where: { id: companyId }
+        });
+        if (!company)
+          throw new ApolloError(
+            "The company does not exists", // TODO : translate
+            "404"
+          );
         const companyUser: CompanyUserModel | null = await CompanyUserModel.findOne(
           { where: { companyId: companyId, userId: userId } }
         );
-        if (companyUser == null) {
-          throw new UserInputError("User not found");
+        if (companyUser === null) {
+          throw new ApolloError("This user is not in the company", "400");
         }
         CompanyUserRoleModel.destroy({
           where: { companyUserId: companyUser.id }
         });
         companyUser.destroy();
         return CompanyModel.findByPk(companyId);
+      }
+    ),
+    addOpeningDay: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        {
+          companyId,
+          day,
+          hours
+        }: {
+          companyId: string;
+          day: string;
+          hours?: { startTime: Date; endTime: Date }[];
+        }
+      ): Promise<CompanyOpeningDayModel | null> => {
+        const company: CompanyModel | null = await CompanyModel.findOne({
+          where: { id: companyId }
+        });
+        if (!company)
+          throw new ApolloError(
+            "The company does not exists", // TODO : translate
+            "404"
+          );
+        const days: string[] = [
+          "monday",
+          "tuesday",
+          "wednesday",
+          "thursday",
+          "friday",
+          "saturday",
+          "sunday"
+        ];
+        if (days.findIndex(d => d === day) === -1)
+          throw new ApolloError(
+            "The day is invalid. It should be : 'monday', 'tuesday', 'wednesday', 'thursday', 'saturday', 'sunday'",
+            "400"
+          );
+        const result: [
+          CompanyOpeningDayModel,
+          boolean
+        ] = await CompanyOpeningDayModel.findOrCreate({
+          where: {
+            dayTranslationKey: day + ".label",
+            daySlugName: day,
+            companyId
+          }
+        });
+        const companyOpeningDay: CompanyOpeningDayModel = result[0];
+        if (hours !== undefined) {
+          // remove all the hours from before
+          await CompanyOpeningDayHoursModel.destroy({
+            where: { dayId: companyOpeningDay.id }
+          });
+          for (const hour of hours) {
+            await CompanyOpeningDayHoursModel.create({
+              startTime: new Date(hour.startTime),
+              endTime: new Date(hour.endTime),
+              dayId: companyOpeningDay.id
+            });
+          }
+        }
+        return CompanyOpeningDayModel.findOne({
+          where: { id: companyOpeningDay.id },
+          include: [CompanyOpeningDayHoursModel]
+        });
+      }
+    ),
+    updateOpeningDay: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        {
+          openingDayId,
+          hours
+        }: {
+          openingDayId: string;
+          hours?: { startTime: Date; endTime: Date }[];
+        }
+      ): Promise<CompanyOpeningDayModel | null> => {
+        const result: [
+          CompanyOpeningDayModel,
+          boolean
+        ] = await CompanyOpeningDayModel.findOrCreate({
+          where: {
+            id: openingDayId
+          }
+        });
+        const companyOpeningDay: CompanyOpeningDayModel = result[0];
+        if (hours !== undefined) {
+          // remove all the hours from before
+          await CompanyOpeningDayHoursModel.destroy({
+            where: { dayId: companyOpeningDay.id }
+          });
+          for (const hour of hours) {
+            await CompanyOpeningDayHoursModel.create({
+              startTime: new Date(hour.startTime),
+              endTime: new Date(hour.endTime),
+              dayId: companyOpeningDay.id
+            });
+          }
+        }
+        return CompanyOpeningDayModel.findOne({
+          where: { id: companyOpeningDay.id },
+          include: [CompanyOpeningDayHoursModel]
+        });
+      }
+    ),
+    removeOpeningDay: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        {
+          openingDayId
+        }: {
+          openingDayId: string;
+        }
+      ): Promise<CompanyOpeningDayModel | null> => {
+        const companyOpeningDay: CompanyOpeningDayModel | null = await CompanyOpeningDayModel.findOne(
+          {
+            where: {
+              id: openingDayId
+            }
+          }
+        );
+        if (!companyOpeningDay)
+          throw new ApolloError("Cannot find this resource", "404");
+        await CompanyOpeningDayModel.destroy({
+          where: { id: openingDayId }
+        });
+        return companyOpeningDay;
+      }
+    ),
+    updateOpeningHours: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        {
+          hourId,
+          hours
+        }: { hourId: string; hours: { startTime: Date; endTime: Date } }
+      ): Promise<CompanyOpeningDayHoursModel | null> => {
+        const tmp: [
+          number,
+          CompanyOpeningDayHoursModel[]
+        ] = await CompanyOpeningDayHoursModel.update(
+          { ...hours },
+          { where: { id: hourId } }
+        );
+        if (tmp[0] === 0)
+          throw new ApolloError("Could not update the resource", "404");
+        const h: CompanyOpeningDayHoursModel | null = await CompanyOpeningDayHoursModel.findOne(
+          { where: { id: hourId }, include: [CompanyOpeningDayModel] }
+        );
+        if (!h) throw new ApolloError("This hours does not exist", "404");
+        return h;
+      }
+    ),
+    removeOpeningHours: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        { hourId }: { hourId: string }
+      ): Promise<CompanyOpeningDayHoursModel | null> => {
+        const h: CompanyOpeningDayHoursModel | null = await CompanyOpeningDayHoursModel.findOne(
+          { where: { id: hourId }, include: [CompanyOpeningDayModel] }
+        );
+        if (!h) throw new ApolloError("Cannot find this resource", "404");
+        await CompanyOpeningDayHoursModel.destroy({
+          where: { id: hourId }
+        });
+        return h;
       }
     )
   }

@@ -122,12 +122,14 @@ export default {
         const company: CompanyModel | null = await CompanyModel.findOne({
           where: { id: args.companyId }
         });
-        const productsSameCategory = await ProductModel.findAll({where: {
-            companyProductsCategoryId: args.companyProductsCategoryId ? args.companyProductsCategoryId: null
-          }});
-        let pos = productsSameCategory.length;
+        const productsSameCategory = await ProductModel.findAll({
+          where: {
+            companyProductsCategoryId: args.companyProductsCategoryId ? args.companyProductsCategoryId : null
+          }
+        });
+        const pos = productsSameCategory.length;
         if (company) {
-          let product: ProductModel = await ProductModel.create({
+          const product: ProductModel = await ProductModel.create({
             ...args,
             position: pos
           }).then(product => {
@@ -141,7 +143,7 @@ export default {
         _: any,
         { productId, categoryName }: { productId: string; categoryName: string }
       ): Promise<Partial<ProductModel> | null> => {
-        let category: CategoryModel | null = await CategoryModel.findOne({
+        const category: CategoryModel | null = await CategoryModel.findOne({
           where: { name: categoryName }
         });
         if (category) {
@@ -168,7 +170,7 @@ export default {
         _: any,
         { productsPositions }: { productsPositions: [ProductsPositionsData] }
       ): Promise<boolean> => {
-        productsPositions.forEach(async (productPosition: ProductsPositionsData) => {
+        for (const productPosition of productsPositions) {
           if (productPosition.type === "addCategory") {
             ProductModel.update({
               companyProductsCategoryId: productPosition.categoryId,
@@ -176,7 +178,8 @@ export default {
             }, {
               where: {
                 id: productPosition.productId
-              }})
+              }
+            });
           } else if (productPosition.type === "deleteCategory") {
             ProductModel.update({
               companyProductsCategoryId: null,
@@ -184,7 +187,8 @@ export default {
             }, {
               where: {
                 id: productPosition.productId
-              }})
+              }
+            });
           } else if (productPosition.type === "moveCategory") {
             ProductModel.update({
               companyProductsCategoryId: productPosition.categoryId,
@@ -192,17 +196,19 @@ export default {
             }, {
               where: {
                 id: productPosition.productId
-              }})
-          } else  {
+              }
+            });
+          } else {
             ProductModel.update({
               position: productPosition.position
             }, {
               where: {
                 id: productPosition.productId
-              }})
+              }
+            });
           }
-      });
-      return true;
+        }
+        return true;
       }),
     updateProduct: combineResolvers(
       isAuthenticated,
@@ -223,7 +229,7 @@ export default {
         const productResult: [
           number,
           ProductModel[]
-          ] = await ProductModel.update(
+        ] = await ProductModel.update(
           {
             ...args
           },
