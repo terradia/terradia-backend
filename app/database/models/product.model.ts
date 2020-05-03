@@ -10,7 +10,7 @@ import {
   Table,
   ForeignKey,
   HasMany,
-  AllowNull, HasOne
+  AllowNull
 } from "sequelize-typescript";
 import CategoryModel from "./category.model";
 import ProductCategoryModel from "./product-category.model";
@@ -41,7 +41,6 @@ export default class ProductModel extends Model<ProductModel> {
   // A string because to get the images you should get them from the media server of Terradia
   // https://media.terradia.eu/ + company.image
 
-
   @ForeignKey(() => CompanyImagesModel)
   @Column
   coverId!: string;
@@ -53,7 +52,10 @@ export default class ProductModel extends Model<ProductModel> {
   public images!: CompanyImagesModel[];
 
   // categories of the products to make it easier to find it.
-  @BelongsToMany(() => CategoryModel, () => ProductCategoryModel)
+  @BelongsToMany(
+    () => CategoryModel,
+    () => ProductCategoryModel
+  )
   public categories!: CategoryModel[];
 
   @Column

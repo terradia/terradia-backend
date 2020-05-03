@@ -12,8 +12,7 @@ import { Fn, Literal } from "sequelize/types/lib/utils";
 import CompanyUserRoleModel from "../../database/models/company-user-role.model";
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
-import {uploadToS3SaveAsCompanyAvatarOrCover} from "../../uploadS3";
-import * as path from "path";
+import { uploadToS3SaveAsCompanyAvatarOrCover } from "../../uploadS3";
 import CompanyImagesModel from "../../database/models/company-images.model";
 import CompanyOpeningDayModel from "../../database/models/company-opening-day.model";
 import CompanyOpeningDayHoursModel from "../../database/models/company-opening-day-hours.model";
@@ -33,16 +32,19 @@ declare interface CreateCompanyProps {
   email: string;
   phone: string;
   address: string;
-  logo: {stream: Body; filename: string; mimetype: string; encoding: string};
-  cover: {stream: Body; filename: string; mimetype: string; encoding: string};
+  logo: { stream: Body; filename: string; mimetype: string; encoding: string };
+  cover: { stream: Body; filename: string; mimetype: string; encoding: string };
 }
 
 export default {
   Query: {
-    getAllCompanies: async (_: any, { page, pageSize }: { page: number; pageSize: number }): Promise<CompanyModel[]> => {
+    getAllCompanies: async (
+      _: any,
+      { page, pageSize }: { page: number; pageSize: number }
+    ): Promise<CompanyModel[]> => {
       const comp = await CompanyModel.findAll({
         include: [
-          {model: CompanyImagesModel, as: "logo"},
+          { model: CompanyImagesModel, as: "logo" },
           ProductModel,
           {
             model: CompanyUserModel,
@@ -63,12 +65,15 @@ export default {
       });
       return comp;
     },
-    getCompany: async (_: any, { companyId }: { companyId: string }): Promise<CompanyModel | null> => {
+    getCompany: async (
+      _: any,
+      { companyId }: { companyId: string }
+    ): Promise<CompanyModel | null> => {
       return CompanyModel.findByPk(companyId, {
         include: [
-          {model: CompanyImagesModel, as: "logo"},
-          {model: CompanyImagesModel, as: "cover"},
-          {model: CompanyImagesModel, as: "companyImages"},
+          { model: CompanyImagesModel, as: "logo" },
+          { model: CompanyImagesModel, as: "cover" },
+          { model: CompanyImagesModel, as: "companyImages" },
           ProductModel,
           {
             model: CompanyUserModel,
@@ -222,11 +227,21 @@ export default {
         });
         if (args.logo) {
           const { stream, filename } = await args.logo;
-          uploadToS3SaveAsCompanyAvatarOrCover(filename, stream, newCompany.id, true);
+          uploadToS3SaveAsCompanyAvatarOrCover(
+            filename,
+            stream,
+            newCompany.id,
+            true
+          );
         }
         if (args.cover) {
           const { stream, filename } = await args.cover;
-          uploadToS3SaveAsCompanyAvatarOrCover(filename, stream, newCompany.id, false);
+          uploadToS3SaveAsCompanyAvatarOrCover(
+            filename,
+            stream,
+            newCompany.id,
+            false
+          );
         }
         await CompanyUserModel.create({
           // @ts-ignore

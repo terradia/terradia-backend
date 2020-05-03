@@ -50,11 +50,11 @@ export default gql`
     removeOpeningHours(hourId: String!): CompanyOpeningDayHours!
   }
   type CompanyImages {
-        id: ID!
-        filename: String
-        createdAt: Date
-        updatedAt: Date
-    }
+    id: ID!
+    filename: String
+    createdAt: Date
+    updatedAt: Date
+  }
   type Company {
     # Resource related information
     id: ID!
@@ -66,7 +66,7 @@ export default gql`
     cover: CompanyImages
     createdAt: Date
     updatedAt: Date
-
+    companyImages: [CompanyImages]
     # Products related data
     products: [Product]
     productsCategories: [CompanyProductsCategory]
@@ -103,7 +103,4 @@ export default gql`
     startTime: Date!
     endTime: Date!
   }
-    
-        
-            
 `;

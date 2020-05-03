@@ -40,17 +40,15 @@ export default gql`
     categoryId: ID
     type: String
   }
-            
 
-        
   type Product {
     # Resouce related data
     id: ID!
     name: String!
     description: String!
     position: Int
-        cover: CompanyImages    
-        images: [CompanyImages]
+    cover: CompanyImages
+    images: [CompanyImages]
 
     createdAt: Date
     updatedAt: Date
