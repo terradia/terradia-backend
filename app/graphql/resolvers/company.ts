@@ -354,7 +354,7 @@ export default {
               where: { dayId: companyOpeningDay.id }
             }
           );
-          for (let i = 0; i < oldHours.length && i < hours.length; i++) {
+          for (let i = 0; i < oldHours.length || i < hours.length; i++) {
             const oldHour = oldHours.length > i ? oldHours[i] : null;
             const hour = hours.length > i ? hours[i] : null;
             if (hour !== null) {
