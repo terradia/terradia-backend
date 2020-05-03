@@ -7,19 +7,11 @@ module.exports =  {
     ],
     parserOptions:  {
         ecmaVersion:  2018,  // Allows for the parsing of modern ECMAScript features
-        ecmaFeatures:  {
-            jsx:  true,  // Allows for the parsing of JSX
-        },
     },
     rules:  {
         "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/no-unused-vars": "off",
         // Place to specify ESLint rules. Can be used to overwrite rules specified from the extended configs
         // e.g. "@typescript-eslint/explicit-function-return-type": "off",
-    },
-	settings:  {
-        node:  {
-            version:  'detect',  // Tells eslint-plugin-react to automatically detect the version of React to use
-        },
-    },
+    }
 };
