@@ -1,8 +1,10 @@
 "use strict";
 
-var dbm;
-var type;
-var seed;
+const Sequelize = require("sequelize");
+
+let dbm;
+let type;
+let seed;
 
 /**
  * We receive the dbmigrate dependency from dbmigrate initially.
@@ -41,8 +43,8 @@ exports.up = function(db) {
           defaultValue: new String("now()")
         },
         orderId: { type: "uuid", allowNull: false },
+        eventTranslationKey: { type: "string", allowNull: true },
         moreInfo: { type: "string", allowNull: true },
-        translationKey: { type: "string", allowNull: true },
         orderStatus: { type: "uuid", allowNull: false }
       });
     })
@@ -77,7 +79,9 @@ exports.up = function(db) {
         pickUpAt: { type: new String("TIMESTAMPTZ") },
         dropOffAt: { type: new String("TIMESTAMPTZ") },
         endedAt: { type: new String("TIMESTAMPTZ") },
-        distance: { type: "float", allowNull: true }
+        distance: { type: "float", allowNull: true },
+        price: { type: "float", allowNull: false },
+        transportType: { type: "string", allowNull: true }
       });
     })
     .then(() => {
@@ -105,7 +109,12 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-  return null;
+  return db
+    .dropTable("Orders")
+    .then(() => db.dropTable("OrdersDeliveryInformation"))
+    .then(() => db.dropTable("OrdersProducts"))
+    .then(() => db.dropTable("OrdersEvents"))
+    .then(() => db.dropTable("OrdersStatus"));
 };
 
 exports._meta = {

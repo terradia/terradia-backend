@@ -242,12 +242,14 @@ export default {
             "The company does not exists", // TODO : translate
             "404"
           );
-        const companyUser = await CompanyUserModel.findOne({
-          where: {
-            companyId,
-            userId
+        const companyUser: CompanyUserModel | null = await CompanyUserModel.findOne(
+          {
+            where: {
+              companyId,
+              userId
+            }
           }
-        });
+        );
         if (companyUser !== null)
           throw new ApolloError(
             "This user has already joined the company", // TODO : translate
