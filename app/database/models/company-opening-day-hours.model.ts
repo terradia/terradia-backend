@@ -5,20 +5,16 @@ import {
   DataType,
   Default,
   ForeignKey,
-  HasMany,
   IsUUID,
   Model,
   PrimaryKey,
   Table
 } from "sequelize-typescript";
-import CartProductModel from "./cart-product.model";
-import CompanyModel from "./company.model";
-import CustomerModel from "./customer.model";
-import CompanyOpeningDayModel from "./CompanyOpeningDay.model";
+import CompanyOpeningDayModel from "./company-opening-day.model";
 
 @Table({
   tableName: "CompaniesOpeningDaysHours",
-  timestamps: true
+  timestamps: false
 })
 export default class CompanyOpeningDayHoursModel extends Model<
   CompanyOpeningDayHoursModel

@@ -26,8 +26,8 @@ exports.up = function(db) {
         defaultValue: new String("uuid_generate_v4()")
       },
       dayId: { type: "uuid", allowNull: false },
-      startTime: { type: "date", allowNull: false },
-      endTime: { type: "date", allowNull: false }
+      startTime: { type: "datetime", allowNull: false },
+      endTime: { type: "datetime", allowNull: false }
     })
     .then(() => {
       db.createTable("CompaniesOpeningDays", {

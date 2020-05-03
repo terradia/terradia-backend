@@ -11,14 +11,12 @@ import {
   PrimaryKey,
   Table
 } from "sequelize-typescript";
-import CartProductModel from "./cart-product.model";
 import CompanyModel from "./company.model";
-import CustomerModel from "./customer.model";
-import CompanyOpeningDayHoursModel from "./CompanyOpeningDayHours.model";
+import CompanyOpeningDayHoursModel from "./company-opening-day-hours.model";
 
 @Table({
   tableName: "CompaniesOpeningDays",
-  timestamps: true
+  timestamps: false
 })
 export default class CompanyOpeningDayModel extends Model<CompanyOpeningDayModel> {
   @IsUUID(4)

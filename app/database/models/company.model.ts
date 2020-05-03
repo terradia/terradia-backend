@@ -17,11 +17,11 @@ import CustomersFavoriteCompaniesModel from "./customers-favorite-companies.mode
 import CompanyProductsCategoryModel from "./company-products-category.model";
 import CompanyUserModel from "./company-user.model";
 import CartModel from "./cart.model";
-import CompanyOpeningDayModel from "./CompanyOpeningDay.model";
+import CompanyOpeningDayModel from "./company-opening-day.model";
 
 @Table({
   tableName: "Companies",
-  timestamps: false
+  timestamps: true
 })
 export default class CompanyModel extends Model<CompanyModel> {
   @IsUUID(4)

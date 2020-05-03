@@ -29,7 +29,7 @@ export default gql`
         addOpeningDay(companyId: String!, day: String!, hours: [ScheduleInput]): CompanyOpeningDay!
         updateOpeningDay(openingDayId: String!, hours: [ScheduleInput]): CompanyOpeningDay!
         removeOpeningDay(openingDayId: String!): CompanyOpeningDay!
-        updateOpeningHours(hourId: String!, startTime: Date!, endTime: Date!): CompanyOpeningDayHours!
+        updateOpeningHours(hourId: String!, hours: ScheduleInput!): CompanyOpeningDayHours!
         removeOpeningHours(hourId: String!): CompanyOpeningDayHours!
     }
     type Company {
