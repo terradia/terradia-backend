@@ -36,7 +36,7 @@ async function generateCompanies(): Promise<Company[]> {
 			numberOfMarks: Math.floor(Math.random() * 99) + 1
 		});
 	}
-	return companiesGenerated;
+	  return companiesGenerated;
 }
 
 export const upCompanies: () => Promise<CompanyModel[]> = async () => {
