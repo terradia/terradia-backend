@@ -7,7 +7,8 @@ import {
   IsUUID,
   Model,
   PrimaryKey,
-  Table, BelongsToMany
+  Table,
+  BelongsToMany
 } from "sequelize-typescript";
 import ProductModel from "./product.model";
 import CompanyReviewModel from "./company-review.model";
@@ -15,10 +16,12 @@ import CustomerModel from "./customer.model";
 import CustomersFavoriteCompaniesModel from "./customers-favorite-companies.model";
 import CompanyProductsCategoryModel from "./company-products-category.model";
 import CompanyUserModel from "./company-user.model";
+import CartModel from "./cart.model";
+import CompanyOpeningDayModel from "./company-opening-day.model";
 
 @Table({
   tableName: "Companies",
-  timestamps: false
+  timestamps: true
 })
 export default class CompanyModel extends Model<CompanyModel> {
   @IsUUID(4)
@@ -74,7 +77,10 @@ export default class CompanyModel extends Model<CompanyModel> {
 
   // all the users that made favorite this company => could be usefull for big companies to find
   // people to do promotions of their companies (if the users said he want to do that or other...)
-  @BelongsToMany(() => CustomerModel, () => CustomersFavoriteCompaniesModel)
+  @BelongsToMany(
+    () => CustomerModel,
+    () => CustomersFavoriteCompaniesModel
+  )
   public customersFavorites!: CustomerModel[];
 
   // Mark average the company get from the customers reviews.
@@ -87,11 +93,17 @@ export default class CompanyModel extends Model<CompanyModel> {
   public numberOfMarks!: number;
 
   @Column(DataType.GEOMETRY)
-  // @ts-ignore
   public position!: any;
 
   @Column(DataType.STRING)
   public address!: string;
+
+  @HasMany(() => CartModel, "companyId")
+  public customersCarts!: CartModel[];
+
+  // the opening days of the company
+  @HasMany(() => CompanyOpeningDayModel, "companyId")
+  public openingDays!: CompanyOpeningDayModel[];
 
   @Column
   public createdAt!: Date;

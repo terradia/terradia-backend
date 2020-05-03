@@ -13,6 +13,7 @@ import CompanyUserRoleModel from "./company-user-role.model";
 import CompanyUserModel from "./company-user.model";
 import UserPermissionsModel from "./userPermissions.model";
 import CompanyProductsCategoryModel from "./company-products-category.model";
+import ProductModel from "./product.model";
 
 @Table({
   tableName: "Units",
@@ -33,6 +34,9 @@ export default class UnitModel extends Model<UnitModel> {
 
   @BelongsTo(() => UnitModel, "referenceUnitId")
   public referenceUnit?: UnitModel;
+
+  @HasMany(() => ProductModel, "unitId")
+  public products!: ProductModel[];
 
   @ForeignKey(() => UnitModel)
   @AllowNull(true)

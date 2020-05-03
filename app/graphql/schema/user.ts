@@ -13,6 +13,13 @@ export default gql`
       phone: String
     ): SignupAnswer!
     login(email: String!, password: String!): SigninAnswer!
+    updateUser(
+      email: String
+      lastName: String
+      firstName: String
+      phone: String
+      password: String
+    ): User!
   }
   type SignupAnswer {
     token: String!
@@ -32,7 +39,11 @@ export default gql`
     password: String!
     phone: String!
     validated: Boolean
+
+    # Company Management related
     companies: [CompanyUser]
+
+    # Customer related
     customer: Customer
   }
 `;

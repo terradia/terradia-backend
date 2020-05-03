@@ -3,7 +3,8 @@ import UserModel from "../../database/models/user.model";
 import CustomerModel from "../../database/models/customer.model";
 import CompanyModel from "../../database/models/company.model";
 import {ApolloError} from "apollo-server";
-import {Model} from "sequelize-typescript";
+import { combineResolvers } from "graphql-resolvers";
+import { isAuthenticated } from "./authorization";
 
 interface reviewData {
     title: string;
@@ -22,7 +23,8 @@ declare interface CustomerModelMember {
 
 export default {
     Mutation: {
-        createCompanyReview: async (
+        createCompanyReview: combineResolvers(isAuthenticated,
+          async (
             _: any,
             {title, customerMark, description, companyId}: reviewData,
             {user}: argumentsData
@@ -77,6 +79,6 @@ export default {
             } else {
                 throw new ApolloError("You need to be a customer to review a product.", "403");
             }
-        }
+        })
     }
 };
