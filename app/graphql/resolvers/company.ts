@@ -348,16 +348,36 @@ export default {
         });
         const companyOpeningDay: CompanyOpeningDayModel = result[0];
         if (hours !== undefined) {
-          // remove all the hours from before
-          await CompanyOpeningDayHoursModel.destroy({
-            where: { dayId: companyOpeningDay.id }
-          });
-          for (const hour of hours) {
-            await CompanyOpeningDayHoursModel.create({
-              startTime: new Date(hour.startTime),
-              endTime: new Date(hour.endTime),
-              dayId: companyOpeningDay.id
-            });
+          // get hours of the corresponding day
+          const oldHours: CompanyOpeningDayHoursModel[] = await CompanyOpeningDayHoursModel.findAll(
+            {
+              where: { dayId: companyOpeningDay.id }
+            }
+          );
+          for (let i = 0; i < oldHours.length || i < hours.length; i++) {
+            const oldHour = oldHours.length > i ? oldHours[i] : null;
+            const hour = hours.length > i ? hours[i] : null;
+            if (hour !== null) {
+              const defaults: any = {
+                startTime: hour.startTime,
+                endTime: hour.endTime,
+                dayId: companyOpeningDay.id
+              };
+              if (oldHour === null) {
+                await CompanyOpeningDayHoursModel.create(defaults);
+              } else {
+                await CompanyOpeningDayHoursModel.findOrCreate({
+                  where: { id: oldHour.id },
+                  defaults
+                });
+              }
+            } else if (oldHour !== null) {
+              // if there is less hours specifications than before, remove the
+              // ones that in the db but should not exists.
+              await CompanyOpeningDayHoursModel.destroy({
+                where: { id: oldHour.id }
+              });
+            }
           }
         }
         return CompanyOpeningDayModel.findOne({
