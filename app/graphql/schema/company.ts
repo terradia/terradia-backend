@@ -76,6 +76,8 @@ export default gql`
     numberOfMarks: Int
     reviews: [CompanyReview]
 
+    tags: [CompanyTag]
+
     # Opening Hours
     openingDays: [CompanyOpeningDay]
   }
