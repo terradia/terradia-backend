@@ -75,10 +75,10 @@ export default gql`
     averageMark: Float
     numberOfMarks: Int
     reviews: [CompanyReview]
-      
-      Tag: [TagCompany]
 
-      # Opening Hours
+    tags: [CompanyTag]
+
+    # Opening Hours
     openingDays: [CompanyOpeningDay]
   }
   type GeographicPoint {

@@ -1,8 +1,8 @@
 "use strict";
 
-var dbm;
-var type;
-var seed;
+let dbm;
+let type;
+let seed;
 
 /**
  * We receive the dbmigrate dependency from dbmigrate initially.
@@ -15,7 +15,7 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.createTable("TagCompany", {
+  return db.createTable("CompaniesTagsRelations", {
     id: {
       type: "uuid",
       primaryKey: true,
@@ -24,17 +24,17 @@ exports.up = function(db) {
     },
     companyId: {
       type: "uuid",
-      notNull: true
+      allowNull: false
     },
-    tagName: {
-      type: "string",
-      notNull: true
+    tagId: {
+      type: "uuid",
+      allowNull: false
     }
   });
 };
 
 exports.down = function(db) {
-  return db.dropTable("TagCompany");
+  return db.dropTable("CompaniesTagsRelations");
 };
 
 exports._meta = {

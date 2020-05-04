@@ -14,6 +14,7 @@ import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
 import CompanyOpeningDayModel from "../../database/models/company-opening-day.model";
 import CompanyOpeningDayHoursModel from "../../database/models/company-opening-day-hours.model";
+import CompanyTagModel from "../../database/models/company-tag.model";
 
 declare interface Point {
   type: string;
@@ -32,6 +33,23 @@ declare interface CreateCompanyProps {
   address: string;
 }
 
+export const toIncludeWhenGetCompany = [
+  ProductModel,
+  {
+    model: CompanyUserModel,
+    include: [RoleModel, UserModel]
+  },
+  {
+    model: CompanyProductsCategoryModel,
+    include: [ProductModel]
+  },
+  CompanyReviewModel,
+  {
+    model: CompanyOpeningDayModel,
+    include: [CompanyOpeningDayHoursModel]
+  },
+  CompanyTagModel
+];
 
 export default {
   Query: {
@@ -40,22 +58,7 @@ export default {
       { page, pageSize }: { page: number; pageSize: number }
     ): Promise<CompanyModel[]> => {
       return CompanyModel.findAll({
-        include: [
-          ProductModel,
-          {
-            model: CompanyUserModel,
-            include: [RoleModel, UserModel]
-          },
-          CompanyReviewModel,
-          {
-            model: CompanyProductsCategoryModel,
-            include: [ProductModel]
-          },
-          {
-            model: CompanyOpeningDayModel,
-            include: [CompanyOpeningDayHoursModel]
-          }
-        ],
+        include: toIncludeWhenGetCompany,
         offset: page,
         limit: pageSize
       });
@@ -65,22 +68,7 @@ export default {
       { companyId }: { companyId: string }
     ): Promise<CompanyModel | null> => {
       return CompanyModel.findByPk(companyId, {
-        include: [
-          ProductModel,
-          {
-            model: CompanyUserModel,
-            include: [RoleModel, UserModel]
-          },
-          CompanyReviewModel,
-          {
-            model: CompanyProductsCategoryModel,
-            include: [ProductModel]
-          },
-          {
-            model: CompanyOpeningDayModel,
-            include: [CompanyOpeningDayHoursModel]
-          }
-        ]
+        include: toIncludeWhenGetCompany
       });
     },
     getCompanyByName: async (
@@ -89,18 +77,7 @@ export default {
     ): Promise<CompanyModel | null> => {
       return CompanyModel.findOne({
         where: { name },
-        include: [
-          ProductModel,
-          {
-            model: CompanyUserModel,
-            include: [RoleModel, UserModel]
-          },
-          CompanyReviewModel,
-          {
-            model: CompanyProductsCategoryModel,
-            include: [ProductModel]
-          }
-        ]
+        include: toIncludeWhenGetCompany
       });
     },
     getCompaniesByDistance: async (
@@ -123,19 +100,7 @@ export default {
 
       return CompanyModel.findAll({
         attributes: { include: [[distance, "distance"]] },
-        include: [
-          ProductModel,
-          {
-            model: CompanyUserModel,
-            include: [RoleModel, UserModel]
-          },
-          {
-            model: CompanyProductsCategoryModel,
-            include: [ProductModel]
-          },
-          CompanyReviewModel,
-          CompanyProductsCategoryModel
-        ],
+        include: toIncludeWhenGetCompany,
         order: distance,
         offset: page,
         limit: pageSize

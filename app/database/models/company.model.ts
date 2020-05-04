@@ -18,6 +18,8 @@ import CompanyProductsCategoryModel from "./company-products-category.model";
 import CompanyUserModel from "./company-user.model";
 import CartModel from "./cart.model";
 import CompanyOpeningDayModel from "./company-opening-day.model";
+import CompanyTagModel from "./company-tag.model";
+import CompanyTagRelationsModel from "./company-tag-relations.model";
 
 @Table({
   tableName: "Companies",
@@ -104,6 +106,12 @@ export default class CompanyModel extends Model<CompanyModel> {
   // the opening days of the company
   @HasMany(() => CompanyOpeningDayModel, "companyId")
   public openingDays!: CompanyOpeningDayModel[];
+
+  @BelongsToMany(
+    () => CompanyTagModel,
+    () => CompanyTagRelationsModel
+  )
+  public tags!: CompanyTagModel[];
 
   @Column
   public createdAt!: Date;

@@ -43,7 +43,10 @@ export default class ProductModel extends Model<ProductModel> {
   public image!: string;
 
   // categories of the products to make it easier to find it.
-  @BelongsToMany(() => CategoryModel, () => ProductCategoryModel)
+  @BelongsToMany(
+    () => CategoryModel,
+    () => ProductCategoryModel
+  )
   public categories!: CategoryModel[];
 
   @Column

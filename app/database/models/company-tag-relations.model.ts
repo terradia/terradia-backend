@@ -1,4 +1,5 @@
 import {
+  AllowNull,
   Column,
   DataType,
   Default,
@@ -9,13 +10,15 @@ import {
   Table
 } from "sequelize-typescript";
 import CompanyModel from "./company.model";
-import TagModel from "./tag-company-category.model";
+import CompanyTagModel from "./company-tag.model";
 
 @Table({
-  tableName: "TagCompany",
+  tableName: "CompaniesTagsRelations",
   timestamps: false
 })
-export default class TagCompanyModel extends Model<TagCompanyModel> {
+export default class CompanyTagRelationsModel extends Model<
+  CompanyTagRelationsModel
+> {
   @IsUUID(4)
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -23,10 +26,12 @@ export default class TagCompanyModel extends Model<TagCompanyModel> {
   public id!: string;
 
   @ForeignKey(() => CompanyModel)
+  @AllowNull(false)
   @Column
   companyId!: string;
 
-  @ForeignKey(() => TagModel)
+  @ForeignKey(() => CompanyTagModel)
+  @AllowNull(false)
   @Column
-  tagName!: string;
+  tagId!: string;
 }
