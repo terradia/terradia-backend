@@ -1,12 +1,12 @@
 import {
   AllowNull,
+  BeforeBulkUpdate,
   BeforeCreate,
   BeforeUpdate,
-  BelongsTo, BelongsToMany,
   Column,
   DataType,
   Default,
-  ForeignKey, HasMany,
+  HasMany,
   HasOne,
   Is,
   IsEmail,
@@ -17,8 +17,7 @@ import {
   Unique
 } from "sequelize-typescript";
 
-import bcrypt from "bcrypt";
-import CompanyModel from "./company.model";
+import bcrypt from "bcryptjs";
 import CustomerModel from "./customer.model";
 import CompanyUserModel from "./company-user.model";
 
@@ -60,15 +59,6 @@ export default class UserModel extends Model<UserModel> {
   @Column(DataType.BOOLEAN)
   public validated!: boolean;
 
-  // TODO: Remove => Not longer used
-  // @ForeignKey(() => CompanyModel)
-  // @Column
-  // public companyId!: string;
-  //
-  // // Not longer used
-  // @BelongsTo(() => CompanyModel)
-  // public company!: CompanyModel;
-
   // All companies for each user
   @HasMany(() => CompanyUserModel)
   public companies!: CompanyUserModel[];
@@ -78,9 +68,18 @@ export default class UserModel extends Model<UserModel> {
 
   @BeforeCreate
   @BeforeUpdate
-  public static async hashPassword(user: UserModel) {
+  public static async hashPassword(user: UserModel): Promise<void> {
     if (user.changed("password")) {
       user.password = await bcrypt.hash(user.password, 15);
+    }
+  }
+  @BeforeBulkUpdate
+  public static async hashUpdatedPassword(user: any): Promise<void> {
+    if (user.attributes.password) {
+      user.attributes.password = await bcrypt.hash(
+        user.attributes.password,
+        15
+      );
     }
   }
 
@@ -90,13 +89,17 @@ export default class UserModel extends Model<UserModel> {
 
   public static async userExist(email: string): Promise<boolean> {
     return !!UserModel.findOne({
-        where: {email}
+      where: { email }
     });
   }
 
   public static async findByLogin(login: string): Promise<UserModel | null> {
-    return UserModel.findOne({
-      where: { email: login }
-    });
+    try {
+      return UserModel.findOne({
+        where: { email: login }
+      });
+    } catch (e) {
+      throw e;
+    }
   }
 }

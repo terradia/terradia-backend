@@ -12,6 +12,7 @@ import companyUserSchema from "./companyUser";
 import roleSchema from "./role";
 import userPermissionsSchema from './userPermissions'
 import customerAddressSchema from './customerAddress'
+import cartSchema from "./cart";
 import tagCompanyCategorySchema from './tagCompanyCategory'
 
 const linkSchema = gql`
@@ -42,5 +43,6 @@ export default [
   roleSchema,
   userPermissionsSchema,
   customerAddressSchema,
+  cartSchema,
   tagCompanyCategorySchema
 ];

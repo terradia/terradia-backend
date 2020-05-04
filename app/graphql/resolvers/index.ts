@@ -9,6 +9,7 @@ import companyProductsCategory from "./companyProductsCategory";
 import role from "./role";
 import customerAddress from "./customerAddress"
 import tagCompanyCategory from "./tagCompanyCategory";
+import cart from "./cart";
 
 export default [
     users,
@@ -18,8 +19,10 @@ export default [
     customer,
     companyReview,
     productReview,
+    role,
     companyProductsCategory,
     role,
-    tagCompanyCategory,
-    customerAddress
+    customerAddress,
+    cart,
+    tagCompanyCategory
 ];

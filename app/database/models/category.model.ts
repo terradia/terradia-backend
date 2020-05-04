@@ -26,9 +26,10 @@ export default class CategoryModel extends Model<CategoryModel> {
   @Column(DataType.STRING)
   public name!: string;
 
+  //TODO TO refactor, Id can't be a number
   @AllowNull(true)
   @Column(DataType.NUMBER)
-  public parentCategoryId!: number;
+  public parentCategoryId!: string;
 
   @BelongsToMany(() => ProductModel, {
     onDelete: "CASCADE",

@@ -18,5 +18,10 @@ export default gql`
     user: User!
     companyReviews: [CompanyReview]
     favoriteCompanies: [Company]
+
+    # Ordering related data
+    cart: Cart
+    # orders
+    # receipts
   }
 `;

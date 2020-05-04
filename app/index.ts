@@ -16,17 +16,23 @@ import bodyParser = require("body-parser");
 import logger from "./logger";
 import { getUser } from "./auth";
 
-const server: express.Express = express();
+declare type WhiteList = string[]
 
-const customHost = process.env.HOST;
-const prettyHost = customHost || "localhost";
+declare interface CorsOptions {
+    origin: WhiteList,
+    credentials: boolean
+}
+
+const server: express.Express = express();
+const customHost: string | undefined = process.env.HOST;
+const prettyHost: string = customHost || "localhost";
 const port: number = parseInt(process.env.PORT || "8000", 10);
 
 const noCache = (
     _req: express.Request,
     res: express.Response,
     next: express.NextFunction
-) => {
+): void => {
     res.setHeader("Surrogate-Control", "no-store");
     res.setHeader(
         "Cache-Control",
@@ -37,16 +43,18 @@ const noCache = (
     next();
 };
 
-const whitelist = [
+const whitelist: WhiteList = [
     "https://terradia.eu",
-    "http://localhost:3000"
+    "http://localhost:3000",
+  "https://producteurs.terradia.eu"
 ];
-const corsOptions = {
+
+const corsOptions: CorsOptions = {
     origin: whitelist,
     credentials: true
 };
 
-const startServer = async () => {
+const startServer = async (): Promise<void> => {
     server.use(cors(corsOptions));
     server.use(helmet());
     server.use(noCache);
@@ -77,7 +85,9 @@ const startServer = async () => {
         uploads: {
             maxFileSize: 5000000, // 5 MB
             maxFiles: 2
-        }
+        },
+        tracing: true,
+
     });
     graphServer.applyMiddleware({ app: server, cors: corsOptions });
     server.use(bodyParser.json());

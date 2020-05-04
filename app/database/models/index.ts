@@ -4,7 +4,7 @@ import config from "../config";
 const env = process.env.NODE_ENV || "development";
 const currentConfig = config[env];
 
-let sequelize;
+let sequelize: Sequelize
 try {
   sequelize = new Sequelize({
     ...currentConfig,
@@ -17,7 +17,7 @@ try {
     }
   });
 } catch (error) {
-  console.log(error);
+  throw(error);
 }
 
 export default sequelize;
