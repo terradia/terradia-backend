@@ -11,6 +11,8 @@ import { Op } from "sequelize";
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
 import CompanyProductsCategoryModel from "../../database/models/company-products-category.model";
+import CompanyImagesModel from "../../database/models/company-images.model";
+import { uploadToS3SaveAsProductCover } from "../../uploadS3";
 
 interface ProductsPositionsData {
   productId: string;
@@ -30,8 +32,10 @@ export default {
       _: any,
       { id }: { id: string }
     ): Promise<ProductModel | null> => {
-      return ProductModel.findByPk(id, {
+      const product = await ProductModel.findByPk(id, {
         include: [
+          { model: CompanyImagesModel, as: "cover" },
+          { model: CompanyImagesModel, as: "images" },
           CategoryModel,
           CompanyModel,
           {
@@ -44,6 +48,8 @@ export default {
           }
         ]
       });
+      if (!product) throw new ApolloError("This product does not exist", "404");
+      return product;
     },
     getProductsByCompany: async (
       _: any,
@@ -116,6 +122,12 @@ export default {
           price: number;
           quantityForUnit?: number;
           unitId?: string;
+          cover: {
+            stream: Body;
+            filename: string;
+            mimetype: string;
+            encoding: string;
+          };
           companyProductsCategoryId?: string;
         }
       ): Promise<Partial<ProductModel>> => {
@@ -137,6 +149,15 @@ export default {
           }).then(product => {
             return product;
           });
+          if (args.cover) {
+            const { stream, filename } = await args.cover;
+            uploadToS3SaveAsProductCover(
+              filename,
+              stream,
+              company.id,
+              product.id
+            );
+          }
           return product.toJSON();
         } else throw new ApolloError("This company does not exist", "404");
       }
@@ -240,6 +261,12 @@ export default {
           image?: string;
           unitId?: string;
           quantityForUnit?: number;
+          cover: {
+            stream: Body;
+            filename: string;
+            mimetype: string;
+            encoding: string;
+          };
           price?: number;
         }
       ): Promise<Partial<ProductModel>> => {
@@ -257,7 +284,19 @@ export default {
             returning: true
           }
         );
-        if (productResult[0] === 0)
+        if (args.cover) {
+          const existingProduct = await ProductModel.findByPk(args.productId);
+          if (!existingProduct) {
+            throw new ApolloError("Could not upload image", "400");
+          }
+          const { stream, filename } = await args.cover;
+          uploadToS3SaveAsProductCover(
+            filename,
+            stream,
+            existingProduct.companyId,
+            args.productId
+          );
+        } else if (productResult[0] === 0)
           throw new ApolloError(
             "Could not update any field in Database, are you sure the product you want to update exists ?",
             "400"
