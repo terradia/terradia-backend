@@ -88,7 +88,7 @@ export default {
       _: any,
       { companyId }: { companyId: string }
     ): Promise<CompanyModel | null> => {
-      return CompanyModel.findByPk(companyId, {
+      const company = CompanyModel.findByPk(companyId, {
         include: [
           { model: CompanyImagesModel, as: "logo" },
           { model: CompanyImagesModel, as: "cover" },
@@ -109,6 +109,8 @@ export default {
           }
         ]
       });
+      if (!company) throw new ApolloError("This company does not exist", "404");
+      return company;
     },
     getCompanyByName: async (
       _: any,
