@@ -7,7 +7,7 @@ import CompanyUserModel from "../../database/models/company-user.model";
 import RoleModel from "../../database/models/role.model";
 import NodeGeocoder, { Geocoder } from "node-geocoder";
 import { ApolloError } from "apollo-server-errors";
-import { Sequelize } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import { Fn, Literal } from "sequelize/types/lib/utils";
 import CompanyUserRoleModel from "../../database/models/company-user-role.model";
 import { combineResolvers } from "graphql-resolvers";
@@ -183,6 +183,33 @@ export default {
           ]
         })
       )?.companies;
+    },
+    searchCompanies: async (
+      _: any,
+      { query }: { query: string },
+      { user }: { user: UserModel }
+    ): Promise<CompanyModel[]> => {
+      const comp = await CompanyModel.findAll({
+        //TODO: Search by tag
+        //https://stackoverflow.com/questions/31258158/how-to-implement-search-feature-using-sequelizejs/37326395
+        where: {
+          [Op.or]: [{ name: { [Op.iLike]: "%" + query + "%" } }]
+        },
+        include: [
+          ProductModel,
+          {
+            model: CompanyUserModel,
+            include: [RoleModel, UserModel]
+          },
+          {
+            model: CompanyProductsCategoryModel,
+            include: [ProductModel]
+          },
+          CompanyReviewModel,
+          CompanyProductsCategoryModel
+        ]
+      });
+      return comp;
     }
   },
   Mutation: {

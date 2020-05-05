@@ -18,6 +18,7 @@ export default gql`
     ): [Company]
     getCompaniesByUser(userId: ID!): [CompanyUser]
     getCompanies: [Company]
+    searchCompanies(query: String!): [Company]
   }
   extend type Mutation {
     createCompany(
