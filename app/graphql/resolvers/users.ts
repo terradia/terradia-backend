@@ -6,6 +6,7 @@ import { ApolloError } from "apollo-server-errors";
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
 import ProductModel from "../../database/models/product.model";
+import { uploadToS3 } from "../../uploadS3";
 
 const createToken = async (user: UserModel, secret: string) => {
   const payload: Partial<UserModel> = user.toJSON();
@@ -112,6 +113,31 @@ export default {
         if (userResult[0] === 0)
           throw new ApolloError("Could not update this user", "400");
         return userResult[1][0];
+      }
+    ),
+    updateUserAvatar: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        avatar: {
+          stream: Body;
+          filename: string;
+          mimetype: string;
+          encoding: string;
+        },
+        { user }: Context
+      ): Promise<UserModel | null> => {
+        //TODO: Delete unused user avatar
+        //TODO: Compress with aws lambda
+        const { stream, filename } = await avatar.avatar;
+        const { name } = await uploadToS3(filename, stream);
+        const update = await UserModel.update(
+          {
+            avatar: name
+          },
+          { where: { id: user.id } }
+        );
+        return await UserModel.findByPk(user.id);
       }
     )
   }

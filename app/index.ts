@@ -1,6 +1,6 @@
 import { ApolloServer } from "apollo-server-express";
 import cors from "cors";
-import express from "express";
+import express, {json} from "express";
 import helmet from "helmet";
 import compression from "compression";
 import cookieParser from "cookie-parser";
@@ -55,11 +55,12 @@ const corsOptions: CorsOptions = {
 };
 
 const startServer = async (): Promise<void> => {
-  server.use(cors(corsOptions));
-  server.use(helmet());
-  server.use(noCache);
-  server.use(compression());
-  server.use(cookieParser());
+    server.use(cors(corsOptions));
+    server.use(helmet());
+    server.use(noCache);
+    server.use(compression());
+    server.use(cookieParser());
+    server.use(json({ limit: '2mb' }));
 
   await sequelize;
 

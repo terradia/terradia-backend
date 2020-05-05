@@ -7,11 +7,13 @@ import CompanyUserModel from "../../database/models/company-user.model";
 import RoleModel from "../../database/models/role.model";
 import NodeGeocoder, { Geocoder } from "node-geocoder";
 import { ApolloError } from "apollo-server-errors";
-import { Sequelize } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import { Fn, Literal } from "sequelize/types/lib/utils";
 import CompanyUserRoleModel from "../../database/models/company-user-role.model";
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
+import { uploadToS3SaveAsCompanyAvatarOrCover } from "../../uploadS3";
+import CompanyImagesModel from "../../database/models/company-images.model";
 import CompanyOpeningDayModel from "../../database/models/company-opening-day.model";
 import CompanyOpeningDayHoursModel from "../../database/models/company-opening-day-hours.model";
 import CompanyTagModel from "../../database/models/company-tag.model";
@@ -31,6 +33,8 @@ declare interface CreateCompanyProps {
   email: string;
   phone: string;
   address: string;
+  logo: { stream: Body; filename: string; mimetype: string; encoding: string };
+  cover: { stream: Body; filename: string; mimetype: string; encoding: string };
 }
 
 export const toIncludeWhenGetCompany = [
@@ -57,19 +61,56 @@ export default {
       _: any,
       { page, pageSize }: { page: number; pageSize: number }
     ): Promise<CompanyModel[]> => {
-      return CompanyModel.findAll({
-        include: toIncludeWhenGetCompany,
+      const comp = await CompanyModel.findAll({
+        include: [
+          { model: CompanyImagesModel, as: "logo" },
+          ProductModel,
+          {
+            model: CompanyUserModel,
+            include: [RoleModel, UserModel]
+          },
+          CompanyReviewModel,
+          {
+            model: CompanyProductsCategoryModel,
+            include: [ProductModel]
+          },
+          {
+            model: CompanyOpeningDayModel,
+            include: [CompanyOpeningDayHoursModel]
+          }
+        ],
         offset: page,
         limit: pageSize
       });
+      return comp;
     },
     getCompany: async (
       _: any,
       { companyId }: { companyId: string }
     ): Promise<CompanyModel | null> => {
-      return CompanyModel.findByPk(companyId, {
-        include: toIncludeWhenGetCompany
+      const company = CompanyModel.findByPk(companyId, {
+        include: [
+          { model: CompanyImagesModel, as: "logo" },
+          { model: CompanyImagesModel, as: "cover" },
+          { model: CompanyImagesModel, as: "companyImages" },
+          ProductModel,
+          {
+            model: CompanyUserModel,
+            include: [RoleModel, UserModel]
+          },
+          CompanyReviewModel,
+          {
+            model: CompanyProductsCategoryModel,
+            include: [ProductModel]
+          },
+          {
+            model: CompanyOpeningDayModel,
+            include: [CompanyOpeningDayHoursModel]
+          }
+        ]
       });
+      if (!company) throw new ApolloError("This company does not exist", "404");
+      return company;
     },
     getCompanyByName: async (
       _: any,
@@ -140,6 +181,33 @@ export default {
           ]
         })
       )?.companies;
+    },
+    searchCompanies: async (
+      _: any,
+      { query }: { query: string },
+      { user }: { user: UserModel }
+    ): Promise<CompanyModel[]> => {
+      const comp = await CompanyModel.findAll({
+        //TODO: Search by tag
+        //https://stackoverflow.com/questions/31258158/how-to-implement-search-feature-using-sequelizejs/37326395
+        where: {
+          [Op.or]: [{ name: { [Op.iLike]: "%" + query + "%" } }]
+        },
+        include: [
+          ProductModel,
+          {
+            model: CompanyUserModel,
+            include: [RoleModel, UserModel]
+          },
+          {
+            model: CompanyProductsCategoryModel,
+            include: [ProductModel]
+          },
+          CompanyReviewModel,
+          CompanyProductsCategoryModel
+        ]
+      });
+      return comp;
     }
   },
   Mutation: {
@@ -182,6 +250,24 @@ export default {
           ...args,
           position: point
         });
+        if (args.logo) {
+          const { stream, filename } = await args.logo;
+          uploadToS3SaveAsCompanyAvatarOrCover(
+            filename,
+            stream,
+            newCompany.id,
+            true
+          );
+        }
+        if (args.cover) {
+          const { stream, filename } = await args.cover;
+          uploadToS3SaveAsCompanyAvatarOrCover(
+            filename,
+            stream,
+            newCompany.id,
+            false
+          );
+        }
         await CompanyUserModel.create({
           // @ts-ignore
           companyId: newCompany.id,

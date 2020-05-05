@@ -7,8 +7,7 @@ import {
   IsUUID,
   Model,
   PrimaryKey,
-  Table,
-  BelongsToMany
+  Table, BelongsToMany, AfterFind, HasOne, ForeignKey, BelongsTo
 } from "sequelize-typescript";
 import ProductModel from "./product.model";
 import CompanyReviewModel from "./company-review.model";
@@ -18,6 +17,7 @@ import CompanyProductsCategoryModel from "./company-products-category.model";
 import CompanyUserModel from "./company-user.model";
 import CartModel from "./cart.model";
 import CompanyOpeningDayModel from "./company-opening-day.model";
+import CompanyImagesModel from "./company-images.model";
 import CompanyTagModel from "./company-tag.model";
 import CompanyTagRelationsModel from "./company-tag-relations.model";
 
@@ -47,21 +47,32 @@ export default class CompanyModel extends Model<CompanyModel> {
   @Column(DataType.STRING)
   public phone!: string;
 
+  @ForeignKey(() => CompanyImagesModel)
+  @Column
+  logoId!: string;
   // A string because to get the images you should get them from the media server of Terradia
   // https://media.terradia.eu/ + company.logo
-  @Column(DataType.STRING)
+  @BelongsTo(() => CompanyImagesModel, "logoId")
   public logo!: string;
 
   // A string because to get the images you should get them from the media server of Terradia
   // https://media.terradia.eu/ + company.cover
-  @Column(DataType.STRING)
+  @ForeignKey(() => CompanyImagesModel)
+  @Column
+  coverId!: string;
+
+  @BelongsTo(() => CompanyImagesModel, "coverId")
   public cover!: string;
+
 
   // @HasMany(() => UserModel)
   // public users!: UserModel[];
 
   // This way we can get all the products independently of their categories
   // the second usage is that we can have projects without categories to "hide them"
+  @HasMany(() => CompanyImagesModel)
+  public companyImages!: CompanyImagesModel[];
+
   @HasMany(() => ProductModel)
   public products!: ProductModel[];
 
@@ -118,4 +129,17 @@ export default class CompanyModel extends Model<CompanyModel> {
 
   @Column
   public updatedAt!: Date;
+
+  // @AfterFind
+  // static afterFindHook(result: any): void {
+  //   if(result.constructor === Array) {
+  //     let arrayLength = result.length;
+  //     for (let i = 0; i < arrayLength; i++) {
+  //       result[i].logo = process.env.__S3_URL__ + result[i].logo;
+  //     }
+  //   } else {
+  //     result.logo = process.env.__S3_URL__ + result.logo;
+  //   }
+  //   return result;
+  // }
 }

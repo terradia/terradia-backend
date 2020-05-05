@@ -15,6 +15,7 @@ export default gql`
       description: String!
       companyId: String!
       price: Float!
+      cover: Upload
       quantityForUnit: Int
       unitId: String
       companyProductsCategoryId: String
@@ -45,8 +46,9 @@ export default gql`
     id: ID!
     name: String!
     description: String!
-    image: String
     position: Int
+    cover: CompanyImages
+    images: [CompanyImages]
 
     createdAt: Date
     updatedAt: Date

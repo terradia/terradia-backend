@@ -1,4 +1,5 @@
 import {
+  AfterFind,
   AllowNull,
   BeforeBulkUpdate,
   BeforeCreate,
@@ -59,6 +60,9 @@ export default class UserModel extends Model<UserModel> {
   @Column(DataType.BOOLEAN)
   public validated!: boolean;
 
+  @Column
+  public avatar!: string;
+
   // All companies for each user
   @HasMany(() => CompanyUserModel)
   public companies!: CompanyUserModel[];
@@ -102,4 +106,17 @@ export default class UserModel extends Model<UserModel> {
       throw e;
     }
   }
+  // @AfterFind
+  // static afterFindHook(result: any): void {
+  //   let url = process.env.__S3_URL__;
+  //   if (result.constructor === Array) {
+  //     const arrayLength = result.length;
+  //     for (let i = 0; i < arrayLength; i++) {
+  //       result[i].avatar = process.env.__S3_URL__ + result[i].avatar;
+  //     }
+  //   } else {
+  //     result.avatar = process.env.__S3_URL__ + result.avatar;
+  //   }
+  //   return result;
+  // }
 }

@@ -17,7 +17,7 @@ import tagCompanyCategorySchema from "./companyTag";
 
 const linkSchema = gql`
   scalar Date
-
+  
   type Query {
     _: Boolean
   }

@@ -20,6 +20,7 @@ export default gql`
       phone: String
       password: String
     ): User!
+    updateUserAvatar(avatar: Upload!): User
   }
   type SignupAnswer {
     token: String!
@@ -39,7 +40,7 @@ export default gql`
     password: String!
     phone: String!
     validated: Boolean
-
+    avatar: String
     # Company Management related
     companies: [CompanyUser]
 

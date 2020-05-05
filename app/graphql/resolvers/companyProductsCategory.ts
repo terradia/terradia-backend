@@ -5,6 +5,7 @@ import CompanyModel from "../../database/models/company.model";
 import { WhereOptions } from "sequelize";
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
+import CompanyImagesModel from "../../database/models/company-images.model";
 
 export default {
   Query: {
@@ -13,16 +14,30 @@ export default {
       { companyId }: { companyId: string }): Promise<CompanyProductsCategoryModel[]> => {
       const categories = await CompanyProductsCategoryModel.findAll({
         where: { companyId },
-        include: [ProductModel, CompanyModel]
+        include: [
+          {model: ProductModel, include: [
+            {model: CompanyImagesModel, as: "cover"},
+            {model: CompanyImagesModel, as: "images"},
+          ]},
+          CompanyModel]
       });
       const nonCategories = await ProductModel.findAll({
         where: {
           companyId,
           companyProductsCategoryId: null,
-        }
+        },
+        include: [
+          {model: CompanyImagesModel, as: "cover"},
+          {model: CompanyImagesModel, as: "images"},
+        ]
       });
       const nonCat: CompanyProductsCategoryModel = CompanyProductsCategoryModel.build({id: "nonCat", name: "NonCategories", products: nonCategories}, {
-        include: [ProductModel, CompanyModel]
+        include: [
+          {model: ProductModel, include: [
+            {model: CompanyImagesModel, as: "cover"},
+            {model: CompanyImagesModel, as: "images"},
+          ]},
+          CompanyModel]
       });
       categories.push(nonCat);
       return categories;
