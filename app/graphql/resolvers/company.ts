@@ -16,6 +16,7 @@ import { uploadToS3SaveAsCompanyAvatarOrCover } from "../../uploadS3";
 import CompanyImagesModel from "../../database/models/company-images.model";
 import CompanyOpeningDayModel from "../../database/models/company-opening-day.model";
 import CompanyOpeningDayHoursModel from "../../database/models/company-opening-day-hours.model";
+import CompanyTagModel from "../../database/models/company-tag.model";
 
 declare interface Point {
   type: string;
@@ -35,6 +36,24 @@ declare interface CreateCompanyProps {
   logo: { stream: Body; filename: string; mimetype: string; encoding: string };
   cover: { stream: Body; filename: string; mimetype: string; encoding: string };
 }
+
+export const toIncludeWhenGetCompany = [
+  ProductModel,
+  {
+    model: CompanyUserModel,
+    include: [RoleModel, UserModel]
+  },
+  {
+    model: CompanyProductsCategoryModel,
+    include: [ProductModel]
+  },
+  CompanyReviewModel,
+  {
+    model: CompanyOpeningDayModel,
+    include: [CompanyOpeningDayHoursModel]
+  },
+  CompanyTagModel
+];
 
 export default {
   Query: {
@@ -97,18 +116,7 @@ export default {
     ): Promise<CompanyModel | null> => {
       return CompanyModel.findOne({
         where: { name },
-        include: [
-          ProductModel,
-          {
-            model: CompanyUserModel,
-            include: [RoleModel, UserModel]
-          },
-          CompanyReviewModel,
-          {
-            model: CompanyProductsCategoryModel,
-            include: [ProductModel]
-          }
-        ]
+        include: toIncludeWhenGetCompany
       });
     },
     getCompaniesByDistance: async (
@@ -131,19 +139,7 @@ export default {
 
       return CompanyModel.findAll({
         attributes: { include: [[distance, "distance"]] },
-        include: [
-          ProductModel,
-          {
-            model: CompanyUserModel,
-            include: [RoleModel, UserModel]
-          },
-          {
-            model: CompanyProductsCategoryModel,
-            include: [ProductModel]
-          },
-          CompanyReviewModel,
-          CompanyProductsCategoryModel
-        ],
+        include: toIncludeWhenGetCompany,
         order: distance,
         offset: page,
         limit: pageSize
@@ -402,16 +398,36 @@ export default {
         });
         const companyOpeningDay: CompanyOpeningDayModel = result[0];
         if (hours !== undefined) {
-          // remove all the hours from before
-          await CompanyOpeningDayHoursModel.destroy({
-            where: { dayId: companyOpeningDay.id }
-          });
-          for (const hour of hours) {
-            await CompanyOpeningDayHoursModel.create({
-              startTime: new Date(hour.startTime),
-              endTime: new Date(hour.endTime),
-              dayId: companyOpeningDay.id
-            });
+          // get hours of the corresponding day
+          const oldHours: CompanyOpeningDayHoursModel[] = await CompanyOpeningDayHoursModel.findAll(
+            {
+              where: { dayId: companyOpeningDay.id }
+            }
+          );
+          for (let i = 0; i < oldHours.length || i < hours.length; i++) {
+            const oldHour = oldHours.length > i ? oldHours[i] : null;
+            const hour = hours.length > i ? hours[i] : null;
+            if (hour !== null) {
+              const defaults: any = {
+                startTime: hour.startTime,
+                endTime: hour.endTime,
+                dayId: companyOpeningDay.id
+              };
+              if (oldHour === null) {
+                await CompanyOpeningDayHoursModel.create(defaults);
+              } else {
+                await CompanyOpeningDayHoursModel.findOrCreate({
+                  where: { id: oldHour.id },
+                  defaults
+                });
+              }
+            } else if (oldHour !== null) {
+              // if there is less hours specifications than before, remove the
+              // ones that in the db but should not exists.
+              await CompanyOpeningDayHoursModel.destroy({
+                where: { id: oldHour.id }
+              });
+            }
           }
         }
         return CompanyOpeningDayModel.findOne({
