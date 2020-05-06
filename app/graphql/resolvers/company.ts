@@ -79,7 +79,7 @@ export default {
             include: [CompanyOpeningDayHoursModel]
           }
         ],
-        offset: page,
+        offset: page * pageSize,
         limit: pageSize
       });
       return comp;
@@ -208,6 +208,21 @@ export default {
         ]
       });
       return comp;
+    },
+    getCompanyImages: async (
+      _: any,
+      {
+        companyId,
+        page = 0,
+        pageSize = 15
+      }: { companyId: string; page: number; pageSize: number },
+      __: any
+    ): Promise<CompanyImagesModel[]> => {
+      return CompanyImagesModel.findAll({
+        where: { companyId },
+        limit: pageSize,
+        offset: page * pageSize
+      });
     }
   },
   Mutation: {
