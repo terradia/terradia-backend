@@ -56,7 +56,7 @@ export default {
         });
       }
     ),
-    removeCompanyImage: combineResolvers(
+    removeCompanyImages: combineResolvers(
       isAuthenticated,
       async (
         _: any,

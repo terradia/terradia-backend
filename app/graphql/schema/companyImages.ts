@@ -6,7 +6,7 @@ export default gql`
   }
   extend type Mutation {
     addCompanyImages(images: [Upload]!, companyId: ID!): [CompanyImages]
-    removeCompanyImage(imagesId: [ID]!): [CompanyImages]
+    removeCompanyImages(imagesId: [ID]!): [CompanyImages]
   }
   type CompanyImages {
     id: ID!

@@ -27,6 +27,6 @@ export default [
   customerAddress,
   cart,
   tagCompanyCategory,
-  companyImages
+  companyImages,
   companyOpeningDays
 ];
