@@ -19,7 +19,6 @@ export default gql`
     getCompaniesByUser(userId: ID!): [CompanyUser]
     getCompanies: [Company]
     searchCompanies(query: String!): [Company]
-    getCompanyImages(companyId: ID, page: Int, pageSize: Int): [CompanyImages]
   }
   extend type Mutation {
     createCompany(
@@ -34,12 +33,7 @@ export default gql`
     joinCompany(companyId: String!, userId: String!): Company!
     leaveCompany(companyId: String!, userId: String!): Company!
   }
-  type CompanyImages {
-    id: ID!
-    filename: String
-    createdAt: Date
-    updatedAt: Date
-  }
+  
   type Company {
     # Resource related information
     id: ID!

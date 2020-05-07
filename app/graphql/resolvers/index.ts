@@ -11,6 +11,7 @@ import customerAddress from "./customerAddress";
 import tagCompanyCategory from "./companyTag";
 import cart from "./cart";
 import companyOpeningDays from "./companyOpeningDays";
+import companyImages from "./companyImages";
 
 export default [
   users,
@@ -26,5 +27,6 @@ export default [
   customerAddress,
   cart,
   tagCompanyCategory,
+  companyImages,
   companyOpeningDays
 ];

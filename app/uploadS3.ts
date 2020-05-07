@@ -97,5 +97,6 @@ const uploadToS3SaveAsProductCover = async (
 export {
   uploadToS3SaveAsCompanyAvatarOrCover,
   uploadToS3SaveAsProductCover,
-  uploadToS3
+  uploadToS3,
+  uploadToS3AsCompany
 };
