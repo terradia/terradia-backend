@@ -10,6 +10,7 @@ import role from "./role";
 import customerAddress from "./customerAddress";
 import tagCompanyCategory from "./companyTag";
 import cart from "./cart";
+import companyOpeningDays from "./companyOpeningDays";
 
 export default [
   users,
@@ -24,5 +25,6 @@ export default [
   role,
   customerAddress,
   cart,
-  tagCompanyCategory
+  tagCompanyCategory,
+  companyOpeningDays
 ];
