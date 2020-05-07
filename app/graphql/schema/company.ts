@@ -16,6 +16,7 @@ export default gql`
       lat: Float!
       lon: Float!
     ): [Company]
+    getCompaniesByDistanceByCustomer(page: Int, pageSize: Int): [Company]
     getCompaniesByUser(userId: ID!): [CompanyUser]
     getCompanies: [Company]
     searchCompanies(query: String!): [Company]
@@ -33,7 +34,7 @@ export default gql`
     joinCompany(companyId: String!, userId: String!): Company!
     leaveCompany(companyId: String!, userId: String!): Company!
   }
-  
+
   type Company {
     # Resource related information
     id: ID!
@@ -52,7 +53,7 @@ export default gql`
 
     # Geolocalization
     address: String!
-    position: GeographicPoint
+    geoPosition: GeographicPoint
     distance: Float # field added when returning the data form the resolvers
     # Users
     users: [CompanyUser]

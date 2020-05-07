@@ -11,7 +11,7 @@ interface Company {
   name: string;
   description: string;
   address: string;
-  position: GeoPoint;
+  geoPosition: GeoPoint;
   averageMark: number;
   numberOfMarks: number;
 }
@@ -31,7 +31,7 @@ async function generateCompanies(): Promise<Company[]> {
       name: faker.company.companyName(),
       description: faker.company.catchPhraseDescriptor(),
       address,
-      position: point,
+      geoPosition: point,
       averageMark: parseFloat((Math.random() * 5).toFixed(2)),
       numberOfMarks: Math.floor(Math.random() * 99) + 1
     });

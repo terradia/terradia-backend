@@ -11,12 +11,13 @@ import { Op, Sequelize } from "sequelize";
 import { Fn, Literal } from "sequelize/types/lib/utils";
 import CompanyUserRoleModel from "../../database/models/company-user-role.model";
 import { combineResolvers } from "graphql-resolvers";
-import { isAuthenticated } from "./authorization";
+import { isAuthenticated, isUserAndCustomer } from "./authorization";
 import { uploadToS3SaveAsCompanyAvatarOrCover } from "../../uploadS3";
 import CompanyImagesModel from "../../database/models/company-images.model";
 import CompanyOpeningDayModel from "../../database/models/company-opening-day.model";
 import CompanyOpeningDayHoursModel from "../../database/models/company-opening-day-hours.model";
 import CompanyTagModel from "../../database/models/company-tag.model";
+import CustomerAddressModel from "../../database/models/customer-address.model";
 
 declare interface Point {
   type: string;
@@ -121,6 +122,40 @@ export default {
         include: toIncludeWhenGetCompany
       });
     },
+    getCompaniesByDistanceByCustomer: combineResolvers(
+      isUserAndCustomer,
+      async (
+        _: any,
+        {
+          page,
+          pageSize
+        }: { page: number; pageSize: number; lat: number; lon: number },
+        { user: { customer } }: Context
+      ): Promise<CompanyModel[]> => {
+        const customerFetched = await CustomerAddressModel.findOne({
+          where: { customerId: customer.id, active: true }
+        });
+        if (!customerFetched) {
+          throw new ApolloError("Customer doesn't exist");
+        }
+        const location: Literal = Sequelize.literal(
+          `ST_GeomFromText('POINT(${customerFetched.location.coordinates[0]} ${customerFetched.location.coordinates[1]})')`
+        );
+        const distance: Fn = Sequelize.fn(
+          "ST_DistanceSphere",
+          Sequelize.col("geoPosition"),
+          location
+        );
+
+        return await CompanyModel.findAll({
+          attributes: { include: [[distance, "distance"]] },
+          include: toIncludeWhenGetCompany,
+          order: Sequelize.literal("distance ASC"),
+          offset: page,
+          limit: pageSize
+        });
+      }
+    ),
     getCompaniesByDistance: async (
       _: any,
       {
@@ -135,7 +170,7 @@ export default {
       );
       const distance: Fn = Sequelize.fn(
         "ST_DistanceSphere",
-        Sequelize.col("position"),
+        Sequelize.col("geoPosition"),
         location
       );
 
@@ -263,7 +298,7 @@ export default {
           );
         const newCompany: CompanyModel = await CompanyModel.create({
           ...args,
-          position: point
+          geoPosition: point
         });
         if (args.logo) {
           const { stream, filename } = await args.logo;

@@ -7,7 +7,12 @@ import {
   IsUUID,
   Model,
   PrimaryKey,
-  Table, BelongsToMany, AfterFind, HasOne, ForeignKey, BelongsTo
+  Table,
+  BelongsToMany,
+  AfterFind,
+  HasOne,
+  ForeignKey,
+  BelongsTo
 } from "sequelize-typescript";
 import ProductModel from "./product.model";
 import CompanyReviewModel from "./company-review.model";
@@ -64,7 +69,6 @@ export default class CompanyModel extends Model<CompanyModel> {
   @BelongsTo(() => CompanyImagesModel, "coverId")
   public cover!: string;
 
-
   // @HasMany(() => UserModel)
   // public users!: UserModel[];
 
@@ -106,7 +110,7 @@ export default class CompanyModel extends Model<CompanyModel> {
   public numberOfMarks!: number;
 
   @Column(DataType.GEOMETRY)
-  public position!: any;
+  public geoPosition!: any;
 
   @Column(DataType.STRING)
   public address!: string;
@@ -129,6 +133,9 @@ export default class CompanyModel extends Model<CompanyModel> {
 
   @Column
   public updatedAt!: Date;
+
+  @Column(DataType.VIRTUAL)
+  public distance!: number;
 
   // @AfterFind
   // static afterFindHook(result: any): void {
