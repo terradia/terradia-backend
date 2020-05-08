@@ -2,7 +2,7 @@
   "family": "terradia-api",
   "containerDefinitions": [
     {
-      "name": "postgres",
+      "name": "sample-app",
       "image": "kartoza/postgis",
       "cpu": 128,
       "memoryReservation": 128,
