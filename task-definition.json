@@ -1,0 +1,21 @@
+{
+  "family": "terradia-api",
+  "containerDefinitions": [
+    {
+      "name": "postg",
+      "image": "kartoza/postgis",
+      "cpu": 128,
+      "memoryReservation": 128,
+      "portMappings": [
+        {
+          "containerPort": 5432,
+          "protocol": "tcp"
+        }
+      ],
+      "command": [
+        "npm run start"
+      ],
+      "essential": true
+    }
+  ]
+}
