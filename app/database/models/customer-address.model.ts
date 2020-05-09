@@ -31,9 +31,6 @@ export default class CustomerAddressModel extends Model<CustomerAddressModel> {
   @Column
   public information!: string;
 
-  @Column
-  public active!: boolean;
-
   @Column(DataType.GEOMETRY)
   public location!: any;
 

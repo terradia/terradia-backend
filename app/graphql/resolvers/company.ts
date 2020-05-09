@@ -18,6 +18,7 @@ import CompanyOpeningDayModel from "../../database/models/company-opening-day.mo
 import CompanyOpeningDayHoursModel from "../../database/models/company-opening-day-hours.model";
 import CompanyTagModel from "../../database/models/company-tag.model";
 import CustomerAddressModel from "../../database/models/customer-address.model";
+import CustomerModel from "../../database/models/customer.model";
 
 declare interface Point {
   type: string;
@@ -132,14 +133,14 @@ export default {
         }: { page: number; pageSize: number; lat: number; lon: number },
         { user: { customer } }: Context
       ): Promise<CompanyModel[]> => {
-        const customerFetched = await CustomerAddressModel.findOne({
-          where: { customerId: customer.id, active: true }
+        const customerFetched = await CustomerModel.findByPk(customer.id, {
+          include: [{ model: CustomerAddressModel, as: "activeAddress" }]
         });
         if (!customerFetched) {
           throw new ApolloError("Customer doesn't exist");
         }
         const location: Literal = Sequelize.literal(
-          `ST_GeomFromText('POINT(${customerFetched.location.coordinates[0]} ${customerFetched.location.coordinates[1]})')`
+          `ST_GeomFromText('POINT(${customerFetched.activeAddress.location.coordinates[0]} ${customerFetched.activeAddress.location.coordinates[1]})')`
         );
         const distance: Fn = Sequelize.fn(
           "ST_DistanceSphere",

@@ -27,13 +27,25 @@ exports.up = function(db) {
         Sequelize.DataTypes.GEOMETRY("GEOMETRY")
       );
     })
-    .then(() => db.renameColumn("Companies", "position", "geoPosition"));
+    .then(() => db.renameColumn("Companies", "position", "geoPosition"))
+    .then(() => db.removeColumn("CustomerAddresses", "active"))
+    .then(() =>
+      db.addColumn("Customers", "activeAddressId", {
+        type: "uuid"
+      })
+    );
 };
 
 exports.down = function(db) {
   return db
     .removeColumn("CustomerAddresses", "location")
-    .then(() => db.renameColumn("Companies", "geoPosition", "position"));
+    .then(() => db.renameColumn("Companies", "geoPosition", "position"))
+    .then(() => {
+      db.addColumn("CustomerAddresses", "active", {
+        type: "boolean"
+      });
+    })
+    .then(() => db.removeColumn("Customers", "activeAddressId"));
 };
 
 exports._meta = {

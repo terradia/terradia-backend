@@ -10,7 +10,6 @@ declare interface CustomerAddress {
   address: string;
   apartment: string;
   information: string;
-  active: boolean;
   customerId: string;
   location: GeoPoint;
 }
@@ -36,16 +35,13 @@ const generateAddresses: (
       location: point,
       apartment: faker.address.secondaryAddress(),
       information: faker.lorem.lines(1),
-      active: i == 0,
       customerId: customer.id
     });
   }
   return generatedCustomerAddresses;
 };
 
-export const upCustomersAddress: () => Promise<
-  CustomerAddressModel[]
-> = async () => {
+export const upCustomersAddress: () => void = async () => {
   try {
     let customerAddressesGenerated: any[] = [];
     const customers = await CustomerModel.findAll();
@@ -53,7 +49,20 @@ export const upCustomersAddress: () => Promise<
       const tmp = generateAddresses(customer);
       customerAddressesGenerated = customerAddressesGenerated.concat(tmp);
     });
-    return CustomerAddressModel.bulkCreate(customerAddressesGenerated);
+    await CustomerAddressModel.bulkCreate(customerAddressesGenerated);
+    customers.forEach(async customer => {
+      const customerAddr = await CustomerAddressModel.findAll({
+        where: { customerId: customer.id }
+      });
+      if (customerAddr[0]) {
+        await CustomerModel.update(
+          {
+            activeAddressId: customerAddr[0].id
+          },
+          { where: { id: customer.id } }
+        );
+      }
+    });
   } catch (err) {
     throw err;
   }

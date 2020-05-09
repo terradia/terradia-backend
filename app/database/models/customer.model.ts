@@ -20,6 +20,8 @@ import CompanyModel from "./company.model";
 import CompanyAddressModel from "./customer-address.model";
 import ProductReviewModel from "./product-review.model";
 import CartModel from "./cart.model";
+import CustomerAddressModel from "./customer-address.model";
+import CompanyImagesModel from "./company-images.model";
 
 // Customer :
 // Contains the information of the customer, relating to his orders, payements, reviews etc...
@@ -41,14 +43,24 @@ export default class CustomerModel extends Model<CustomerModel> {
   @BelongsTo(() => UserModel)
   public user!: UserModel;
 
+  /**
+   * Customer addresses
+   */
+  @ForeignKey(() => CustomerAddressModel)
+  @Column
+  public activeAddressId!: string;
+
+  @BelongsTo(() => CustomerAddressModel)
+  public activeAddress!: CustomerAddressModel;
+
+  @HasMany(() => CustomerAddressModel)
+  public addresses!: CustomerAddressModel[];
+
   @HasMany(() => ProductReviewModel)
   public productReviews!: ProductReviewModel[];
 
   @HasMany(() => CompanyReviewModel)
   public companyReviews!: CompanyReviewModel[];
-
-  @HasMany(() => CompanyAddressModel)
-  public address!: CompanyAddressModel[];
 
   @BelongsToMany(
     () => CompanyModel,

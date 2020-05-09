@@ -4,10 +4,9 @@ import { ApolloError } from "apollo-server";
 import CustomerAddressModel from "../../database/models/customer-address.model";
 import { combineResolvers } from "graphql-resolvers";
 import { isUserAndCustomer } from "./authorization";
-import { Geocoder } from "node-geocoder";
 import NodeGeocoder, { Geocoder } from "node-geocoder";
 
-interface createCustomerAddressData {
+interface CreateCustomerAddressData {
   address: string;
   apartment?: number;
   information?: string;
@@ -15,13 +14,6 @@ interface createCustomerAddressData {
   id?: string;
 }
 
-interface setActiveData {
-  id: string;
-}
-
-interface argumentsData {
-  user: UserModel;
-}
 declare interface Point {
   type: string;
   coordinates: number[];
@@ -33,11 +25,15 @@ export default {
       async (
         _: any,
         __: object,
-        { user: { customer } }: argumentsData
+        { user: { customer } }: { user: UserModel }
       ): Promise<CustomerAddressModel | null> => {
-        return CustomerAddressModel.findOne({
-          where: { customerId: customer.id, active: true }
+        const customerFetched = await CustomerModel.findByPk(customer.id, {
+          include: [{ model: CustomerAddressModel, as: "activeAddress" }]
         });
+        if (!customerFetched) {
+          throw new ApolloError("Customer doesn't exist");
+        }
+        return customerFetched.activeAddress;
       }
     ),
     getAllCustomerAddressesByUser: combineResolvers(
@@ -45,7 +41,7 @@ export default {
       async (
         _: any,
         __: any,
-        { user }: argumentsData
+        { user }: { user: UserModel }
       ): Promise<CustomerAddressModel[] | null> => {
         const customer: CustomerModel = user.customer;
         return CustomerAddressModel.findAll({
@@ -65,17 +61,13 @@ export default {
       isUserAndCustomer,
       async (
         _: any,
-        { address, apartment, information, id }: createCustomerAddressData,
+        { address, apartment, information, id }: CreateCustomerAddressData,
         { user }: argumentsData
       ): Promise<
         CustomerAddressModel | [number, CustomerAddressModel[]] | null
       > => {
         const customer: CustomerModel = user.customer;
         if (customer) {
-          await CustomerAddressModel.update(
-            { active: false },
-            { where: { active: true } }
-          );
           let point: Point = {
             type: "",
             coordinates: []
@@ -132,8 +124,8 @@ export default {
       isUserAndCustomer,
       async (
         _: any,
-        { id }: setActiveData,
-        { user }: argumentsData
+        { id }: { id: string },
+        { user }: { user: UserModel }
       ): Promise<CustomerAddressModel | null> => {
         await CustomerAddressModel.update(
           { active: false },
