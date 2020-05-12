@@ -227,7 +227,12 @@ export default {
         //TODO: Search by tag
         //https://stackoverflow.com/questions/31258158/how-to-implement-search-feature-using-sequelizejs/37326395
         where: {
-          [Op.or]: [{ name: { [Op.iLike]: "%" + query + "%" } }]
+          [Op.or]: [
+            { name: { [Op.iLike]: "%" + query + "%" } }
+            // { 'name': { [Op.iLike]: "%" + query + "%" } },
+            // { "$CompanyTags.slugName$": { [Op.iLike]: "%" + query + "%" } }
+            // { "$CompanyTagModel.slugName$": query }
+          ]
         },
         include: [
           ProductModel,
@@ -240,7 +245,8 @@ export default {
             include: [ProductModel]
           },
           CompanyReviewModel,
-          CompanyProductsCategoryModel
+          CompanyProductsCategoryModel,
+          CompanyTagModel
         ]
       });
       return comp;

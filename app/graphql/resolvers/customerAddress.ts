@@ -62,7 +62,7 @@ export default {
       async (
         _: any,
         { address, apartment, information, id }: CreateCustomerAddressData,
-        { user }: argumentsData
+        { user }: { user: UserModel }
       ): Promise<
         CustomerAddressModel | [number, CustomerAddressModel[]] | null
       > => {
@@ -90,17 +90,34 @@ export default {
             };
           });
           if (id) {
-            return CustomerAddressModel.update(
-              { address, apartment, information, active: true },
-              { where: { id } }
+            const customerResult: [
+              number,
+              CustomerAddressModel[]
+            ] = await CustomerAddressModel.update(
+              { address, apartment, information, location: point },
+              { where: { id }, returning: true }
             );
+            CustomerModel.update(
+              {
+                activeAddressId: customerResult[1][0].id
+              },
+              { where: { id: customer.id } }
+            );
+            return customerResult;
           } else {
             const addr: CustomerAddressModel = await CustomerAddressModel.create(
               {
                 address,
                 apartment,
-                information
+                information,
+                location: point
               }
+            );
+            CustomerModel.update(
+              {
+                activeAddressId: addr.id
+              },
+              { where: { id: customer.id } }
             );
             await addr.$set("customer", customer);
             return CustomerAddressModel.findByPk(addr.id, {

@@ -6,6 +6,8 @@ let dbm;
 let type;
 let seed;
 
+const TAGS = ["Biere", "Vin", "Cidre", "Fromage", "Pain", "Lait", "Farine"];
+
 /**
  * We receive the dbmigrate dependency from dbmigrate initially.
  * This enables us to not have to rely on NODE_PATH.
@@ -33,7 +35,18 @@ exports.up = function(db) {
       db.addColumn("Customers", "activeAddressId", {
         type: "uuid"
       })
-    );
+    )
+    .then(() => {
+      TAGS.forEach(tag => {
+        db.runSql(
+          'INSERT INTO "CompanyTags"  ("slugName", "translationKey", color) VALUES (\'' +
+            tag +
+            "', '" +
+            tag +
+            "', 'green');"
+        );
+      });
+    });
 };
 
 exports.down = function(db) {
