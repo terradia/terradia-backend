@@ -21,7 +21,6 @@ export default gql`
     address: String!
     apartment: String
     information: String
-    active: Boolean!
     customer: Customer
 
     location: GeographicPoint

@@ -103,7 +103,7 @@ export default {
               },
               { where: { id: customer.id } }
             );
-            return customerResult;
+            return customerResult[1][0];
           } else {
             const addr: CustomerAddressModel = await CustomerAddressModel.create(
               {
