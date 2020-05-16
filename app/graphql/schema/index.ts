@@ -14,10 +14,12 @@ import userPermissionsSchema from "./userPermissions";
 import customerAddressSchema from "./customerAddress";
 import cartSchema from "./cart";
 import tagCompanyCategorySchema from "./companyTag";
+import companyOpeningDaysSchema from "./companyOpeningDays";
+import companyImagesSchema from "./companyImages";
 
 const linkSchema = gql`
   scalar Date
-  
+
   type Query {
     _: Boolean
   }
@@ -44,5 +46,7 @@ export default [
   userPermissionsSchema,
   customerAddressSchema,
   cartSchema,
-  tagCompanyCategorySchema
+  tagCompanyCategorySchema,
+  companyImagesSchema,
+  companyOpeningDaysSchema
 ];
