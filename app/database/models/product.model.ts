@@ -19,7 +19,8 @@ import CompanyModel from "./company.model";
 import CompanyProductsCategoryModel from "./company-products-category.model";
 import CartProductModel from "./cart-product.model";
 import UnitModel from "./unit.model";
-import CompanyImagesModel from "./company-images.model";
+import CompanyImagesModel from "./company-image.model";
+import ProductCompanyImageModel from "./product-company-images.model";
 
 @Table({
   tableName: "Products",
@@ -41,14 +42,17 @@ export default class ProductModel extends Model<ProductModel> {
   // A string because to get the images you should get them from the media server of Terradia
   // https://media.terradia.eu/ + company.image
 
-  @ForeignKey(() => CompanyImagesModel)
+  // the cover points to the ManyToMany table because we want to ensure
+  // that it's an image of the product and it's just a field mark one of the images
+  // as different, nothing more.
+  @ForeignKey(() => ProductCompanyImageModel)
   @Column
   coverId!: string;
 
-  @BelongsTo(() => CompanyImagesModel)
-  public cover!: string;
-
-  @HasMany(() => CompanyImagesModel)
+  @BelongsToMany(
+    () => CompanyImagesModel,
+    () => ProductCompanyImageModel
+  )
   public images!: CompanyImagesModel[];
 
   // categories of the products to make it easier to find it.

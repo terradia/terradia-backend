@@ -46,5 +46,6 @@ export default gql`
 
     # Customer related
     customer: Customer
+    createdAt: Date
   }
 `;

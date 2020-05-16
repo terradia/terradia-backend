@@ -5,7 +5,7 @@ import CompanyModel from "../../database/models/company.model";
 import { WhereOptions } from "sequelize";
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
-import CompanyImagesModel from "../../database/models/company-images.model";
+import CompanyImagesModel from "../../database/models/company-image.model";
 
 export default {
   Query: {

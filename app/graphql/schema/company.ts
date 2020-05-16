@@ -33,7 +33,7 @@ export default gql`
     joinCompany(companyId: String!, userId: String!): Company!
     leaveCompany(companyId: String!, userId: String!): Company!
   }
-  
+
   type Company {
     # Resource related information
     id: ID!
@@ -41,11 +41,11 @@ export default gql`
     description: String
     email: String
     phone: String
-    logo: CompanyImages
-    cover: CompanyImages
+    logo: CompanyImage
+    cover: CompanyImage
     createdAt: Date
     updatedAt: Date
-    companyImages: [CompanyImages]
+    companyImages: [CompanyImage]
     # Products related data
     products: [Product]
     productsCategories: [CompanyProductsCategory]

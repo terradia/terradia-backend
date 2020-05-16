@@ -13,7 +13,7 @@ import CompanyUserRoleModel from "../../database/models/company-user-role.model"
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
 import { uploadToS3SaveAsCompanyAvatarOrCover } from "../../uploadS3";
-import CompanyImagesModel from "../../database/models/company-images.model";
+import CompanyImageModel from "../../database/models/company-image.model";
 import CompanyOpeningDayModel from "../../database/models/company-opening-day.model";
 import CompanyOpeningDayHoursModel from "../../database/models/company-opening-day-hours.model";
 import CompanyTagModel from "../../database/models/company-tag.model";
@@ -63,7 +63,7 @@ export default {
     ): Promise<CompanyModel[]> => {
       const comp = await CompanyModel.findAll({
         include: [
-          { model: CompanyImagesModel, as: "logo" },
+          { model: CompanyImageModel, as: "logo" },
           ProductModel,
           {
             model: CompanyUserModel,
@@ -90,9 +90,9 @@ export default {
     ): Promise<CompanyModel | null> => {
       const company = CompanyModel.findByPk(companyId, {
         include: [
-          { model: CompanyImagesModel, as: "logo" },
-          { model: CompanyImagesModel, as: "cover" },
-          { model: CompanyImagesModel, as: "companyImages" },
+          { model: CompanyImageModel, as: "logo" },
+          { model: CompanyImageModel, as: "cover" },
+          { model: CompanyImageModel, as: "companyImages" },
           ProductModel,
           {
             model: CompanyUserModel,
@@ -217,8 +217,8 @@ export default {
         pageSize = 15
       }: { companyId: string; page: number; pageSize: number },
       __: any
-    ): Promise<CompanyImagesModel[]> => {
-      return CompanyImagesModel.findAll({
+    ): Promise<CompanyImageModel[]> => {
+      return CompanyImageModel.findAll({
         where: { companyId },
         limit: pageSize,
         offset: page * pageSize
