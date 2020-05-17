@@ -42,5 +42,5 @@ export default class CompanyOpeningDayModel extends Model<CompanyOpeningDayModel
   public daySlugName!: string;
 
   @HasMany(() => CompanyOpeningDayHoursModel, "dayId")
-  public hours!: CompanyOpeningDayHoursModel[]
+  public hours!: CompanyOpeningDayHoursModel[];
 }

@@ -31,6 +31,7 @@ export default gql`
       phone: String
       address: String!
     ): Company!
+    deleteCompany(companyId: String!): Company!
     joinCompany(companyId: String!, userId: String!): Company!
     leaveCompany(companyId: String!, userId: String!): Company!
   }
@@ -46,7 +47,8 @@ export default gql`
     cover: CompanyImage
     createdAt: Date
     updatedAt: Date
-    companyImages: [CompanyImage]
+    archivedAt: Date
+    companyImages: [CompanyImages]
     # Products related data
     products: [Product]
     productsCategories: [CompanyProductsCategory]
