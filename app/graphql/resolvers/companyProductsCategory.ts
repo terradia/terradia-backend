@@ -5,40 +5,43 @@ import CompanyModel from "../../database/models/company.model";
 import { WhereOptions } from "sequelize";
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
-import CompanyImagesModel from "../../database/models/company-image.model";
+import CompanyImageModel from "../../database/models/company-image.model";
 
 export default {
   Query: {
     getAllCompanyProductsCategories: async (
-        _: any,
-      { companyId }: { companyId: string }): Promise<CompanyProductsCategoryModel[]> => {
+      _: any,
+      { companyId }: { companyId: string }
+    ): Promise<CompanyProductsCategoryModel[]> => {
       const categories = await CompanyProductsCategoryModel.findAll({
         where: { companyId },
         include: [
-          {model: ProductModel, include: [
-            {model: CompanyImagesModel, as: "cover"},
-            {model: CompanyImagesModel, as: "images"},
-          ]},
-          CompanyModel]
+          {
+            model: ProductModel,
+            include: [{ model: CompanyImageModel, as: "images" }]
+          },
+          CompanyModel
+        ]
       });
       const nonCategories = await ProductModel.findAll({
         where: {
           companyId,
-          companyProductsCategoryId: null,
+          companyProductsCategoryId: null
         },
-        include: [
-          {model: CompanyImagesModel, as: "cover"},
-          {model: CompanyImagesModel, as: "images"},
-        ]
+        include: [{ model: CompanyImageModel, as: "images" }]
       });
-      const nonCat: CompanyProductsCategoryModel = CompanyProductsCategoryModel.build({id: "nonCat", name: "NonCategories", products: nonCategories}, {
-        include: [
-          {model: ProductModel, include: [
-            {model: CompanyImagesModel, as: "cover"},
-            {model: CompanyImagesModel, as: "images"},
-          ]},
-          CompanyModel]
-      });
+      const nonCat: CompanyProductsCategoryModel = CompanyProductsCategoryModel.build(
+        { id: "nonCat", name: "NonCategories", products: nonCategories },
+        {
+          include: [
+            {
+              model: ProductModel,
+              include: [{ model: CompanyImageModel, as: "images" }]
+            },
+            CompanyModel
+          ]
+        }
+      );
       categories.push(nonCat);
       return categories;
     },
@@ -105,21 +108,21 @@ export default {
         const nonCategories = await ProductModel.findAll({
           where: {
             companyId: category.companyId,
-            companyProductsCategoryId: null,
+            companyProductsCategoryId: null
           }
         });
         let currentLength = nonCategories.length;
-          category.products.forEach((element: ProductModel) => {
-            currentLength++;
-            ProductModel.update(
-              { companyProductsCategoryId: null, position: currentLength },
-              { where: { id: element.id } }
-            );
-          });
-          await CompanyProductsCategoryModel.destroy({
-            where: { id: categoryId }
-          });
-          return category;
+        category.products.forEach((element: ProductModel) => {
+          currentLength++;
+          ProductModel.update(
+            { companyProductsCategoryId: null, position: currentLength },
+            { where: { id: element.id } }
+          );
+        });
+        await CompanyProductsCategoryModel.destroy({
+          where: { id: categoryId }
+        });
+        return category;
       }
     ),
     addProductToCompanyCategory: combineResolvers(

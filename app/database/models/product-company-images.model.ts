@@ -15,7 +15,8 @@ import CategoryModel from "./category.model";
 import CompanyImageModel from "./company-image.model";
 
 @Table({
-  tableName: "ProductsCompanyImages"
+  tableName: "ProductsCompanyImages",
+  timestamps: true
 })
 export default class ProductCompanyImageModel extends Model<
   ProductCompanyImageModel
@@ -33,4 +34,10 @@ export default class ProductCompanyImageModel extends Model<
   @ForeignKey(() => CompanyImageModel)
   @Column
   companyImageId!: string;
+
+  @Column
+  public createdAt!: Date;
+
+  @Column
+  public updatedAt!: Date;
 }

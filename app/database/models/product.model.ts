@@ -10,7 +10,7 @@ import {
   Table,
   ForeignKey,
   HasMany,
-  AllowNull
+  AllowNull, AfterFind
 } from "sequelize-typescript";
 import CategoryModel from "./category.model";
 import ProductCategoryModel from "./product-category.model";
@@ -19,8 +19,8 @@ import CompanyModel from "./company.model";
 import CompanyProductsCategoryModel from "./company-products-category.model";
 import CartProductModel from "./cart-product.model";
 import UnitModel from "./unit.model";
-import CompanyImagesModel from "./company-image.model";
 import ProductCompanyImageModel from "./product-company-images.model";
+import CompanyImageModel from "./company-image.model";
 
 @Table({
   tableName: "Products",
@@ -49,11 +49,13 @@ export default class ProductModel extends Model<ProductModel> {
   @Column
   coverId!: string;
 
+  public cover!: CompanyImageModel;
+
   @BelongsToMany(
-    () => CompanyImagesModel,
+    () => CompanyImageModel,
     () => ProductCompanyImageModel
   )
-  public images!: CompanyImagesModel[];
+  public images!: CompanyImageModel[];
 
   // categories of the products to make it easier to find it.
   @BelongsToMany(
@@ -121,4 +123,9 @@ export default class ProductModel extends Model<ProductModel> {
 
   @BelongsTo(() => UnitModel)
   public unit!: UnitModel;
+
+  @AfterFind
+  static afterFindHook(result: any) {
+    console.log("in hook : ", result);
+  }
 }
