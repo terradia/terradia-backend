@@ -4,6 +4,7 @@ import { AuthenticationError } from "apollo-server-express";
 
 import User from "./database/models/user.model";
 import CustomerModel from "./database/models/customer.model";
+import CompanyUserModel from "./database/models/company-user.model";
 
 export const getUser = async (req: express.Request) => {
   const { authorization } = req.headers;
@@ -12,14 +13,12 @@ export const getUser = async (req: express.Request) => {
     token = authorization.substring(7, authorization.length);
   if (token) {
     try {
-      const decoded: any = jwt.verify(
-        token,
-        process.env.TOKEN_SECRET!
-      );
+      const decoded: any = jwt.verify(token, process.env.TOKEN_SECRET!);
       return await User.findByPk(decoded.id, {
-        include: [CustomerModel]
+        include: [CustomerModel, CompanyUserModel]
       });
     } catch (e) {
+      throw new Error(e);
       throw new AuthenticationError(
         "Session expired, please connect you again" // TODO : change the string to be translated.
       );

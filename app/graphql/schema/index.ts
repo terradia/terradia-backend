@@ -1,4 +1,4 @@
-import { gql } from "apollo-server-express";
+import { ApolloServer, gql } from "apollo-server-express";
 
 import userSchema from "./user";
 import productSchema from "./product";
@@ -6,13 +6,16 @@ import categorySchema from "./category";
 import companySchema from "./company";
 import companyReviewSchema from "./companyReview";
 import customerSchema from "./customer";
-import productsReviewSchema from './productReview'
+import productsReviewSchema from "./productReview";
 import companyProductsCategorySchema from "./companyProductsCategory";
 import companyUserSchema from "./companyUser";
 import roleSchema from "./role";
-import userPermissionsSchema from './userPermissions'
-import customerAddressSchema from './customerAddress'
+import userPermissionsSchema from "./userPermissions";
+import customerAddressSchema from "./customerAddress";
 import cartSchema from "./cart";
+import tagCompanyCategorySchema from "./companyTag";
+import companyOpeningDaysSchema from "./companyOpeningDays";
+import companyImagesSchema from "./companyImages";
 
 const linkSchema = gql`
   scalar Date
@@ -42,5 +45,8 @@ export default [
   roleSchema,
   userPermissionsSchema,
   customerAddressSchema,
-  cartSchema
+  cartSchema,
+  tagCompanyCategorySchema,
+  companyImagesSchema,
+  companyOpeningDaysSchema
 ];

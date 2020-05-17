@@ -10,6 +10,21 @@ import UnitModel from "../../database/models/unit.model";
 import { Op } from "sequelize";
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
+import CompanyProductsCategoryModel from "../../database/models/company-products-category.model";
+import CompanyImageModel from "../../database/models/company-image.model";
+import {
+  uploadToS3AsCompany,
+  uploadToS3SaveAsProductCover
+} from "../../uploadS3";
+import ProductCompanyImageModel from "../../database/models/product-company-images.model";
+import { CompanyImageData } from "./companyImages";
+
+interface ProductsPositionsData {
+  productId: string;
+  position: number;
+  categoryId: string;
+  type: string;
+}
 
 export default {
   Query: {
@@ -22,17 +37,23 @@ export default {
       _: any,
       { id }: { id: string }
     ): Promise<ProductModel | null> => {
-      let aa = await ProductModel.findByPk(id, {
+      const product = await ProductModel.findByPk(id, {
         include: [
+          { model: CompanyImageModel, as: "images" },
           CategoryModel,
           CompanyModel,
+          {
+            model: CompanyProductsCategoryModel,
+            include: [CompanyModel]
+          },
           {
             model: ProductReviewModel,
             include: [{ model: CustomerModel, include: [UserModel] }]
           }
         ]
       });
-      return aa;
+      if (!product) throw new ApolloError("This product does not exist", "404");
+      return product;
     },
     getProductsByCompany: async (
       _: any,
@@ -81,7 +102,7 @@ export default {
           "You should at least give one of the three arguments",
           "400"
         );
-      let options: { id?: string; notation?: string; name?: string } = {};
+      const options: { id?: string; notation?: string; name?: string } = {};
       if (id) options["id"] = id;
       else if (notation) options["notation"] = notation;
       else if (name) options["name"] = name;
@@ -94,57 +115,349 @@ export default {
     }
   },
   Mutation: {
-    createProduct: combineResolvers(isAuthenticated,
+    createProduct: combineResolvers(
+      isAuthenticated,
       async (
-      _: any,
-      args: {
-        name: string;
-        description: string;
-        companyId: string;
-        price: number;
-        quantityForUnit?: number;
-        unitId?: string;
-        companyProductsCategoryId?: string;
-      }
-    ): Promise<Partial<ProductModel>> => {
-      const company: CompanyModel | null = await CompanyModel.findOne({
-        where: { id: args.companyId }
-      });
-      if (company) {
-        let product: ProductModel = await ProductModel.create({
-          ...args
-        }).then(product => {
-          return product;
+        _: any,
+        args: {
+          name: string;
+          description: string;
+          companyId: string;
+          price: number;
+          quantityForUnit?: number;
+          unitId?: string;
+          cover: {
+            stream: Body;
+            filename: string;
+            mimetype: string;
+            encoding: string;
+          };
+          companyProductsCategoryId?: string;
+        }
+      ): Promise<Partial<ProductModel>> => {
+        const company: CompanyModel | null = await CompanyModel.findOne({
+          where: { id: args.companyId }
         });
-        return product.toJSON();
-      } else throw new ApolloError("This company does not exist", "404");
-    }),
-    addCategoryToProduct: combineResolvers(isAuthenticated,
-      async (
-      _: any,
-      { productId, categoryName }: { productId: string; categoryName: string }
-    ): Promise<Partial<ProductModel> | null> => {
-      let category: CategoryModel | null = await CategoryModel.findOne({
-        where: { name: categoryName }
-      });
-      if (category) {
-        // findOrCreate so that it doesn't add multiple times the category to a product.
-        await ProductCategoryModel.findOrCreate({
+        const productsSameCategory = await ProductModel.findAll({
           where: {
-            productId,
-            categoryId: category.id
+            companyProductsCategoryId: args.companyProductsCategoryId
+              ? args.companyProductsCategoryId
+              : null
           }
         });
-      } else
-        throw new ApolloError(
-          `The category ${categoryName} doesn't exists.`,
-          "404"
+        const pos = productsSameCategory.length;
+        if (company) {
+          const product: ProductModel = await ProductModel.create({
+            ...args,
+            position: pos
+          }).then(product => {
+            return product;
+          });
+          if (args.cover) {
+            const { stream, filename } = await args.cover;
+            uploadToS3SaveAsProductCover(
+              filename,
+              stream,
+              company.id,
+              product.id
+            );
+          }
+          return product.toJSON();
+        } else throw new ApolloError("This company does not exist", "404");
+      }
+    ),
+    addCategoryToProduct: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        { productId, categoryName }: { productId: string; categoryName: string }
+      ): Promise<Partial<ProductModel> | null> => {
+        const category: CategoryModel | null = await CategoryModel.findOne({
+          where: { name: categoryName }
+        });
+        if (category) {
+          // findOrCreate so that it doesn't add multiple times the category to a product.
+          await ProductCategoryModel.findOrCreate({
+            where: {
+              productId,
+              categoryId: category.id
+            }
+          });
+        } else
+          throw new ApolloError(
+            `The category ${categoryName} doesn't exists.`,
+            "404"
+          );
+        const product: ProductModel | null = await ProductModel.findOne({
+          where: { id: productId },
+          include: [CategoryModel]
+        });
+        return product ? product.toJSON() : null;
+      }
+    ),
+    updateProductsPosition: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        { productsPositions }: { productsPositions: [ProductsPositionsData] }
+      ): Promise<boolean> => {
+        for (const productPosition of productsPositions) {
+          if (productPosition.type === "addCategory") {
+            ProductModel.update(
+              {
+                companyProductsCategoryId: productPosition.categoryId,
+                position: productPosition.position
+              },
+              {
+                where: {
+                  id: productPosition.productId
+                }
+              }
+            );
+          } else if (productPosition.type === "deleteCategory") {
+            ProductModel.update(
+              {
+                companyProductsCategoryId: null,
+                position: productPosition.position
+              },
+              {
+                where: {
+                  id: productPosition.productId
+                }
+              }
+            );
+          } else if (productPosition.type === "moveCategory") {
+            ProductModel.update(
+              {
+                companyProductsCategoryId: productPosition.categoryId,
+                position: productPosition.position
+              },
+              {
+                where: {
+                  id: productPosition.productId
+                }
+              }
+            );
+          } else {
+            ProductModel.update(
+              {
+                position: productPosition.position
+              },
+              {
+                where: {
+                  id: productPosition.productId
+                }
+              }
+            );
+          }
+        }
+        return true;
+      }
+    ),
+    updateProduct: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        args: {
+          productId: string;
+          name?: string;
+          description?: string;
+          image?: string;
+          unitId?: string;
+          quantityForUnit?: number;
+          cover: {
+            stream: Body;
+            filename: string;
+            mimetype: string;
+            encoding: string;
+          };
+          price?: number;
+        }
+      ): Promise<Partial<ProductModel>> => {
+        if (args.productId === undefined)
+          throw new ApolloError("You need to provide an ID.", "400");
+        const productResult: [
+          number,
+          ProductModel[]
+        ] = await ProductModel.update(
+          {
+            ...args
+          },
+          {
+            where: { id: args.productId },
+            returning: true
+          }
         );
-      let product: ProductModel | null = await ProductModel.findOne({
-        where: { id: productId },
-        include: [CategoryModel]
-      });
-      return product ? product.toJSON() : null;
-    })
+        if (args.cover) {
+          const existingProduct = await ProductModel.findByPk(args.productId);
+          if (!existingProduct) {
+            throw new ApolloError("Could not upload image", "400");
+          }
+          const { stream, filename } = await args.cover;
+          uploadToS3SaveAsProductCover(
+            filename,
+            stream,
+            existingProduct.companyId,
+            args.productId
+          );
+        } else if (productResult[0] === 0)
+          throw new ApolloError(
+            "Could not update any field in Database, are you sure the product you want to update exists ?",
+            "400"
+          );
+        return productResult[1][0];
+      }
+    ),
+    // returns the number of products deleted : 1 => your product was well deleted.
+    deleteProduct: combineResolvers(
+      isAuthenticated,
+      async (_: any, { productId }: { productId: string }): Promise<number> => {
+        if (productId === undefined)
+          throw new ApolloError(
+            "The product you try to delete, does not exist.",
+            "404"
+          );
+        return ProductModel.destroy({
+          where: { id: productId }
+        });
+      }
+    ),
+    addImageToProduct: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        {
+          companyImageId,
+          productId,
+          isCover
+        }: { companyImageId: string; productId: string; isCover?: boolean }
+      ): Promise<CompanyImageModel> => {
+        const product: ProductModel | null = await ProductModel.findOne({
+          where: { id: productId }
+        });
+        if (!product) throw new ApolloError("Product not found", "404");
+
+        const companyImage: CompanyImageModel | null = await CompanyImageModel.findOne(
+          { where: { id: companyImageId } }
+        );
+        if (!companyImage)
+          throw new ApolloError("CompanyImage not found", "404");
+
+        const newResource = await ProductCompanyImageModel.create({
+          productId,
+          companyImageId
+        });
+        if (isCover === true) {
+          await ProductModel.update(
+            { coverId: newResource.id },
+            { where: { id: productId } }
+          );
+        }
+        return companyImage;
+      }
+    ),
+    uploadImageOfProduct: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        {
+          image,
+          productId,
+          isCover
+        }: { image: CompanyImageData; productId: string; isCover?: boolean }
+      ): Promise<CompanyImageModel> => {
+        const product: ProductModel | null = await ProductModel.findOne({
+          where: { id: productId }
+        });
+        if (!product) throw new ApolloError("Product not found", "404");
+
+        // create the image in S3
+        const { stream, filename } = await image;
+        const imageCreated = await uploadToS3AsCompany(
+          filename,
+          stream,
+          product.companyId,
+          null,
+          name
+        );
+        // create the image in S3
+
+        const newResource = await ProductCompanyImageModel.create({
+          productId,
+          companyImageId: imageCreated.image.id
+        });
+        if (isCover === true) {
+          await ProductModel.update(
+            { coverId: newResource.id },
+            { where: { id: productId } }
+          );
+        }
+        return imageCreated.image;
+      }
+    ),
+    deleteImageFromProduct: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        {
+          companyImageId,
+          productId
+        }: { companyImageId: string; productId: string }
+      ): Promise<CompanyImageModel> => {
+        const product: ProductModel | null = await ProductModel.findOne({
+          where: { id: productId }
+        });
+        if (!product) throw new ApolloError("Product not found", "404");
+        const companyImage: CompanyImageModel | null = await CompanyImageModel.findOne(
+          {
+            where: { id: companyImageId }
+          }
+        );
+        if (!companyImage) throw new ApolloError("Image not found", "404");
+
+        await ProductCompanyImageModel.destroy({
+          where: { productId, companyImageId }
+        });
+        return companyImage;
+      }
+    ),
+    updateProductCover: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        {
+          companyImageId,
+          productId
+        }: { companyImageId: string; productId: string }
+      ): Promise<ProductModel> => {
+        const product: ProductModel | null = await ProductModel.findOne({
+          where: { id: productId }
+        });
+        if (!product) throw new ApolloError("Product not found", "404");
+        const companyImage: CompanyImageModel | null = await CompanyImageModel.findOne(
+          {
+            where: { id: companyImageId }
+          }
+        );
+        if (!companyImage) throw new ApolloError("Image not found", "404");
+
+        let ret: ProductCompanyImageModel | null = await ProductCompanyImageModel.findOne(
+          { where: { productId, companyImageId } }
+        );
+        // if the image is not an image of the product, it is added
+        if (!ret) {
+          ret = await ProductCompanyImageModel.create({
+            productId,
+            companyImageId
+          });
+        }
+        const result: [number, ProductModel[]] = await ProductModel.update(
+          { coverId: ret.id },
+          { where: { id: productId }, returning: true }
+        );
+
+        return result[1][0];
+      }
+    )
   }
 };

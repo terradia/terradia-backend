@@ -3,6 +3,10 @@ import { generateAuthlink } from "../../auth";
 import jwt from "jsonwebtoken";
 import { AuthenticationError, UserInputError } from "apollo-server";
 import { ApolloError } from "apollo-server-errors";
+import { combineResolvers } from "graphql-resolvers";
+import { isAuthenticated } from "./authorization";
+import ProductModel from "../../database/models/product.model";
+import { uploadToS3 } from "../../uploadS3";
 const fetch = require('node-fetch');
 import userController from '../../controllers/user';
 
@@ -11,9 +15,16 @@ const createToken = async (user: UserModel, secret: string) => {
   delete payload.password;
   return jwt.sign(payload, secret);
 };
+declare interface Context {
+  user: UserModel;
+}
 
 export default {
   Query: {
+    getAllUsers: async (): Promise<UserModel[]> => {
+      return UserModel.findAll();
+    },
+
     getUser: async (_: any, __: any, { user }: { user: UserModel }) => {
       if (!user) {
         return null;
@@ -36,7 +47,7 @@ export default {
       { email, password }: { email: string; password: string },
       { secret }: { secret: string }
     ) => {
-      let user = await UserModel.findByLogin(email);
+      const user = await UserModel.findByLogin(email);
       if (!user) {
         throw new UserInputError("No user found with this login credentials.");
       }
@@ -89,6 +100,65 @@ export default {
         userId: user.id,
         message: `Un email de confirmation a été envoyé a cette adresse email : ${user.email}, clique sur le lien dans le mail afin valider ton compte !`
       };
+    },
+    updateUser: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        args: {
+          email?: string;
+          lastName?: string;
+          firstName?: string;
+          phone?: string;
+          password?: string;
+        },
+        { user }: Context
+      ): Promise<UserModel> => {
+        const currentUser = await UserModel.findByPk(user.id);
+        if (!currentUser) {
+          throw new ApolloError("User not found", "404");
+        }
+        const toUpdate =
+          args.email && args.email != currentUser.email
+            ? { ...args, validated: false }
+            : { ...args };
+        const userResult: [number, UserModel[]] = await UserModel.update(
+          toUpdate,
+          {
+            where: { id: user.id },
+            returning: true
+          }
+        );
+        if (userResult[0] === 0)
+          throw new ApolloError("Could not update this user", "400");
+        return userResult[1][0];
+      }
+    ),
+    updateUserAvatar: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        avatar: {
+          stream: Body;
+          filename: string;
+          mimetype: string;
+          encoding: string;
+        },
+        { user }: Context
+      ): Promise<UserModel | null> => {
+        //TODO: Delete unused user avatar
+        //TODO: Compress with aws lambda
+        const { stream, filename } = await avatar.avatar;
+        const { name } = await uploadToS3(filename, stream);
+        const update = await UserModel.update(
+          {
+            avatar: name
+          },
+          { where: { id: user.id } }
+        );
+        return await UserModel.findByPk(user.id);
+      }
+    )
     },
     signUpWithFacebook: async (_: any,
                                { facebookToken, exponentPushToken, defineUserAsCostumer }:

@@ -1,58 +1,101 @@
 import { gql } from "apollo-server";
 
 export default gql`
-    extend type Query {
-        getAllProducts: [Product]!
-        getProduct(id: ID!): Product!
-        getProductsByCompany(companyId: String): [Product]!
-        getProductsByCompanyByCategory(companyId: String): [Category]!
-        getAllUnits(referencesOnly: Boolean): [Unit]!
-        getUnit(id: ID, notation: String, name: String): Unit!
-    }
-    extend type Mutation {
-        createProduct(
-            name: String!
-            description: String!
-            companyId: String!
-            price: Float!
-            quantityForUnit: Int
-            unitId: String
-            companyProductsCategoryId: String
-        ): Product!
-        addCategoryToProduct(categoryName: String!, productId: String!): Product!
-    }
-    type Product {
-        # Resouce related data
-        id: ID!
-        name: String!
-        description: String!
-        image: String
+  extend type Query {
+    getAllProducts: [Product]!
+    getProduct(id: ID!): Product!
+    getProductsByCompany(companyId: String): [Product]!
+    getProductsByCompanyByCategory(companyId: String): [Category]!
+    getAllUnits(referencesOnly: Boolean): [Unit]!
+    getUnit(id: ID, notation: String, name: String): Unit!
+  }
+  extend type Mutation {
+    createProduct(
+      name: String!
+      description: String!
+      companyId: String!
+      price: Float!
+      cover: Upload
+      quantityForUnit: Int
+      unitId: String
+      companyProductsCategoryId: String
+    ): Product!
 
-        createdAt: Date
-        updatedAt: Date
+    addCategoryToProduct(categoryName: String!, productId: String!): Product!
 
-        # Classification data
-        categories: [Category]
-        company: Company
-        companyProductsCategory: CompanyProductsCategory
+    updateProduct(
+      productId: String
+      name: String
+      description: String
+      unitId: String
+      quantityForUnit: Float
+      price: Float
+    ): Product
 
-        # Customers filled
-        reviews: [ProductReview]
-        averageMark: Float
-        numberOfMarks: Int
-        customerBasketProducts: [CartProduct]
-        
-        # Pricing
-        unit: Unit!
-        quantityForUnit: Float!
-        price: Float!
-        
-    }
-    type Unit {
-        id: ID!
-        name: String!
-        notation: String!
-        referenceUnit: Unit
-        multiplicationFactor: Float
-    }
+    deleteProduct(productId: String!): Int
+
+    updateProductsPosition(productsPositions: [ProductPosition!]): Boolean
+
+    addImageToProduct(
+      companyImageId: String!
+      productId: String!
+      isCover: Boolean
+    ): CompanyImage
+    uploadImageOfProduct(
+      image: Upload!
+      productId: String!
+      isCover: Boolean
+    ): CompanyImage
+    deleteImageFromProduct(
+      companyImageId: String!
+      productId: String!
+    ): CompanyImage
+    updateProductCover(companyImageId: String!, productId: String!): Product
+  }
+  #Type => ['addCategory', 'deleteCategory', 'moveCategory']
+  input ProductPosition {
+    productId: ID!
+    position: Int!
+    categoryId: ID
+    type: String
+  }
+
+  type Product {
+    # Resource related data
+    id: ID!
+    name: String!
+    description: String!
+    position: Int
+
+    # Images
+    cover: CompanyImage
+    images: [CompanyImage]
+
+    # Date Related
+    createdAt: Date
+    updatedAt: Date
+
+    # Classification data
+    categories: [Category]
+    company: Company
+    companyProductsCategory: CompanyProductsCategory
+
+    # Customers filled
+    reviews: [ProductReview]
+    averageMark: Float
+    numberOfMarks: Int
+    customerBasketProducts: [CartProduct]
+
+    # Pricing
+    unit: Unit
+    quantityForUnit: Float!
+    price: Float!
+  }
+  type Unit {
+    id: ID!
+    name: String!
+    notation: String!
+    referenceUnit: Unit
+    multiplicationFactor: Float
+  }
 `;

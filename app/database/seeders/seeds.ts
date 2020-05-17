@@ -10,59 +10,62 @@ import CustomersFavoriteCompaniesModel from "../models/customers-favorite-compan
 import ProductModel from "../models/product.model";
 import ProductCategoryModel from "../models/product-category.model";
 import UserModel from "../models/user.model";
-import {downRoles, upRoles} from "./roles";
-import {downUsers, upUsers} from "./users";
-import {downCompanies, upCompanies} from "./companies";
-import {downProducts, upProducts} from "./products";
-import {downCustomers, upCustomers} from "./customers";
-import {downCompaniesReviews, upCompaniesReviews} from "./companyReviews";
-import {downCustomersAddress, upCustomersAddress} from "./customerAddress"
-import {downProductsReviews, upProductsReviews} from "./productReviews"
-import {downCompanyProductsCategories, upCompanyProductsCategories} from "./companyProductsCategories"
+import { downRoles, upRoles } from "./roles";
+import { downUsers, upUsers } from "./users";
+import { downCompanies, upCompanies } from "./companies";
+import { downProducts, upProducts } from "./products";
+import { downCustomers, upCustomers } from "./customers";
+import { downCompaniesReviews, upCompaniesReviews } from "./companyReviews";
+import { downCustomersAddress, upCustomersAddress } from "./customerAddress";
+import { downProductsReviews, upProductsReviews } from "./productReviews";
+import {
+  downCompanyProductsCategories,
+  upCompanyProductsCategories
+} from "./companyProductsCategories";
 import { downUnits, upUnits } from "./unit";
 
 // @ts-ignore
 sequelize.addModels([
-    CategoryModel,
-    CompanyModel,
-    CompanyProductsCategoryModel,
-    CompanyReviewModel,
-    CustomerModel,
-    CustomersFavoriteCompaniesModel,
-    ProductModel,
-    ProductCategoryModel,
-    UserModel
+  CategoryModel,
+  CompanyModel,
+  CompanyProductsCategoryModel,
+  CompanyReviewModel,
+  CustomerModel,
+  CustomersFavoriteCompaniesModel,
+  ProductModel,
+  ProductCategoryModel,
+  UserModel
 ]);
 
 export const up: () => void = async () => {
-    try {
-        await down();
-        await upRoles();
-        await upUsers();
-        await upCompanies();
-        await upCompanyProductsCategories();
-        await upProducts();
-        await upCustomers();
-        await upCompaniesReviews();
-        await upCustomersAddress();
-        await upProductsReviews();
-        await upUnits();
-        debug("init:seed")(chalk.green("Every seeds went well"));
-    } catch (err) {
-        throw err;
-    }
+  try {
+    await down();
+    await upRoles();
+    await upCompanies();
+    await upUsers();
+    await upCompanyProductsCategories();
+    await upProducts();
+    await upCustomers();
+    await upCompaniesReviews();
+    await upCustomersAddress();
+    await upProductsReviews();
+    await upUnits();
+    debug("init:seed")(chalk.green("Every seeds went well"));
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const down: () => void = async () => {
-    await downRoles();
-    await downUsers();
-    await downCompanies();
-    await downCompanyProductsCategories();
-    await downProducts();
-    await downCustomers();
-    await downCompaniesReviews();
-    await downProductsReviews();
-    await downCustomersAddress();
-    await downUnits();
-    debug("init:seed")(chalk.green("All relevant data were erased"));
+  await downRoles();
+  await downUsers();
+  await downCompanies();
+  await downCompanyProductsCategories();
+  await downProducts();
+  await downCustomers();
+  await downCompaniesReviews();
+  await downProductsReviews();
+  await downCustomersAddress();
+  await downUnits();
+  debug("init:seed")(chalk.green("All relevant data were erased"));
 };

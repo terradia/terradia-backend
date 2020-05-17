@@ -8,7 +8,9 @@ import {
   Model,
   PrimaryKey,
   Table,
-  BelongsToMany
+  BelongsToMany,
+  ForeignKey,
+  BelongsTo
 } from "sequelize-typescript";
 import ProductModel from "./product.model";
 import CompanyReviewModel from "./company-review.model";
@@ -17,10 +19,14 @@ import CustomersFavoriteCompaniesModel from "./customers-favorite-companies.mode
 import CompanyProductsCategoryModel from "./company-products-category.model";
 import CompanyUserModel from "./company-user.model";
 import CartModel from "./cart.model";
+import CompanyOpeningDayModel from "./company-opening-day.model";
+import CompanyImageModel from "./company-image.model";
+import CompanyTagModel from "./company-tag.model";
+import CompanyTagRelationsModel from "./company-tag-relations.model";
 
 @Table({
   tableName: "Companies",
-  timestamps: false
+  timestamps: true
 })
 export default class CompanyModel extends Model<CompanyModel> {
   @IsUUID(4)
@@ -44,14 +50,21 @@ export default class CompanyModel extends Model<CompanyModel> {
   @Column(DataType.STRING)
   public phone!: string;
 
+  @ForeignKey(() => CompanyImageModel)
+  @Column
+  logoId!: string;
   // A string because to get the images you should get them from the media server of Terradia
   // https://media.terradia.eu/ + company.logo
-  @Column(DataType.STRING)
+  @BelongsTo(() => CompanyImageModel)
   public logo!: string;
 
   // A string because to get the images you should get them from the media server of Terradia
   // https://media.terradia.eu/ + company.cover
-  @Column(DataType.STRING)
+  @ForeignKey(() => CompanyImageModel)
+  @Column
+  coverId!: string;
+
+  @BelongsTo(() => CompanyImageModel)
   public cover!: string;
 
   // @HasMany(() => UserModel)
@@ -59,6 +72,9 @@ export default class CompanyModel extends Model<CompanyModel> {
 
   // This way we can get all the products independently of their categories
   // the second usage is that we can have projects without categories to "hide them"
+  @HasMany(() => CompanyImageModel)
+  public companyImages!: CompanyImageModel[];
+
   @HasMany(() => ProductModel)
   public products!: ProductModel[];
 
@@ -92,8 +108,7 @@ export default class CompanyModel extends Model<CompanyModel> {
   public numberOfMarks!: number;
 
   @Column(DataType.GEOMETRY)
-  // @ts-ignore
-  public position!: any;
+  public geoPosition!: any;
 
   @Column(DataType.STRING)
   public address!: string;
@@ -101,9 +116,38 @@ export default class CompanyModel extends Model<CompanyModel> {
   @HasMany(() => CartModel, "companyId")
   public customersCarts!: CartModel[];
 
+  // the opening days of the company
+  @HasMany(() => CompanyOpeningDayModel, "companyId")
+  public openingDays!: CompanyOpeningDayModel[];
+
+  @BelongsToMany(
+    () => CompanyTagModel,
+    () => CompanyTagRelationsModel
+  )
+  public tags!: CompanyTagModel[];
+
   @Column
   public createdAt!: Date;
 
   @Column
   public updatedAt!: Date;
+
+  @Column(DataType.VIRTUAL)
+  public distance!: number;
+
+  @Column(DataType.DATE)
+  public archivedAt!: Date;
+
+  // @AfterFind
+  // static afterFindHook(result: any): void {
+  //   if(result.constructor === Array) {
+  //     let arrayLength = result.length;
+  //     for (let i = 0; i < arrayLength; i++) {
+  //       result[i].logo = process.env.__S3_URL__ + result[i].logo;
+  //     }
+  //   } else {
+  //     result.logo = process.env.__S3_URL__ + result.logo;
+  //   }
+  //   return result;
+  // }
 }
