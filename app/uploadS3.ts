@@ -1,5 +1,5 @@
 import { S3 } from "aws-sdk";
-import CompanyImagesModel from "./database/models/company-images.model";
+import CompanyImageModel from "./database/models/company-image.model";
 import * as path from "path";
 import CompanyModel from "./database/models/company.model";
 import ProductModel from "./database/models/product.model";
@@ -8,7 +8,7 @@ const md5 = require("md5");
 interface UploadS3 {
   name: string;
   url: string;
-  image: CompanyImagesModel;
+  image: CompanyImageModel;
 }
 const client = new S3({
   accessKeyId: process.env.__S3_KEY__,
@@ -40,9 +40,11 @@ const uploadToS3AsCompany = async (
   filename: string,
   stream: Body,
   companyId: string,
-  productId: string | null
+  productId: string | null,
+  name?: string | undefined
 ): Promise<UploadS3> => {
-  const hash = md5(filename) + path.extname(filename);
+  // random, so if two files have the same name, they will have a key different.
+  const hash = md5(filename + Math.random() * 10000) + path.extname(filename);
   const response = await client
     .upload({
       Key: hash,
@@ -51,8 +53,9 @@ const uploadToS3AsCompany = async (
       Bucket: process.env.__S3_BUCKET__ ? process.env.__S3_BUCKET__ : ""
     })
     .promise();
-  const image = await CompanyImagesModel.create({
+  const image = await CompanyImageModel.create({
     filename: hash,
+    name: name ? name : hash,
     companyId,
     productId
   });

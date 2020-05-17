@@ -2,6 +2,7 @@ import { gql } from "apollo-server";
 
 export default gql`
   extend type Query {
+    getAllUsers: [User]!
     getUser: User
   }
   extend type Mutation {
@@ -46,5 +47,6 @@ export default gql`
 
     # Customer related
     customer: Customer
+    createdAt: Date
   }
 `;

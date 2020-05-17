@@ -20,18 +20,37 @@ export default gql`
       unitId: String
       companyProductsCategoryId: String
     ): Product!
+
     addCategoryToProduct(categoryName: String!, productId: String!): Product!
+
     updateProduct(
       productId: String
       name: String
       description: String
-      image: String
       unitId: String
       quantityForUnit: Float
       price: Float
     ): Product
+
     deleteProduct(productId: String!): Int
+
     updateProductsPosition(productsPositions: [ProductPosition!]): Boolean
+
+    addImageToProduct(
+      companyImageId: String!
+      productId: String!
+      isCover: Boolean
+    ): CompanyImage
+    uploadImageOfProduct(
+      image: Upload!
+      productId: String!
+      isCover: Boolean
+    ): CompanyImage
+    deleteImageFromProduct(
+      companyImageId: String!
+      productId: String!
+    ): CompanyImage
+    updateProductCover(companyImageId: String!, productId: String!): Product
   }
   #Type => ['addCategory', 'deleteCategory', 'moveCategory']
   input ProductPosition {
@@ -42,14 +61,17 @@ export default gql`
   }
 
   type Product {
-    # Resouce related data
+    # Resource related data
     id: ID!
     name: String!
     description: String!
     position: Int
-    cover: CompanyImages
-    images: [CompanyImages]
 
+    # Images
+    cover: CompanyImage
+    images: [CompanyImage]
+
+    # Date Related
     createdAt: Date
     updatedAt: Date
 

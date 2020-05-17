@@ -1,5 +1,6 @@
 import {
   BelongsTo,
+  BelongsToMany,
   Column,
   DataType,
   Default,
@@ -11,12 +12,13 @@ import {
 } from "sequelize-typescript";
 import CompanyModel from "./company.model";
 import ProductModel from "./product.model";
+import ProductCompanyImageModel from "./product-company-images.model";
 
 @Table({
   tableName: "CompanyImages",
   timestamps: true
 })
-export default class CompanyImagesModel extends Model<CompanyImagesModel> {
+export default class CompanyImageModel extends Model<CompanyImageModel> {
   @IsUUID(4)
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -26,6 +28,9 @@ export default class CompanyImagesModel extends Model<CompanyImagesModel> {
   @Column
   public filename!: string;
 
+  @Column
+  public name!: string;
+
   @ForeignKey(() => CompanyModel)
   @Column
   companyId!: string;
@@ -33,11 +38,10 @@ export default class CompanyImagesModel extends Model<CompanyImagesModel> {
   @BelongsTo(() => CompanyModel)
   company!: CompanyModel;
 
-  @ForeignKey(() => ProductModel)
-  @Column
-  productId!: string;
-
-  @BelongsTo(() => ProductModel)
+  @BelongsToMany(
+    () => ProductModel,
+    () => ProductCompanyImageModel
+  )
   product!: ProductModel;
 
   @Column
