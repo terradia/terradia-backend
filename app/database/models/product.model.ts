@@ -1,17 +1,17 @@
 import {
+  AfterFind,
+  AllowNull,
+  BelongsTo,
   BelongsToMany,
   Column,
   DataType,
   Default,
+  ForeignKey,
+  HasMany,
   IsUUID,
   Model,
   PrimaryKey,
-  BelongsTo,
-  Table,
-  ForeignKey,
-  HasMany,
-  AllowNull,
-  AfterFind
+  Table
 } from "sequelize-typescript";
 import CategoryModel from "./category.model";
 import ProductCategoryModel from "./product-category.model";
@@ -50,7 +50,6 @@ export default class ProductModel extends Model<ProductModel> {
   @Column
   coverId!: string;
 
-  public cover!: CompanyImageModel | null;
 
   @BelongsToMany(
     () => CompanyImageModel,
@@ -125,7 +124,11 @@ export default class ProductModel extends Model<ProductModel> {
   @BelongsTo(() => UnitModel)
   public unit!: UnitModel;
 
-  private static async addCoverToProduct(product: ProductModel) {
+  public cover!: CompanyImageModel | null;
+
+  public static async addCoverToProduct(
+    product: ProductModel
+  ): Promise<ProductModel> {
     if (product.coverId !== null) {
       const productCover: ProductCompanyImageModel | null = await ProductCompanyImageModel.findOne(
         {
@@ -133,10 +136,9 @@ export default class ProductModel extends Model<ProductModel> {
         }
       );
       if (productCover) {
-        const cover = await CompanyImageModel.findOne({
+        product.cover = await CompanyImageModel.findOne({
           where: { id: productCover.companyImageId }
         });
-        product.cover = cover;
       }
     } else {
       product.cover = null;
@@ -146,6 +148,7 @@ export default class ProductModel extends Model<ProductModel> {
 
   @AfterFind
   static async afterFindHook(data: any) {
+    if (data === undefined) return data;
     if (data.map !== undefined) {
       const products: ProductModel[] = data;
       return products.map(async product => {

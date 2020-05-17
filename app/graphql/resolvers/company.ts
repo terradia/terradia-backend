@@ -148,7 +148,7 @@ export default {
           location
         );
 
-        return await CompanyModel.findAll({
+        return CompanyModel.findAll({
           attributes: { include: [[distance, "distance"]] },
           include: toIncludeWhenGetCompany,
           order: Sequelize.literal("distance ASC"),

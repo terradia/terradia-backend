@@ -6,6 +6,7 @@ import { WhereOptions } from "sequelize";
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
 import CompanyImageModel from "../../database/models/company-image.model";
+import UnitModel from "../../database/models/unit.model";
 
 export default {
   Query: {
@@ -13,22 +14,31 @@ export default {
       _: any,
       { companyId }: { companyId: string }
     ): Promise<CompanyProductsCategoryModel[]> => {
-      const categories = await CompanyProductsCategoryModel.findAll({
+      const products = await ProductModel.findAll({
         where: { companyId },
         include: [
-          {
-            model: ProductModel,
-            include: [{ model: CompanyImageModel, as: "images" }]
-          },
-          CompanyModel
+          { model: CompanyImageModel, as: "images" },
+          UnitModel,
+          CompanyImageModel
         ]
+      });
+      const categories: CompanyProductsCategoryModel[] = await CompanyProductsCategoryModel.findAll(
+        {
+          where: { companyId },
+          include: [CompanyModel]
+        }
+      );
+      categories.map((cat: CompanyProductsCategoryModel) => {
+        cat.products = products.filter(
+          elem => elem.companyProductsCategoryId === cat.id
+        );
       });
       const nonCategories = await ProductModel.findAll({
         where: {
           companyId,
           companyProductsCategoryId: null
         },
-        include: [{ model: CompanyImageModel, as: "images" }]
+        include: [UnitModel, { model: CompanyImageModel, as: "images" }]
       });
       const nonCat: CompanyProductsCategoryModel = CompanyProductsCategoryModel.build(
         { id: "nonCat", name: "NonCategories", products: nonCategories },
@@ -36,11 +46,14 @@ export default {
           include: [
             {
               model: ProductModel,
-              include: [{ model: CompanyImageModel, as: "images" }]
+              include: [{ model: CompanyImageModel, as: "images" }, UnitModel]
             },
             CompanyModel
           ]
         }
+      );
+      nonCat.products = products.filter(
+        elem => elem.companyProductsCategoryId === null
       );
       categories.push(nonCat);
       return categories;
