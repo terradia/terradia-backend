@@ -95,7 +95,7 @@ export default {
             };
           });
           if (point.coordinates.length == 0) {
-            throw new ApolloError("This address does not exist", "500");
+            throw new ApolloError("This address does not exist", "400");
           }
           const addr: CustomerAddressModel = await CustomerAddressModel.create({
             address,
