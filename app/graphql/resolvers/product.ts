@@ -107,6 +107,7 @@ export default {
       else if (notation) options["notation"] = notation;
       else if (name) options["name"] = name;
       const unit: UnitModel | null = await UnitModel.findOne({
+        // @ts-ignore
         where: options
       });
       if (!unit) throw new ApolloError("Cannot find this unit.", "404");
