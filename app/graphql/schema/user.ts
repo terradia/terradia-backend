@@ -13,7 +13,7 @@ export default gql`
       password: String!
       email: String!
       phone: String
-      defineUserAsCostumer: Boolean
+      defineUserAsCustomer: Boolean
     ): SignupAnswer!
     login(email: String!, password: String!): SigninAnswer!
     updateUser(

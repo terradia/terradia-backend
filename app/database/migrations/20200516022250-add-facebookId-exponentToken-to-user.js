@@ -1,8 +1,8 @@
 "use strict";
 
-var dbm;
-var type;
-var seed;
+let dbm;
+let type;
+let seed;
 
 /**
  * We receive the dbmigrate dependency from dbmigrate initially.
@@ -18,7 +18,7 @@ exports.up = function(db) {
   db.addColumn("Users", "facebookId", {
     type: "string"
   });
-  db.changeColumn("Users", "password", {allowNull: true});
+  db.changeColumn("Users", "password", { allowNull: true });
   return db.addColumn("Users", "exponentPushToken", {
     type: "string"
   });
@@ -26,7 +26,7 @@ exports.up = function(db) {
 
 exports.down = function(db) {
   db.removeColumn("Users", "facebookId");
-  db.changeColumn("Users", "password", {allowNull: false});
+  db.changeColumn("Users", "password", { allowNull: false });
   return db.removeColumn("Users", "exponentPushToken");
 };
 
