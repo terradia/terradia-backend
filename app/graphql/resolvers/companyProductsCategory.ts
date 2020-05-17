@@ -31,7 +31,7 @@ export default {
           {model: CompanyImagesModel, as: "images"},
         ]
       });
-      const nonCat: CompanyProductsCategoryModel = CompanyProductsCategoryModel.build({id: "nonCat", name: "NonCategories", products: nonCategories}, {
+      const nonCat: CompanyProductsCategoryModel = CompanyProductsCategoryModel.build({id: `nonCat${companyId}`, name: "NonCategories", products: nonCategories}, {
         include: [
           {model: ProductModel, include: [
             {model: CompanyImagesModel, as: "cover"},
