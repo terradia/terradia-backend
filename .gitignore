@@ -68,3 +68,4 @@ dist
 
 # postgre folder that we have in the repository
 postgre
+data/certbot

@@ -137,6 +137,9 @@ export default class CompanyModel extends Model<CompanyModel> {
   @Column(DataType.VIRTUAL)
   public distance!: number;
 
+  @Column(DataType.DATE)
+  public archivedAt!: Date;
+
   // @AfterFind
   // static afterFindHook(result: any): void {
   //   if(result.constructor === Array) {
