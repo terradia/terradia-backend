@@ -21,7 +21,27 @@ declare interface CustomerModelMember {
   id: string;
 }
 
+interface GetCompanyReviewsProps {
+  id: string;
+  limit: number;
+  offset: number;
+}
+
 export default {
+  Query: {
+    getCompanyReviews: async (
+      _: any,
+      { id, limit, offset }: GetCompanyReviewsProps
+    ): Promise<CompanyReviewModel[]> => {
+      return CompanyReviewModel.findAll({
+        where: { companyId: id },
+        include: [{ model: CustomerModel, include: [UserModel] }],
+        offset,
+        limit
+      });
+    }
+  },
+
   Mutation: {
     createCompanyReview: combineResolvers(
       isAuthenticated,
