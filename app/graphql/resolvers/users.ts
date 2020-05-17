@@ -7,8 +7,8 @@ import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
 import ProductModel from "../../database/models/product.model";
 import { uploadToS3 } from "../../uploadS3";
-const fetch = require('node-fetch');
-import userController from '../../controllers/user';
+const fetch = require("node-fetch");
+import userController from "../../controllers/user";
 
 const createToken = async (user: UserModel, secret: string) => {
   const payload: Partial<UserModel> = user.toJSON();
@@ -32,14 +32,21 @@ export default {
       // TODO : Analytics
       return user;
     },
-    doesFacebookAccountExistWithEmail: async (_: any, { facebookToken }: {facebookToken: string}, { user }: {user: UserModel}) => {
-      let data = await fetch(`https://graph.facebook.com/me?fields=id,name,email&access_token=${facebookToken}`);
+    doesFacebookAccountExistWithEmail: async (
+      _: any,
+      { facebookToken }: { facebookToken: string },
+      { user }: { user: UserModel }
+    ) => {
+      let data = await fetch(
+        `https://graph.facebook.com/me?fields=id,name,email&access_token=${facebookToken}`
+      );
       data = await data.json();
-      if (data.error)
-        throw new ApolloError("Facebook account not found");
-      let userFound = await UserModel.findAll({where: {email: data.email}});
-      return userFound.length > 0
-    },
+      if (data.error) throw new ApolloError("Facebook account not found");
+      const userFound = await UserModel.findAll({
+        where: { email: data.email }
+      });
+      return userFound.length > 0;
+    }
   },
   Mutation: {
     login: async (
@@ -158,15 +165,25 @@ export default {
         );
         return await UserModel.findByPk(user.id);
       }
-    )
-    },
-    signUpWithFacebook: async (_: any,
-                               { facebookToken, exponentPushToken, defineUserAsCostumer }:
-                                 { facebookToken: string, exponentPushToken: string, defineUserAsCostumer: boolean}, { secret }: {secret: string}) => {
-      let data = await fetch(`https://graph.facebook.com/me?fields=id,name,email&access_token=${facebookToken}`);
+    ),
+    signUpWithFacebook: async (
+      _: any,
+      {
+        facebookToken,
+        exponentPushToken,
+        defineUserAsCostumer
+      }: {
+        facebookToken: string;
+        exponentPushToken: string;
+        defineUserAsCostumer: boolean;
+      },
+      { secret }: { secret: string }
+    ) => {
+      let data = await fetch(
+        `https://graph.facebook.com/me?fields=id,name,email&access_token=${facebookToken}`
+      );
       data = await data.json();
-      if (data.error)
-        throw new ApolloError("Facebook account not found");
+      if (data.error) throw new ApolloError("Facebook account not found");
       const [user] = await UserModel.findOrCreate({
         where: { email: data.email },
         defaults: {
@@ -185,11 +202,17 @@ export default {
         message: `Un email de confirmation a été envoyé a cette adresse email : ${user.email}, clique sur le lien dans le mail afin valider ton compte !`
       };
     },
-    signInWithFacebook: async (_: any,
-                               { facebookToken, exponentPushToken }:
-                                 { facebookToken: string, exponentPushToken: string},
-                               { secret }: {secret: string}) => {
-      let data = await fetch(`https://graph.facebook.com/me?fields=id,name,email&access_token=${facebookToken}`);
+    signInWithFacebook: async (
+      _: any,
+      {
+        facebookToken,
+        exponentPushToken
+      }: { facebookToken: string; exponentPushToken: string },
+      { secret }: { secret: string }
+    ) => {
+      let data = await fetch(
+        `https://graph.facebook.com/me?fields=id,name,email&access_token=${facebookToken}`
+      );
       data = await data.json();
       const user = await UserModel.findOne({
         where: { email: data.email }
@@ -204,6 +227,6 @@ export default {
         { where: { id: user.id } }
       );
       return { token: createToken(user, secret), userId: user.id };
-    },
+    }
   }
 };

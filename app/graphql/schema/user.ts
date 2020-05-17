@@ -3,7 +3,7 @@ import { gql } from "apollo-server";
 export default gql`
   extend type Query {
     getAllUsers: [User]!
-        doesFacebookAccountExistWithEmail(facebookToken: String!): Boolean!
+    doesFacebookAccountExistWithEmail(facebookToken: String!): Boolean!
     getUser: User
   }
   extend type Mutation {
@@ -13,7 +13,7 @@ export default gql`
       password: String!
       email: String!
       phone: String
-            defineUserAsCostumer: Boolean
+      defineUserAsCostumer: Boolean
     ): SignupAnswer!
     login(email: String!, password: String!): SigninAnswer!
     updateUser(
@@ -24,8 +24,15 @@ export default gql`
       password: String
     ): User!
     updateUserAvatar(avatar: Upload!): User
-        signInWithFacebook(facebookToken: String!, exponentPushToken: String): SigninAnswer!
-        signUpWithFacebook(facebookToken: String! , exponentPushToken: String, defineUserAsCostumer: Boolean): SignupAnswer!
+    signInWithFacebook(
+      facebookToken: String!
+      exponentPushToken: String
+    ): SigninAnswer!
+    signUpWithFacebook(
+      facebookToken: String!
+      exponentPushToken: String
+      defineUserAsCostumer: Boolean
+    ): SignupAnswer!
   }
   type SignupAnswer {
     token: String!
