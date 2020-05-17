@@ -42,11 +42,11 @@ export default gql`
     description: String
     email: String
     phone: String
-    logo: CompanyImages
-    cover: CompanyImages
+    logo: CompanyImage
+    cover: CompanyImage
     createdAt: Date
     updatedAt: Date
-    companyImages: [CompanyImages]
+    companyImages: [CompanyImage]
     # Products related data
     products: [Product]
     productsCategories: [CompanyProductsCategory]

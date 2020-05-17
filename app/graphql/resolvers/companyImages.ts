@@ -1,14 +1,16 @@
-import CompanyImagesModel from "../../database/models/company-images.model";
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
 import UserModel from "../../database/models/user.model";
 import { uploadToS3AsCompany } from "../../uploadS3";
+import ProductCompanyImageModel from "../../database/models/product-company-images.model";
+import { ApolloError } from "apollo-server-errors";
+import CompanyImageModel from "../../database/models/company-image.model";
 
 declare interface Context {
   user: UserModel;
 }
 
-declare interface CompanyImagesData {
+export declare interface CompanyImageData {
   stream: Body;
   filename: string;
   mimetype: string;
@@ -25,8 +27,8 @@ export default {
         pageSize = 15
       }: { companyId: string; page: number; pageSize: number },
       __: any
-    ): Promise<CompanyImagesModel[]> => {
-      return CompanyImagesModel.findAll({
+    ): Promise<CompanyImageModel[]> => {
+      return CompanyImageModel.findAll({
         where: { companyId },
         limit: pageSize,
         offset: page * pageSize
@@ -40,36 +42,102 @@ export default {
         _: any,
         {
           images,
-          companyId
-        }: { images: CompanyImagesData[]; companyId: string },
-        { user }: Context
-      ): Promise<CompanyImagesModel>[] => {
-        return images.map(async image => {
-          const { stream, filename } = image;
+          companyId,
+          names
+        }: { images: CompanyImageData[]; companyId: string; names?: string[] }
+      ): Promise<CompanyImageModel>[] => {
+        return images.map(async (image, index) => {
+          const { stream, filename } = await image;
           const imageCreated = await uploadToS3AsCompany(
             filename,
             stream,
             companyId,
-            null
+            null,
+            names ? names[index] : undefined
           );
           return imageCreated.image;
         });
+      }
+    ),
+    addCompanyImage: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        {
+          image,
+          companyId,
+          name
+        }: { image: CompanyImageData; companyId: string; name?: string }
+      ): Promise<CompanyImageModel> => {
+        const { stream, filename } = await image;
+        const imageCreated = await uploadToS3AsCompany(
+          filename,
+          stream,
+          companyId,
+          null,
+          name
+        );
+        return imageCreated.image;
       }
     ),
     removeCompanyImages: combineResolvers(
       isAuthenticated,
       async (
         _: any,
-        { imagesId }: { imagesId: string[] },
-        { user }: Context
-      ): Promise<CompanyImagesModel[] | null> => {
-        const images = await CompanyImagesModel.findAll({
+        { imagesId }: { imagesId: string[] }
+      ): Promise<CompanyImageModel[] | null> => {
+        const images = await CompanyImageModel.findAll({
           where: { id: imagesId }
         });
-        await CompanyImagesModel.destroy({
+        await CompanyImageModel.destroy({
           where: { id: imagesId }
+        });
+        // TODO : remove the image from AmazonS3
+        // destroy all of the items in the joinTable
+        await ProductCompanyImageModel.destroy({
+          where: { companyImageId: imagesId }
         });
         return images;
+      }
+    ),
+    removeCompanyImage: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        { imageId }: { imageId: string }
+      ): Promise<CompanyImageModel | null> => {
+        const image = await CompanyImageModel.findOne({
+          where: { id: imageId }
+        });
+        await CompanyImageModel.destroy({
+          where: { id: imageId }
+        });
+        // TODO : remove the image from AmazonS3
+        // destroy all of the items in the joinTable
+        await ProductCompanyImageModel.destroy({
+          where: { companyImageId: imageId }
+        });
+        return image;
+      }
+    ),
+    updateCompanyImageName: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        { imageId, name }: { imageId: string; name: string }
+      ): Promise<CompanyImageModel> => {
+        const img: CompanyImageModel | null = await CompanyImageModel.findOne({
+          where: { id: imageId }
+        });
+        if (!img) throw new ApolloError("Image not found", "404");
+        const result: [
+          number,
+          CompanyImageModel[]
+        ] = await CompanyImageModel.update(
+          { name },
+          { where: { id: imageId }, returning: true }
+        );
+        return result[1][0];
       }
     )
   }

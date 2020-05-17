@@ -19,6 +19,10 @@ declare interface Context {
 
 export default {
   Query: {
+    getAllUsers: async (): Promise<UserModel[]> => {
+      return UserModel.findAll();
+    },
+
     getUser: async (_: any, __: any, { user }: { user: UserModel }) => {
       if (!user) {
         return null;

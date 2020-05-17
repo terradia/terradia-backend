@@ -22,7 +22,7 @@ import CompanyProductsCategoryModel from "./company-products-category.model";
 import CompanyUserModel from "./company-user.model";
 import CartModel from "./cart.model";
 import CompanyOpeningDayModel from "./company-opening-day.model";
-import CompanyImagesModel from "./company-images.model";
+import CompanyImagesModel from "./company-image.model";
 import CompanyTagModel from "./company-tag.model";
 import CompanyTagRelationsModel from "./company-tag-relations.model";
 
@@ -57,7 +57,7 @@ export default class CompanyModel extends Model<CompanyModel> {
   logoId!: string;
   // A string because to get the images you should get them from the media server of Terradia
   // https://media.terradia.eu/ + company.logo
-  @BelongsTo(() => CompanyImagesModel, "logoId")
+  @BelongsTo(() => CompanyImagesModel)
   public logo!: string;
 
   // A string because to get the images you should get them from the media server of Terradia
@@ -66,7 +66,7 @@ export default class CompanyModel extends Model<CompanyModel> {
   @Column
   coverId!: string;
 
-  @BelongsTo(() => CompanyImagesModel, "coverId")
+  @BelongsTo(() => CompanyImagesModel)
   public cover!: string;
 
   // @HasMany(() => UserModel)
