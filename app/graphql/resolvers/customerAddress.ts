@@ -62,12 +62,14 @@ export default {
       async (
         _: any,
         { address, apartment, information, id }: CreateCustomerAddressData,
-        { user }: { user: UserModel }
+        { user: { customer } }: { user: UserModel }
       ): Promise<
         CustomerAddressModel | [number, CustomerAddressModel[]] | null
       > => {
-        const customer: CustomerModel = user.customer;
-        if (customer) {
+        const customerAddress = await CustomerAddressModel.findOne({
+          where: { customerId: customer.id, address }
+        });
+        if (!customerAddress) {
           let point: Point = {
             type: "",
             coordinates: []
@@ -81,6 +83,9 @@ export default {
                 "Error while get geo data from address",
                 "500"
               );
+            if (res.length == 0) {
+              return;
+            }
             point = {
               type: "Point",
               coordinates: [
@@ -89,51 +94,45 @@ export default {
               ]
             };
           });
-          if (id) {
-            const customerResult: [
-              number,
-              CustomerAddressModel[]
-            ] = await CustomerAddressModel.update(
-              { address, apartment, information, location: point },
-              { where: { id }, returning: true }
-            );
-            CustomerModel.update(
-              {
-                activeAddressId: customerResult[1][0].id
-              },
-              { where: { id: customer.id } }
-            );
-            return customerResult[1][0];
-          } else {
-            const addr: CustomerAddressModel = await CustomerAddressModel.create(
-              {
-                address,
-                apartment,
-                information,
-                location: point
-              }
-            );
-            CustomerModel.update(
-              {
-                activeAddressId: addr.id
-              },
-              { where: { id: customer.id } }
-            );
-            await addr.$set("customer", customer);
-            return CustomerAddressModel.findByPk(addr.id, {
-              include: [
-                {
-                  model: CustomerModel,
-                  include: [UserModel]
-                }
-              ]
-            });
+          if (point.coordinates.length == 0) {
+            throw new ApolloError("This address does not exist", "500");
           }
-        } else {
-          throw new ApolloError(
-            "You need to be a customer review a product.",
-            "403"
+          const addr: CustomerAddressModel = await CustomerAddressModel.create({
+            address,
+            apartment,
+            information,
+            location: point
+          });
+          CustomerModel.update(
+            {
+              activeAddressId: addr.id
+            },
+            { where: { id: customer.id } }
           );
+          await addr.$set("customer", customer);
+          return CustomerAddressModel.findByPk(addr.id, {
+            include: [
+              {
+                model: CustomerModel,
+                include: [UserModel]
+              }
+            ]
+          });
+        } else {
+          const customerResult: [
+            number,
+            CustomerAddressModel[]
+          ] = await CustomerAddressModel.update(
+            { apartment, information },
+            { where: { address }, returning: true }
+          );
+          CustomerModel.update(
+            {
+              activeAddressId: customerResult[1][0].id
+            },
+            { where: { id: customer.id } }
+          );
+          return customerResult[1][0];
         }
       }
     ),
