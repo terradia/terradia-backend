@@ -30,6 +30,7 @@ export default gql`
       unitId: String
       quantityForUnit: Float
       price: Float
+      coverId: String
     ): Product
 
     deleteProduct(productId: String!): Int

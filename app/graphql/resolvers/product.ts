@@ -262,50 +262,49 @@ export default {
           productId: string;
           name?: string;
           description?: string;
-          image?: string;
           unitId?: string;
           quantityForUnit?: number;
-          cover: {
-            stream: Body;
-            filename: string;
-            mimetype: string;
-            encoding: string;
-          };
           price?: number;
+          coverId?: string;
         }
-      ): Promise<Partial<ProductModel>> => {
+      ): Promise<ProductModel | null> => {
         if (args.productId === undefined)
           throw new ApolloError("You need to provide an ID.", "400");
+        const product: ProductModel | null = await ProductModel.findOne({
+          where: { id: args.productId }
+        });
+        if (!product)
+          throw new ApolloError("The product does not exist", "404");
+        const cover: any = {};
+        let newResource: any = undefined;
+        if (args.coverId) {
+          newResource = await ProductCompanyImageModel.findOrCreate({
+            where: {
+              productId: args.productId,
+              companyImageId: args.coverId
+            }
+          });
+          cover["coverId"] = newResource[0].id;
+        }
         const productResult: [
           number,
           ProductModel[]
         ] = await ProductModel.update(
           {
-            ...args
+            ...args,
+            ...cover
           },
           {
             where: { id: args.productId },
             returning: true
           }
         );
-        if (args.cover) {
-          const existingProduct = await ProductModel.findByPk(args.productId);
-          if (!existingProduct) {
-            throw new ApolloError("Could not upload image", "400");
-          }
-          const { stream, filename } = await args.cover;
-          uploadToS3SaveAsProductCover(
-            filename,
-            stream,
-            existingProduct.companyId,
-            args.productId
-          );
-        } else if (productResult[0] === 0)
+        if (productResult[0] === 0)
           throw new ApolloError(
             "Could not update any field in Database, are you sure the product you want to update exists ?",
             "400"
           );
-        return productResult[1][0];
+        return ProductModel.findOne({ where: { id: args.productId } });
       }
     ),
     // returns the number of products deleted : 1 => your product was well deleted.
