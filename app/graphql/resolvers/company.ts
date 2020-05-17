@@ -148,7 +148,7 @@ export default {
           location
         );
 
-        return await CompanyModel.findAll({
+        return CompanyModel.findAll({
           attributes: { include: [[distance, "distance"]] },
           include: toIncludeWhenGetCompany,
           order: Sequelize.literal("distance ASC"),
@@ -335,6 +335,22 @@ export default {
           userCompany.addRole(ownerRole.id);
         });
         return newCompany;
+      }
+    ),
+    deleteCompany: combineResolvers(
+      isAuthenticated,
+      async (_: any, { companyId }, { user }: Context) => {
+        const [nb, company] = await CompanyModel.update(
+          { archivedAt: Date.now() },
+          {
+            where: { id: companyId },
+            returning: true
+          }
+        );
+        if (nb == 0) {
+          throw new ApolloError("Can't find the requested company");
+        }
+        return company[0];
       }
     ),
     joinCompany: combineResolvers(
