@@ -23,15 +23,15 @@ exports.up = function(db) {
         notNull: true,
         defaultValue: new String("uuid_generate_v4()")
       },
+      name: {
+        type: "string",
+        allowNull: false
+      },
       filename: {
         type: "string",
         allowNull: false
       },
       companyId: {
-        type: "uuid",
-        allowNull: true
-      },
-      productId: {
         type: "uuid",
         allowNull: true
       },
@@ -45,26 +45,30 @@ exports.up = function(db) {
         type: new String("TIMESTAMPTZ"),
         defaultValue: new String("now()")
       }
-    }).then(() => {
+    })
+    .then(() => {
       return db.addColumn("Companies", "logoId", {
         type: "uuid",
-        allowNull: false
+        allowNull: true
       });
-    }).then(() => {
+    })
+    .then(() => {
       return db.addColumn("Companies", "coverId", {
         type: "uuid",
-        allowNull: false
+        allowNull: true
       });
-    }).then(() => {
+    })
+    .then(() => {
       return db.addColumn("Products", "coverId", {
         type: "uuid",
-        allowNull: false
+        allowNull: true
       });
     });
 };
 
 exports.down = function(db) {
-  return db.dropTable("CompanyImages")
+  return db
+    .dropTable("CompanyImages")
     .then(() => db.removeColumn("Companies", "logoId"))
     .then(() => db.removeColumn("Companies", "coverId"))
     .then(() => db.removeColumn("Products", "coverId"));
