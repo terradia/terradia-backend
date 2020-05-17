@@ -5,6 +5,7 @@ import { uploadToS3AsCompany } from "../../uploadS3";
 import ProductCompanyImageModel from "../../database/models/product-company-images.model";
 import { ApolloError } from "apollo-server-errors";
 import CompanyImageModel from "../../database/models/company-image.model";
+import ProductModel from "../../database/models/product.model";
 
 declare interface Context {
   user: UserModel;
@@ -31,7 +32,8 @@ export default {
       return CompanyImageModel.findAll({
         where: { companyId },
         limit: pageSize,
-        offset: page * pageSize
+        offset: page * pageSize,
+        include: [ProductModel]
       });
     }
   },
