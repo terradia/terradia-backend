@@ -287,6 +287,10 @@ export default {
               "Error while get geo data from address",
               "500"
             );
+          //If coordinates are not found, avoid server crash
+          if (res.length == 0) {
+            return;
+          }
           point = {
             type: "Point",
             coordinates: [
@@ -295,6 +299,9 @@ export default {
             ]
           };
         });
+        if (point.coordinates.length == 0) {
+          throw new ApolloError("This address does not exist", "400");
+        }
         const ownerRole: RoleModel | null = await RoleModel.findOne({
           where: { slugName: "owner" }
         }).then(elem => elem);
