@@ -42,7 +42,7 @@ export default class CompanyImageModel extends Model<CompanyImageModel> {
     () => ProductModel,
     () => ProductCompanyImageModel
   )
-  product!: ProductModel;
+  products!: ProductModel[];
 
   @Column
   public createdAt!: Date;

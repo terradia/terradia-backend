@@ -48,7 +48,7 @@ export default gql`
     createdAt: Date
     updatedAt: Date
     archivedAt: Date
-    companyImages: [CompanyImages]
+    companyImages: [CompanyImage]
     # Products related data
     products: [Product]
     productsCategories: [CompanyProductsCategory]
