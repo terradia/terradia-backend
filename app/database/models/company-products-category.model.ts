@@ -50,7 +50,6 @@ export default class CompanyProductsCategoryModel extends Model<
         const products = await category.products.map(
           async (product: ProductModel) => {
             const res = await ProductModel.addCoverToProduct(product);
-            if (product.coverId !== null) console.log(res);
             return res;
           }
         );
@@ -62,7 +61,6 @@ export default class CompanyProductsCategoryModel extends Model<
       category.products = await category.products.map(
         async (product: ProductModel) => {
           const res = await ProductModel.addCoverToProduct(product);
-          if (product.coverId !== null) console.log(res);
           return res;
         }
       );
