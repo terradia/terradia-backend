@@ -31,7 +31,7 @@ export default {
   Query: {
     getCompanyReviews: async (
       _: any,
-      { id, limit, offset }: GetCompanyReviewsProps
+      { id, limit = 10, offset = 10 }: GetCompanyReviewsProps
     ): Promise<CompanyReviewModel[]> => {
       return CompanyReviewModel.findAll({
         where: { companyId: id },
