@@ -7,6 +7,7 @@ import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
 import ProductModel from "../../database/models/product.model";
 import { uploadToS3 } from "../../uploadS3";
+import { createEmailRegister } from "../../services/mails/users";
 
 const createToken = async (user: UserModel, secret: string) => {
   const payload: Partial<UserModel> = user.toJSON();
@@ -80,6 +81,7 @@ export default {
       });
       console.log(validationLink);
       // TODO : here handle the identification of the user for the analytics.
+      createEmailRegister(email, validationLink, userInformations.firstName);
       return {
         token: createToken(user, secret),
         userId: user.id,
