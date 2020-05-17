@@ -1,9 +1,11 @@
 import {
   AllowNull,
-  BelongsTo, BelongsToMany,
+  BelongsTo,
   Column,
   DataType,
-  Default, ForeignKey, HasMany, HasOne,
+  Default,
+  ForeignKey,
+  HasMany,
   IsUUID,
   Model,
   PrimaryKey,

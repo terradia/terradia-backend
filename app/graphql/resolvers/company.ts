@@ -197,7 +197,7 @@ export default {
                 model: CompanyModel,
                 include: [
                   { model: CompanyImageModel, as: "logo" },
-                  { model: CompanyImageModel, as: "cover" },
+                  { model: CompanyImageModel, as: "cover" }
                 ]
               }
             ]
