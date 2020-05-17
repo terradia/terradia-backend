@@ -10,7 +10,8 @@ import {
   Table,
   ForeignKey,
   HasMany,
-  AllowNull, AfterFind
+  AllowNull,
+  AfterFind
 } from "sequelize-typescript";
 import CategoryModel from "./category.model";
 import ProductCategoryModel from "./product-category.model";
@@ -49,7 +50,7 @@ export default class ProductModel extends Model<ProductModel> {
   @Column
   coverId!: string;
 
-  public cover!: CompanyImageModel;
+  public cover!: CompanyImageModel | null;
 
   @BelongsToMany(
     () => CompanyImageModel,
@@ -124,8 +125,35 @@ export default class ProductModel extends Model<ProductModel> {
   @BelongsTo(() => UnitModel)
   public unit!: UnitModel;
 
+  private static async addCoverToProduct(product: ProductModel) {
+    if (product.coverId !== null) {
+      const productCover: ProductCompanyImageModel | null = await ProductCompanyImageModel.findOne(
+        {
+          where: { id: product.coverId }
+        }
+      );
+      if (productCover) {
+        const cover = await CompanyImageModel.findOne({
+          where: { id: productCover.companyImageId }
+        });
+        product.cover = cover;
+      }
+    } else {
+      product.cover = null;
+    }
+    return product;
+  }
+
   @AfterFind
-  static afterFindHook(result: any) {
-    console.log("in hook : ", result);
+  static async afterFindHook(data: any) {
+    if (data.map !== undefined) {
+      const products: ProductModel[] = data;
+      return products.map(async product => {
+        return ProductModel.addCoverToProduct(product);
+      });
+    } else {
+      const product: ProductModel = data;
+      return ProductModel.addCoverToProduct(product);
+    }
   }
 }
