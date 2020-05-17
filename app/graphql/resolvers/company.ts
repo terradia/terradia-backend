@@ -192,7 +192,15 @@ export default {
         include: [
           {
             model: CompanyUserModel,
-            include: [CompanyModel]
+            include: [
+              {
+                model: CompanyModel,
+                include: [
+                  { model: CompanyImageModel, as: "logo" },
+                  { model: CompanyImageModel, as: "cover" },
+                ]
+              }
+            ]
           }
         ]
       });
