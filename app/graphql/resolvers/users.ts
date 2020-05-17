@@ -48,10 +48,10 @@ export default {
       { facebookToken }: { facebookToken: string },
       { user }: { user: UserModel }
     ) => {
-      let data = await fetch(
+      let data: any = await fetch(
         `https://graph.facebook.com/me?fields=id,name,email&access_token=${facebookToken}`
       );
-      data = await data.json();
+      data = (await data.json()) as FacebookObject;
       if (data.error) throw new ApolloError("Facebook account not found");
       const userFound = await UserModel.findAll({
         where: { email: data.email }
@@ -157,10 +157,12 @@ export default {
       async (
         _: any,
         avatar: {
-          stream: Body;
-          filename: string;
-          mimetype: string;
-          encoding: string;
+          avatar: {
+            stream: Body;
+            filename: string;
+            mimetype: string;
+            encoding: string;
+          };
         },
         { user }: Context
       ): Promise<UserModel | null> => {
@@ -190,10 +192,10 @@ export default {
       },
       { secret }: { secret: string }
     ): Promise<{ userId: string; token: Promise<string>; message: string }> => {
-      let data = await fetch(
+      let data: any = await fetch(
         `https://graph.facebook.com/me?fields=id,name,email,first_name,last_name&access_token=${facebookToken}`
       );
-      data = await data.json();
+      data = (await data.json()) as FacebookObject;
       if (data.error) throw new ApolloError("Facebook account not found");
       const [user] = await UserModel.findOrCreate({
         where: { email: data.email },
@@ -203,7 +205,7 @@ export default {
           exponentPushToken,
           phone: "070787866",
           firstName: data.first_name,
-          lastName: data.last_last
+          lastName: data.last_name
         }
       });
       if (defineUserAsCostumer) {
@@ -223,10 +225,10 @@ export default {
       }: { facebookToken: string; exponentPushToken: string },
       { secret }: { secret: string }
     ): Promise<{ userId: string; token: Promise<string> }> => {
-      let data = await fetch(
+      let data: any = await fetch(
         `https://graph.facebook.com/me?fields=id,name,email&access_token=${facebookToken}`
       );
-      data = await data.json();
+      data = (await data.json()) as FacebookObject;
       const user = await UserModel.findOne({
         where: { email: data.email }
       });
