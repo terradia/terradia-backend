@@ -6,6 +6,16 @@ export default gql`
     endTime: Date!
   }
 
+  input CompanyUpdateInput {
+    name: String
+    description: String
+    email: String
+    phone: String
+    address: String
+    logo: Upload
+    cover: Upload
+  }
+
   extend type Query {
     getAllCompanies(page: Int, pageSize: Int): [Company]
     getCompany(companyId: ID!): Company
@@ -32,6 +42,7 @@ export default gql`
       address: String!
     ): Company!
     deleteCompany(companyId: String!): Company!
+    updateCompany(companyId: ID!, newValues: CompanyUpdateInput): Company!
     joinCompany(companyId: String!, userId: String!): Company!
     leaveCompany(companyId: String!, userId: String!): Company!
   }

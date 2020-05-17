@@ -353,6 +353,43 @@ export default {
         return company[0];
       }
     ),
+    updateCompany: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        {
+          companyId,
+          newValues
+        }: { companyId: string; newValues: CreateCompanyProps }
+      ): Promise<CompanyModel | null> => {
+        const [nb, companies] = await CompanyModel.update(newValues, {
+          where: { id: companyId },
+          returning: true
+        });
+        if (nb === 0) {
+          throw new ApolloError("Can't find the requested company", "500");
+        }
+        if (newValues.logo) {
+          const { stream, filename } = await newValues.logo;
+          uploadToS3SaveAsCompanyAvatarOrCover(
+            filename,
+            stream,
+            companyId,
+            true
+          );
+        }
+        if (newValues.cover) {
+          const { stream, filename } = await newValues.cover;
+          uploadToS3SaveAsCompanyAvatarOrCover(
+            filename,
+            stream,
+            companyId,
+            false
+          );
+        }
+        return companies[0];
+      }
+    ),
     joinCompany: combineResolvers(
       isAuthenticated,
       async (
