@@ -65,6 +65,7 @@
     }
   },
   "dependencies": {
+    "@sendgrid/mail": "^7.1.1",
     "apollo-server": "^2.11.0",
     "apollo-server-express": "^2.11.0",
     "aws-sdk": "^2.656.0",
@@ -77,8 +78,8 @@
     "eslint-config-prettier": "^6.9.0",
     "graphql": "^14.6.0",
     "graphql-import": "^1.0.2",
-    "graphql-upload": "^9.0.0",
     "graphql-resolvers": "^0.4.2",
+    "graphql-upload": "^9.0.0",
     "helmet": "latest",
     "jsonwebtoken": "^8.5.1",
     "md5": "^2.2.1",

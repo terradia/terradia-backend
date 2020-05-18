@@ -6,6 +6,7 @@ import { ApolloError } from "apollo-server-errors";
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
 import { uploadToS3 } from "../../uploadS3";
+import { createEmailRegister } from "../../services/mails/users";
 import fetch from "node-fetch";
 import userController from "../../controllers/user";
 import { FetchError } from "node-fetch";
@@ -113,6 +114,7 @@ export default {
       }
       console.log(validationLink);
       // TODO : here handle the identification of the user for the analytics.
+      createEmailRegister(email, validationLink, userInformations.firstName);
       return {
         token: createToken(user, secret),
         userId: user.id,
