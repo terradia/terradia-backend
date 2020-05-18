@@ -50,12 +50,15 @@ export default class CompanyModel extends Model<CompanyModel> {
   @Column(DataType.STRING)
   public phone!: string;
 
+  @Column(DataType.STRING)
+  public siren!: string;
+
   @ForeignKey(() => CompanyImageModel)
   @Column
   logoId!: string;
   // A string because to get the images you should get them from the media server of Terradia
   // https://media.terradia.eu/ + company.logo
-  @BelongsTo(() => CompanyImageModel)
+  @BelongsTo(() => CompanyImageModel, "logoId")
   public logo!: string;
 
   // A string because to get the images you should get them from the media server of Terradia
@@ -64,7 +67,7 @@ export default class CompanyModel extends Model<CompanyModel> {
   @Column
   coverId!: string;
 
-  @BelongsTo(() => CompanyImageModel)
+  @BelongsTo(() => CompanyImageModel, "coverId")
   public cover!: string;
 
   // @HasMany(() => UserModel)

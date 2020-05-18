@@ -35,6 +35,7 @@ declare interface CreateCompanyProps {
   email: string;
   phone: string;
   address: string;
+  siren: string;
   logo: { stream: Body; filename: string; mimetype: string; encoding: string };
   cover: { stream: Body; filename: string; mimetype: string; encoding: string };
 }
@@ -92,8 +93,14 @@ export default {
     ): Promise<CompanyModel | null> => {
       const company = CompanyModel.findByPk(companyId, {
         include: [
-          { model: CompanyImageModel, as: "logo" },
-          { model: CompanyImageModel, as: "cover" },
+          {
+            model: CompanyImageModel,
+            as: "logo"
+          },
+          {
+            model: CompanyImageModel,
+            as: "cover"
+          },
           { model: CompanyImageModel, as: "companyImages" },
           ProductModel,
           {
@@ -322,24 +329,6 @@ export default {
           ...args,
           geoPosition: point
         });
-        if (args.logo) {
-          const { stream, filename } = await args.logo;
-          uploadToS3SaveAsCompanyAvatarOrCover(
-            filename,
-            stream,
-            newCompany.id,
-            true
-          );
-        }
-        if (args.cover) {
-          const { stream, filename } = await args.cover;
-          uploadToS3SaveAsCompanyAvatarOrCover(
-            filename,
-            stream,
-            newCompany.id,
-            false
-          );
-        }
         await CompanyUserModel.create({
           // @ts-ignore
           companyId: newCompany.id,
@@ -366,6 +355,35 @@ export default {
           throw new ApolloError("Can't find the requested company");
         }
         return company[0];
+      }
+    ),
+    updateCompany: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        {
+          companyId,
+          newValues
+        }: { companyId: string; newValues: CreateCompanyProps }
+      ): Promise<CompanyModel | null> => {
+        const [nb] = await CompanyModel.update(newValues, {
+          where: { id: companyId }
+        });
+        if (nb === 0) {
+          throw new ApolloError("Can't find the requested company", "500");
+        }
+        return CompanyModel.findByPk(companyId, {
+          include: [
+            {
+              model: CompanyImageModel,
+              as: "logo"
+            },
+            {
+              model: CompanyImageModel,
+              as: "cover"
+            }
+          ]
+        });
       }
     ),
     joinCompany: combineResolvers(
