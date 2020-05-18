@@ -5,16 +5,29 @@ import { AuthenticationError, UserInputError } from "apollo-server";
 import { ApolloError } from "apollo-server-errors";
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
-import ProductModel from "../../database/models/product.model";
 import { uploadToS3 } from "../../uploadS3";
+import fetch from "node-fetch";
+import userController from "../../controllers/user";
+import { FetchError } from "node-fetch";
 
-const createToken = async (user: UserModel, secret: string) => {
+const createToken = async (
+  user: UserModel,
+  secret: string
+): Promise<string> => {
   const payload: Partial<UserModel> = user.toJSON();
   delete payload.password;
   return jwt.sign(payload, secret);
 };
 declare interface Context {
   user: UserModel;
+}
+
+declare interface FacebookObject {
+  email: string;
+  first_name: string;
+  id: string;
+  last_name: string;
+  name: string;
 }
 
 export default {
@@ -29,6 +42,21 @@ export default {
       }
       // TODO : Analytics
       return user;
+    },
+    doesFacebookAccountExistWithEmail: async (
+      _: any,
+      { facebookToken }: { facebookToken: string },
+      { user }: { user: UserModel }
+    ) => {
+      let data: any = await fetch(
+        `https://graph.facebook.com/me?fields=id,name,email&access_token=${facebookToken}`
+      );
+      data = (await data.json()) as FacebookObject;
+      if (data.error) throw new ApolloError("Facebook account not found");
+      const userFound = await UserModel.findAll({
+        where: { email: data.email }
+      });
+      return userFound.length > 0;
     }
   },
   Mutation: {
@@ -36,7 +64,7 @@ export default {
       _: any,
       { email, password }: { email: string; password: string },
       { secret }: { secret: string }
-    ) => {
+    ): Promise<{ userId: string; token: Promise<string> }> => {
       const user = await UserModel.findByLogin(email);
       if (!user) {
         throw new UserInputError("No user found with this login credentials.");
@@ -52,6 +80,7 @@ export default {
       _: any,
       {
         email,
+        defineUserAsCustomer,
         ...userInformations
       }: {
         email: string;
@@ -59,9 +88,10 @@ export default {
         lastName: string;
         password: string;
         phone: string;
+        defineUserAsCustomer: boolean;
       },
       { secret }: { secret: string }
-    ) => {
+    ): Promise<{ userId: string; token: Promise<string>; message: string }> => {
       const emailAlreadyTaken = await UserModel.findOne({
         where: { email }
       });
@@ -78,6 +108,9 @@ export default {
       const validationLink = generateAuthlink("check-email", {
         id: user.id
       });
+      if (defineUserAsCustomer) {
+        await userController.defineUserAsCustomer(user.id);
+      }
       console.log(validationLink);
       // TODO : here handle the identification of the user for the analytics.
       return {
@@ -124,10 +157,12 @@ export default {
       async (
         _: any,
         avatar: {
-          stream: Body;
-          filename: string;
-          mimetype: string;
-          encoding: string;
+          avatar: {
+            stream: Body;
+            filename: string;
+            mimetype: string;
+            encoding: string;
+          };
         },
         { user }: Context
       ): Promise<UserModel | null> => {
@@ -143,6 +178,70 @@ export default {
         );
         return await UserModel.findByPk(user.id);
       }
-    )
+    ),
+    signUpWithFacebook: async (
+      _: any,
+      {
+        facebookToken,
+        exponentPushToken,
+        defineUserAsCostumer
+      }: {
+        facebookToken: string;
+        exponentPushToken: string;
+        defineUserAsCostumer: boolean;
+      },
+      { secret }: { secret: string }
+    ): Promise<{ userId: string; token: Promise<string>; message: string }> => {
+      let data: any = await fetch(
+        `https://graph.facebook.com/me?fields=id,name,email,first_name,last_name&access_token=${facebookToken}`
+      );
+      data = (await data.json()) as FacebookObject;
+      if (data.error) throw new ApolloError("Facebook account not found");
+      const [user] = await UserModel.findOrCreate({
+        where: { email: data.email },
+        defaults: {
+          email: data.email,
+          facebookId: data.id,
+          exponentPushToken,
+          phone: "070787866",
+          firstName: data.first_name,
+          lastName: data.last_name
+        }
+      });
+      if (defineUserAsCostumer) {
+        await userController.defineUserAsCustomer(user.id);
+      }
+      return {
+        token: createToken(user, secret),
+        userId: user.id,
+        message: `Un email de confirmation a été envoyé a cette adresse email : ${user.email}, clique sur le lien dans le mail afin valider ton compte !`
+      };
+    },
+    signInWithFacebook: async (
+      _: any,
+      {
+        facebookToken,
+        exponentPushToken
+      }: { facebookToken: string; exponentPushToken: string },
+      { secret }: { secret: string }
+    ): Promise<{ userId: string; token: Promise<string> }> => {
+      let data: any = await fetch(
+        `https://graph.facebook.com/me?fields=id,name,email&access_token=${facebookToken}`
+      );
+      data = (await data.json()) as FacebookObject;
+      const user = await UserModel.findOne({
+        where: { email: data.email }
+      });
+      if (!user) {
+        throw new UserInputError("No user found with this login credentials.");
+      }
+      if (user.facebookId && data.id !== user.facebookId)
+        throw new ApolloError("Account doesnt match");
+      await UserModel.update(
+        { facebookId: data.id, exponentPushToken },
+        { where: { id: user.id } }
+      );
+      return { token: createToken(user, secret), userId: user.id };
+    }
   }
 };
