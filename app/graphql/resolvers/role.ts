@@ -13,12 +13,9 @@ declare interface UserCompanyRoleProps {
 
 export default {
   Query: {
-    getAllRoles: combineResolvers(
-      isAuthenticated,
-      async (_: any, __: any): Promise<RoleModel[]> => {
-        return RoleModel.findAll();
-      }
-    )
+    getAllRoles: async (_: any, __: any): Promise<RoleModel[]> => {
+      return RoleModel.findAll();
+    }
   },
 
   Mutation: {
