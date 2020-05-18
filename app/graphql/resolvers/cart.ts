@@ -38,7 +38,8 @@ export default {
             CompanyModel,
             {
               model: CartProductModel,
-              include: [ProductModel]
+              include: [ProductModel],
+              order: ['updatedAt'],
             }
           ]
         });
