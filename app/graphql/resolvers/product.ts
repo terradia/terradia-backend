@@ -126,12 +126,7 @@ export default {
           price: number;
           quantityForUnit?: number;
           unitId?: string;
-          cover: {
-            stream: Body;
-            filename: string;
-            mimetype: string;
-            encoding: string;
-          };
+          coverId?: string;
           companyProductsCategoryId?: string;
         }
       ): Promise<Partial<ProductModel>> => {
@@ -151,17 +146,14 @@ export default {
             ...args,
             position: pos
           }).then(product => {
+            ProductCompanyImageModel.create({
+              productId: product.id,
+              companyImageId: args.coverId
+            }).then(image => {
+              product.update({ coverId: image.id });
+            });
             return product;
           });
-          if (args.cover) {
-            const { stream, filename } = await args.cover;
-            uploadToS3SaveAsProductCover(
-              filename,
-              stream,
-              company.id,
-              product.id
-            );
-          }
           return product.toJSON();
         } else throw new ApolloError("This company does not exist", "404");
       }
