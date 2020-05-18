@@ -12,8 +12,9 @@ export default gql`
     email: String
     phone: String
     address: String
-    logo: Upload
-    cover: Upload
+    siren: String
+    logoId: String
+    coverId: String
   }
 
   extend type Query {
@@ -35,11 +36,10 @@ export default gql`
     createCompany(
       name: String!
       description: String
-      logo: Upload
-      cover: Upload
-      email: String
-      phone: String
+      email: String!
+      phone: String!
       address: String!
+      siren: String!
     ): Company!
     deleteCompany(companyId: String!): Company!
     updateCompany(companyId: ID!, newValues: CompanyUpdateInput): Company!
@@ -52,8 +52,9 @@ export default gql`
     id: ID!
     name: String!
     description: String
-    email: String
-    phone: String
+    email: String!
+    phone: String!
+    siren: String!
     logo: CompanyImage
     cover: CompanyImage
     createdAt: Date
