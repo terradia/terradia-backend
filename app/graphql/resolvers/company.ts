@@ -415,10 +415,8 @@ export default {
       isAuthenticated,
       async (
         _: any,
-        { companyId }: { companyId: string },
-        { user }: Context
+        { companyId, userId }: { companyId: string; userId: string }
       ): Promise<CompanyModel | null> => {
-        const userId: string = user.id;
         const company: CompanyModel | null = await CompanyModel.findOne({
           where: { id: companyId }
         });
