@@ -28,7 +28,6 @@ services:
 #    ports:
 #      - "${PGADMIN_PORT:-5050}:80"
 #    restart: unless-stopped
-<<<<<<< HEAD
 
   api:
     build:
@@ -44,24 +43,6 @@ services:
       - ./app:/app/app
     depends_on:
       - postgres
-=======
-#
-#  api:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    ports:
-#      - "5000:5000"
-#    environment:
-#      - NODE_ENV=development
-#    env_file:
-#      - ./.env
-#    volumes:
-#      - ./app:/app/app
-#      - ./node_modules:/app/node_modules
-#    depends_on:
-#      - postgres
->>>>>>> dev
 
   nginx:
     image: nginx:latest
