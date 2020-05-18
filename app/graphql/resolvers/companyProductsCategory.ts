@@ -41,7 +41,11 @@ export default {
         include: [UnitModel, { model: CompanyImageModel, as: "images" }]
       });
       const nonCat: CompanyProductsCategoryModel = CompanyProductsCategoryModel.build(
-        { id: `nonCat${companyId}`, name: "NonCategories", products: nonCategories },
+        {
+          id: `nonCat${companyId}`,
+          name: "NonCategories",
+          products: nonCategories
+        },
         {
           include: [
             {
