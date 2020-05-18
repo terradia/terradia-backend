@@ -151,9 +151,12 @@ export default class ProductModel extends Model<ProductModel> {
     if (data === undefined) return data;
     if (data.map !== undefined) {
       const products: ProductModel[] = data;
-      return products.map(async product => {
-        return ProductModel.addCoverToProduct(product);
-      });
+      if (products) {
+        return products.map(async product => {
+          return ProductModel.addCoverToProduct(product);
+        });
+      }
+      return data;
     } else {
       const product: ProductModel = data;
       return ProductModel.addCoverToProduct(product);

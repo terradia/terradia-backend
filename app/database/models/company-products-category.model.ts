@@ -42,23 +42,27 @@ export default class CompanyProductsCategoryModel extends Model<
 
   @AfterFind
   static async afterFindHook(data: any) {
-    if (data === undefined) return data;
+    if (!data) return data;
     if (data.map !== undefined) {
       const categories: CompanyProductsCategoryModel[] = data;
-      return categories.map(async category => {
-        if (!category.products) return category;
-        const products = await category.products.map(
-          async (product: ProductModel) => {
-            const res = await ProductModel.addCoverToProduct(product);
-            return res;
-          }
-        );
-        //@ts-ignore
-        category.products = products;
-        return category;
-      });
+      if (categories) {
+        return categories.map(async category => {
+          if (!category.products) return category;
+          const products = await category.products.map(
+            async (product: ProductModel) => {
+              const res = await ProductModel.addCoverToProduct(product);
+              return res;
+            }
+          );
+          //@ts-ignore
+          category.products = products;
+          return category;
+        });
+      }
+      return categories;
     } else {
       const category: CompanyProductsCategoryModel = data;
+      if (!category.products) return category;
       //@ts-ignore
       category.products = await category.products.map(
         async (product: ProductModel) => {

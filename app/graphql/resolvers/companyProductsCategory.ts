@@ -87,23 +87,20 @@ export default {
         _: any,
         { companyId, name }: { companyId: string; name: string }
       ): Promise<CompanyProductsCategoryModel | null> => {
-        const [productsCategory]: [
+        const productsCategory: [
           CompanyProductsCategoryModel,
           boolean
         ] = await CompanyProductsCategoryModel.findOrCreate({
           where: {
             name: name,
             companyId: companyId
-          },
-          defaults: {
-            name: name,
-            companyId: companyId
           }
         });
-        if (!productsCategory)
-          throw new ApolloError("Can't create the Products Category");
-        return CompanyProductsCategoryModel.findByPk(productsCategory.id, {
-          include: [CompanyModel, ProductModel]
+        console.log("productsCategory");
+        if (!productsCategory[0])
+          throw new ApolloError("Error while creating the Category");
+        return CompanyProductsCategoryModel.findOne({
+          where: { id: productsCategory[0].id }
         });
       }
     ),
