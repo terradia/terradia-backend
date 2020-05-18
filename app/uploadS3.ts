@@ -3,6 +3,7 @@ import CompanyImageModel from "./database/models/company-image.model";
 import * as path from "path";
 import CompanyModel from "./database/models/company.model";
 import ProductModel from "./database/models/product.model";
+import ProductCompanyImageModel from "./database/models/product-company-images.model";
 const md5 = require("md5");
 
 interface UploadS3 {
@@ -94,7 +95,14 @@ const uploadToS3SaveAsProductCover = async (
     companyId,
     null
   );
-  ProductModel.update({ coverId: image }, { where: { id: productId } });
+  const newResource = await ProductCompanyImageModel.create({
+    productId,
+    companyImageId: image.id
+  });
+  await ProductModel.update(
+    { coverId: newResource.id },
+    { where: { id: productId } }
+  );
 };
 
 export {

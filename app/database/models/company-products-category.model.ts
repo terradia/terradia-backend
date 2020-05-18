@@ -53,11 +53,13 @@ export default class CompanyProductsCategoryModel extends Model<
             return res;
           }
         );
+        //@ts-ignore
         category.products = products;
         return category;
       });
     } else {
       const category: CompanyProductsCategoryModel = data;
+      //@ts-ignore
       category.products = await category.products.map(
         async (product: ProductModel) => {
           const res = await ProductModel.addCoverToProduct(product);
