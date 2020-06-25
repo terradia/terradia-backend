@@ -3,6 +3,7 @@ import { gql } from "apollo-server";
 export default gql`
   extend type Query {
     getCart: Cart
+    getCartsByCompany(companyId: String): [Cart]
   }
 
   extend type Mutation {
