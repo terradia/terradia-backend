@@ -244,6 +244,61 @@ export default {
         { where: { id: user.id } }
       );
       return { token: createToken(user, secret), userId: user.id };
+    },
+    generateCodePasswordForgot: async (
+      _: any,
+      { email }: { email: string }
+    ) => {
+      const user = await UserModel.findOne({ where: { email } });
+      if (!user) {
+        throw new ApolloError("Account doesnt exist");
+      }
+      const randomCode = Math.floor(100000 + Math.random() * 900000);
+      console.log(randomCode);
+      const res = await UserModel.update(
+        { passwordForgot: randomCode },
+        { where: { email } }
+      );
+      // if (res[0]) {
+      //   createEmailAccountRecovery(email, randomCode, user.locale);
+      // }
+      return res[0];
+    },
+    signInWithgeneratedCode: async (
+      _: any,
+      {
+        email,
+        code,
+        exponentPushToken
+      }: { email: string; code: string; exponentPushToken: string },
+      { secret }: { secret: string }
+    ) => {
+      const user = await UserModel.findByLogin(email);
+
+      if (!user) {
+        throw new UserInputError("No user found with this login credentials.");
+      }
+
+      /**
+       * User can login even if the email is not validated, mais will show a popup
+       */
+      // if (!user.validated) {
+      //     throw new UserInputError(
+      //         'Your account is not validated',
+      //     );
+      // }
+
+      const isValid = user.passwordForgot === code;
+
+      if (!isValid) {
+        throw new AuthenticationError("Invalid code.");
+      }
+      await UserModel.update(
+        { exponentPushToken, passwordForgot: null },
+        { where: { id: user.id } }
+      );
+
+      return { token: createToken(user, secret), userId: user.id };
     }
   }
 };

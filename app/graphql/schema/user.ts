@@ -33,6 +33,12 @@ export default gql`
       exponentPushToken: String
       defineUserAsCostumer: Boolean
     ): SignupAnswer!
+    generateCodePasswordForgot(email: String!): Boolean
+    signInWithgeneratedCode(
+      email: String!
+      code: String!
+      exponentPushToken: String
+    ): SigninAnswer!
   }
   type SignupAnswer {
     token: String!
