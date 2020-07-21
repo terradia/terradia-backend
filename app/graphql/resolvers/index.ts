@@ -12,6 +12,7 @@ import tagCompanyCategory from "./companyTag";
 import cart from "./cart";
 import companyOpeningDays from "./companyOpeningDays";
 import companyImages from "./companyImages";
+import payment from "./payment";
 
 export default [
   users,
@@ -28,5 +29,6 @@ export default [
   cart,
   tagCompanyCategory,
   companyImages,
-  companyOpeningDays
+  companyOpeningDays,
+  payment
 ];

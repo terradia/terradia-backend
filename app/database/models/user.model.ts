@@ -75,6 +75,7 @@ export default class UserModel extends Model<UserModel> {
   @Column
   public passwordForgot!: string;
 
+
   // All companies for each user
   @HasMany(() => CompanyUserModel)
   public companies!: CompanyUserModel[];
