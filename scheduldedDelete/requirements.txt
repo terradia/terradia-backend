@@ -1,0 +1,3 @@
+requests
+py4j
+aws-psycopg2
