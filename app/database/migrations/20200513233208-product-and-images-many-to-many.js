@@ -29,6 +29,16 @@ exports.up = function(db) {
     companyImageId: {
       type: "uuid",
       notNull: true
+    },
+    createdAt: {
+      notNull: true,
+      type: new String("TIMESTAMPTZ"),
+      defaultValue: new String("now()")
+    },
+    updatedAt: {
+      notNull: true,
+      type: new String("TIMESTAMPTZ"),
+      defaultValue: new String("now()")
     }
   });
 };

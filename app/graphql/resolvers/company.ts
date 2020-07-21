@@ -35,6 +35,7 @@ declare interface CreateCompanyProps {
   email: string;
   phone: string;
   address: string;
+  siren: string;
   logo: { stream: Body; filename: string; mimetype: string; encoding: string };
   cover: { stream: Body; filename: string; mimetype: string; encoding: string };
 }
@@ -92,8 +93,14 @@ export default {
     ): Promise<CompanyModel | null> => {
       const company = CompanyModel.findByPk(companyId, {
         include: [
-          { model: CompanyImageModel, as: "logo" },
-          { model: CompanyImageModel, as: "cover" },
+          {
+            model: CompanyImageModel,
+            as: "logo"
+          },
+          {
+            model: CompanyImageModel,
+            as: "cover"
+          },
           { model: CompanyImageModel, as: "companyImages" },
           ProductModel,
           {
@@ -148,7 +155,7 @@ export default {
           location
         );
 
-        return await CompanyModel.findAll({
+        return CompanyModel.findAll({
           attributes: { include: [[distance, "distance"]] },
           include: toIncludeWhenGetCompany,
           order: Sequelize.literal("distance ASC"),
@@ -192,7 +199,15 @@ export default {
         include: [
           {
             model: CompanyUserModel,
-            include: [CompanyModel]
+            include: [
+              {
+                model: CompanyModel,
+                include: [
+                  { model: CompanyImageModel, as: "logo" },
+                  { model: CompanyImageModel, as: "cover" }
+                ]
+              }
+            ]
           }
         ]
       });
@@ -287,6 +302,10 @@ export default {
               "Error while get geo data from address",
               "500"
             );
+          //If coordinates are not found, avoid server crash
+          if (res.length == 0) {
+            return;
+          }
           point = {
             type: "Point",
             coordinates: [
@@ -295,6 +314,9 @@ export default {
             ]
           };
         });
+        if (point.coordinates.length == 0) {
+          throw new ApolloError("This address does not exist", "400");
+        }
         const ownerRole: RoleModel | null = await RoleModel.findOne({
           where: { slugName: "owner" }
         }).then(elem => elem);
@@ -307,24 +329,6 @@ export default {
           ...args,
           geoPosition: point
         });
-        if (args.logo) {
-          const { stream, filename } = await args.logo;
-          uploadToS3SaveAsCompanyAvatarOrCover(
-            filename,
-            stream,
-            newCompany.id,
-            true
-          );
-        }
-        if (args.cover) {
-          const { stream, filename } = await args.cover;
-          uploadToS3SaveAsCompanyAvatarOrCover(
-            filename,
-            stream,
-            newCompany.id,
-            false
-          );
-        }
         await CompanyUserModel.create({
           // @ts-ignore
           companyId: newCompany.id,
@@ -351,6 +355,35 @@ export default {
           throw new ApolloError("Can't find the requested company");
         }
         return company[0];
+      }
+    ),
+    updateCompany: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        {
+          companyId,
+          newValues
+        }: { companyId: string; newValues: CreateCompanyProps }
+      ): Promise<CompanyModel | null> => {
+        const [nb] = await CompanyModel.update(newValues, {
+          where: { id: companyId }
+        });
+        if (nb === 0) {
+          throw new ApolloError("Can't find the requested company", "500");
+        }
+        return CompanyModel.findByPk(companyId, {
+          include: [
+            {
+              model: CompanyImageModel,
+              as: "logo"
+            },
+            {
+              model: CompanyImageModel,
+              as: "cover"
+            }
+          ]
+        });
       }
     ),
     joinCompany: combineResolvers(
@@ -400,10 +433,8 @@ export default {
       isAuthenticated,
       async (
         _: any,
-        { companyId }: { companyId: string },
-        { user }: Context
+        { companyId, userId }: { companyId: string; userId: string }
       ): Promise<CompanyModel | null> => {
-        const userId: string = user.id;
         const company: CompanyModel | null = await CompanyModel.findOne({
           where: { id: companyId }
         });

@@ -8,6 +8,7 @@
     "mobile": "ngrok http 8000",
     "dev": "docker-compose -d terradia up",
     "db:create": "db-migrate db:create terradia_db --config app/database/database.json -e creation",
+    "db-drop": "db-migrate db:drop terradia_db --config app/database/database.json",
     "migration:create": "db-migrate create --migrations-dir app/database/migrations --config app/database/database.json",
     "migrate:up": "db-migrate up --config app/database/database.json --migrations-dir app/database/migrations -v",
     "migrate:down": "db-migrate down -c 1 --config app/database/database.json -m app/database/migrations",
@@ -64,6 +65,7 @@
     }
   },
   "dependencies": {
+    "@sendgrid/mail": "^7.1.1",
     "apollo-server": "^2.11.0",
     "apollo-server-express": "^2.11.0",
     "aws-sdk": "^2.656.0",
@@ -76,8 +78,8 @@
     "eslint-config-prettier": "^6.9.0",
     "graphql": "^14.6.0",
     "graphql-import": "^1.0.2",
-    "graphql-upload": "^9.0.0",
     "graphql-resolvers": "^0.4.2",
+    "graphql-upload": "^9.0.0",
     "helmet": "latest",
     "jsonwebtoken": "^8.5.1",
     "md5": "^2.2.1",

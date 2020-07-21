@@ -1,16 +1,17 @@
 import {
+  AfterFind,
+  AllowNull,
+  BelongsTo,
   BelongsToMany,
   Column,
   DataType,
   Default,
+  ForeignKey,
+  HasMany,
   IsUUID,
   Model,
   PrimaryKey,
-  BelongsTo,
-  Table,
-  ForeignKey,
-  HasMany,
-  AllowNull
+  Table
 } from "sequelize-typescript";
 import CategoryModel from "./category.model";
 import ProductCategoryModel from "./product-category.model";
@@ -19,8 +20,8 @@ import CompanyModel from "./company.model";
 import CompanyProductsCategoryModel from "./company-products-category.model";
 import CartProductModel from "./cart-product.model";
 import UnitModel from "./unit.model";
-import CompanyImagesModel from "./company-image.model";
 import ProductCompanyImageModel from "./product-company-images.model";
+import CompanyImageModel from "./company-image.model";
 
 @Table({
   tableName: "Products",
@@ -49,11 +50,12 @@ export default class ProductModel extends Model<ProductModel> {
   @Column
   coverId!: string;
 
+
   @BelongsToMany(
-    () => CompanyImagesModel,
+    () => CompanyImageModel,
     () => ProductCompanyImageModel
   )
-  public images!: CompanyImagesModel[];
+  public images!: CompanyImageModel[];
 
   // categories of the products to make it easier to find it.
   @BelongsToMany(
@@ -121,4 +123,43 @@ export default class ProductModel extends Model<ProductModel> {
 
   @BelongsTo(() => UnitModel)
   public unit!: UnitModel;
+
+  public cover!: CompanyImageModel | null;
+
+  public static async addCoverToProduct(
+    product: ProductModel
+  ): Promise<ProductModel> {
+    if (product.coverId !== null) {
+      const productCover: ProductCompanyImageModel | null = await ProductCompanyImageModel.findOne(
+        {
+          where: { id: product.coverId }
+        }
+      );
+      if (productCover) {
+        product.cover = await CompanyImageModel.findOne({
+          where: { id: productCover.companyImageId }
+        });
+      }
+    } else {
+      product.cover = null;
+    }
+    return product;
+  }
+
+  @AfterFind
+  static async afterFindHook(data: any) {
+    if (data === undefined) return data;
+    if (data.map !== undefined) {
+      const products: ProductModel[] = data;
+      if (products) {
+        return products.map(async product => {
+          return ProductModel.addCoverToProduct(product);
+        });
+      }
+      return data;
+    } else {
+      const product: ProductModel = data;
+      return ProductModel.addCoverToProduct(product);
+    }
+  }
 }

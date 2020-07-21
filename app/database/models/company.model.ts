@@ -9,8 +9,6 @@ import {
   PrimaryKey,
   Table,
   BelongsToMany,
-  AfterFind,
-  HasOne,
   ForeignKey,
   BelongsTo
 } from "sequelize-typescript";
@@ -22,7 +20,7 @@ import CompanyProductsCategoryModel from "./company-products-category.model";
 import CompanyUserModel from "./company-user.model";
 import CartModel from "./cart.model";
 import CompanyOpeningDayModel from "./company-opening-day.model";
-import CompanyImagesModel from "./company-image.model";
+import CompanyImageModel from "./company-image.model";
 import CompanyTagModel from "./company-tag.model";
 import CompanyTagRelationsModel from "./company-tag-relations.model";
 
@@ -52,21 +50,24 @@ export default class CompanyModel extends Model<CompanyModel> {
   @Column(DataType.STRING)
   public phone!: string;
 
-  @ForeignKey(() => CompanyImagesModel)
+  @Column(DataType.STRING)
+  public siren!: string;
+
+  @ForeignKey(() => CompanyImageModel)
   @Column
   logoId!: string;
   // A string because to get the images you should get them from the media server of Terradia
   // https://media.terradia.eu/ + company.logo
-  @BelongsTo(() => CompanyImagesModel)
+  @BelongsTo(() => CompanyImageModel, "logoId")
   public logo!: string;
 
   // A string because to get the images you should get them from the media server of Terradia
   // https://media.terradia.eu/ + company.cover
-  @ForeignKey(() => CompanyImagesModel)
+  @ForeignKey(() => CompanyImageModel)
   @Column
   coverId!: string;
 
-  @BelongsTo(() => CompanyImagesModel)
+  @BelongsTo(() => CompanyImageModel, "coverId")
   public cover!: string;
 
   // @HasMany(() => UserModel)
@@ -74,8 +75,8 @@ export default class CompanyModel extends Model<CompanyModel> {
 
   // This way we can get all the products independently of their categories
   // the second usage is that we can have projects without categories to "hide them"
-  @HasMany(() => CompanyImagesModel)
-  public companyImages!: CompanyImagesModel[];
+  @HasMany(() => CompanyImageModel)
+  public companyImages!: CompanyImageModel[];
 
   @HasMany(() => ProductModel)
   public products!: ProductModel[];

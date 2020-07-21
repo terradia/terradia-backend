@@ -15,7 +15,7 @@ export default gql`
       description: String!
       companyId: String!
       price: Float!
-      cover: Upload
+      coverId: String
       quantityForUnit: Int
       unitId: String
       companyProductsCategoryId: String
@@ -30,6 +30,7 @@ export default gql`
       unitId: String
       quantityForUnit: Float
       price: Float
+      coverId: String
     ): Product
 
     deleteProduct(productId: String!): Int
