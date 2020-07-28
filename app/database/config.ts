@@ -21,7 +21,7 @@ declare interface connexions {
   [key: string]: connexion,
 }
 
-const config: connexions =  {
+const config: connexions = {
   development: {
     username: "postgres",
     password: "postgres",
