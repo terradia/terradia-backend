@@ -39,7 +39,29 @@ export default {
             {
               model: CartProductModel,
               include: [ProductModel],
-              order: ['updatedAt'],
+              order: ["updatedAt"]
+            }
+          ]
+        });
+      }
+    ),
+
+    getCartsByCompany: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        { companyId }: { companyId: string }
+      ): Promise<CartModel[] | null> => {
+        return CartModel.findAll({
+          where: {
+            companyId
+          },
+          include: [
+            CompanyModel,
+            {
+              model: CartProductModel,
+              include: [ProductModel],
+              order: ["updatedAt"]
             }
           ]
         });
