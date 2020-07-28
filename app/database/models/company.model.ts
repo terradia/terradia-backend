@@ -38,6 +38,9 @@ export default class CompanyModel extends Model<CompanyModel> {
   @Column(DataType.STRING)
   public name!: string;
 
+  @Column(DataType.STRING)
+  public officialName!: string;
+
   @AllowNull(true)
   @Column(DataType.STRING)
   public description!: string;
