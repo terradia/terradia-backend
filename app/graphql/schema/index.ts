@@ -15,6 +15,7 @@ import customerAddressSchema from "./customerAddress";
 import cartSchema from "./cart";
 import tagCompanyCategorySchema from "./companyTag";
 import companyOpeningDaysSchema from "./companyOpeningDays";
+import companyDeliveryDaysSchema from "./companyDeliveryDays";
 import companyImagesSchema from "./companyImages";
 
 const linkSchema = gql`
@@ -48,5 +49,6 @@ export default [
   cartSchema,
   tagCompanyCategorySchema,
   companyImagesSchema,
-  companyOpeningDaysSchema
+  companyOpeningDaysSchema,
+  companyDeliveryDaysSchema
 ];
