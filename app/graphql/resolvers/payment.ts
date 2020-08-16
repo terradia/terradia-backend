@@ -1,16 +1,13 @@
 import UserModel from "../../database/models/user.model";
 import { combineResolvers } from "graphql-resolvers";
-import { isAuthenticated, isUserAndCustomer } from "./authorization";
+import { isUserAndCustomer } from "./authorization";
 import CustomerModel from "../../database/models/customer.model";
 
-import Stripe, { AccountDebitSource } from "stripe";
-import CustomerSource = module;
-const stripe = new Stripe(
-  "sk_test_51H6a9LHJwleKpfuCSnn9k6k4SY0IGjN9EBJ6NU2Y3l9VgxfQYCpsdLOEiVd6WobmM80yA3juKgmjwjEyqhnvXvpG00VrOmywaz",
-  {
-    apiVersion: "2020-03-02"
-  }
-);
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_API_KEY, {
+  apiVersion: "2020-03-02"
+});
 
 declare interface Card {
   last4: string;
@@ -31,7 +28,7 @@ export default {
           cvc
         }: { number: string; expMonth: number; expYear: number; cvc: number },
         { user }: { user: UserModel }
-      ): Promise<any> => {
+      ): Promise<Stripe.CustomerSource[]> => {
         const data = await stripe.customers.listSources(
           user.customer.stripeId,
           { object: "card", limit: 20 }
@@ -48,13 +45,12 @@ export default {
         __: any,
         { user }: { user: UserModel }
       ): Promise<boolean> => {
-        stripe.customers.create(
-          {
+        await stripe.customers
+          .create({
             email: user.email,
             phone: user.phone
-          },
-          function(err: any, customer: any) {
-            console.log(err);
+          })
+          .then((customer: { id: any }) => {
             CustomerModel.update(
               { stripeId: customer.id },
               {
@@ -63,10 +59,7 @@ export default {
                 }
               }
             );
-
-            // asynchronously called
-          }
-        );
+          });
         return true;
       }
     ),
@@ -76,14 +69,10 @@ export default {
         _: any,
         { cardId }: { cardId: string },
         { user }: { user: UserModel }
-      ): Promise<Card> => {
-        const card = await stripe.customers.createSource(
-          user.customer.stripeId,
-          {
-            source: "tok_mastercard"
-          }
-        );
-        return card;
+      ): Promise<Stripe.CustomerSource> => {
+        return await stripe.customers.createSource(user.customer.stripeId, {
+          source: cardId
+        });
       }
     ),
     deleteCard: combineResolvers(
@@ -93,12 +82,11 @@ export default {
         { cardId }: { cardId: string },
         { user }: { user: UserModel }
       ): Promise<boolean> => {
-        stripe.customers.deleteSource(user.customer.stripeId, cardId, function(
-          err,
-          confirmation
-        ) {
-          // asynchronously called
-        });
+        await stripe.customers
+          .deleteSource(user.customer.stripeId, cardId)
+          .then(() => {
+            //if it has been deleted
+          });
         return true;
       }
     )

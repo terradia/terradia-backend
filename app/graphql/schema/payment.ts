@@ -13,6 +13,7 @@ export default gql`
     last4: String!
     exp_month: Int!
     exp_year: Int!
-    id: String
+    id: String!
+    brand: String!
   }
 `;

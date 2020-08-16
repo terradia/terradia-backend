@@ -3,6 +3,11 @@ import jwt from "jsonwebtoken";
 import UserModel from "../database/models/user.model";
 import { Request, Response } from "express";
 import CustomerModel from "../database/models/customer.model";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_API_KEY, {
+  apiVersion: "2020-03-02"
+});
 
 declare interface DecodedPayload {
   type: string;
@@ -11,12 +16,22 @@ declare interface DecodedPayload {
 
 export default {
   defineUserAsCustomer: async (userId: string) => {
-    await CustomerModel.findOrCreate({
-      where: { userId },
-      defaults: {
-        userId
-      }
-    });
+    const user = await UserModel.findByPk(userId);
+    if (!user) return;
+    await stripe.customers
+      .create({
+        email: user.email,
+        phone: user.phone
+      })
+      .then(async (customer: { id: any }) => {
+        await CustomerModel.findOrCreate({
+          where: { userId },
+          defaults: {
+            userId,
+            stripeId: customer.id
+          }
+        });
+      });
   },
   checkEmail: (req: Request, res: Response, next: NextFunction) =>
     jwt.verify(

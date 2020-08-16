@@ -3,6 +3,7 @@ import { gql } from "apollo-server";
 export default gql`
   extend type Query {
     getCart: Cart
+    totalCartPrice: Float
   }
 
   extend type Mutation {
