@@ -7,6 +7,7 @@ import CompanyUserModel from "../../database/models/company-user.model";
 import RoleModel from "../../database/models/role.model";
 import NodeGeocoder, { Geocoder } from "node-geocoder";
 import { ApolloError } from "apollo-server-errors";
+import fetch from "node-fetch";
 import { Op, Sequelize } from "sequelize";
 import { Fn, Literal } from "sequelize/types/lib/utils";
 import CompanyUserRoleModel from "../../database/models/company-user-role.model";
@@ -40,7 +41,31 @@ declare interface CreateCompanyProps {
   siren: string;
   logo: { stream: Body; filename: string; mimetype: string; encoding: string };
   cover: { stream: Body; filename: string; mimetype: string; encoding: string };
+  officialName?: string;
 }
+
+const checkSiren: (siren: string) => Promise<string> = async (
+  siren: string
+) => {
+  const json = await fetch(
+    process.env.INSEE_SIREN_URL + siren + "?masquerValeursNulles=true",
+    {
+      method: "GET",
+      headers: {
+        Authorization: "Bearer " + process.env.INSEE_API_TOKEN
+      }
+    }
+  ).then(async res => {
+    if (!res.ok) return null;
+    return await res.json();
+  });
+  if (json === null) return null;
+  const activityCode =
+    json.uniteLegale.periodesUniteLegale["0"].activitePrincipaleUniteLegale;
+  if (!activityCode.startsWith("01"))
+    throw new ApolloError("Company don't have a producer activity.", "400");
+  return json.uniteLegale.periodesUniteLegale["0"].denominationUniteLegale;
+};
 
 export const toIncludeWhenGetCompany = [
   ProductModel,
@@ -339,6 +364,14 @@ export default {
             "There is no owner Role in the DB, cannot create Company. Try to seed the DB.",
             "500"
           );
+        const officialName = await checkSiren(args.siren);
+        if (officialName === null) {
+          throw new ApolloError(
+            "Can not find company based on the given siren.",
+            "400"
+          );
+        }
+        args.officialName = officialName;
         const newCompany: CompanyModel = await CompanyModel.create({
           ...args,
           geoPosition: point

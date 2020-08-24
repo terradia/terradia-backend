@@ -50,6 +50,7 @@ export default gql`
     # Resource related information
     id: ID!
     name: String!
+    officialName: String
     description: String
     email: String!
     phone: String!
