@@ -45,6 +45,7 @@ export default gql`
     updateCompany(companyId: ID!, newValues: CompanyUpdateInput): Company!
     joinCompany(companyId: String!, userId: String!): Company!
     leaveCompany(companyId: String!, userId: String!): Company!
+    restoreCompany(companyId: String!): Company!
   }
 
   type Company {

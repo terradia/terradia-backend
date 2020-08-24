@@ -455,6 +455,22 @@ export default {
         companyUser.destroy();
         return CompanyModel.findByPk(companyId);
       }
+    ),
+    restoreCompany: combineResolvers(
+      isAuthenticated,
+      async (_: any, { companyId }, { user }: Context) => {
+        const [nb, company] = await CompanyModel.update(
+          { archivedAt: null },
+          {
+            where: { id: companyId },
+            returning: true
+          }
+        );
+        if (nb == 0) {
+          throw new ApolloError("Can't find the requested company");
+        }
+        return company[0];
+      }
     )
   }
 };
