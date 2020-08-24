@@ -25,4 +25,36 @@ const createEmailRegister = (
   sendMail(msg);
 };
 
-export { createEmailRegister };
+const createEmailInvitation = (
+  to: string,
+  invitationId: string,
+  user_name: string | undefined,
+  from_user_name: string,
+  companyName: string
+): void => {
+  const mail = {
+    to,
+    from: FROM,
+    subject: "Invitation à collaborer sur Terradia",
+    templateId: "d-b6a051e0874d4be4936718a039c4c195",
+    dynamic_template_data: {
+      subject: "Invitation à collaborer sur Terradia",
+      accept_button_text:
+        user_name !== undefined
+          ? "Accepter"
+          : "Créer un compte et accepter automatiquement",
+      accept_link:
+        user_name !== undefined
+          ? `https://producteurs.terradia.eu/accept/${invitationId}`
+          : `https://producteurs.terradia.eu/register?invitationCode=${invitationId}`,
+      decline_button_text: "Refuser",
+      decline_link: `https://producteurs.terradia.eu/decline/${invitationId}`,
+      from_user_name,
+      user_name: user_name ? user_name : "",
+      company_name: companyName
+    }
+  };
+  sendMail(mail);
+};
+
+export { createEmailRegister, createEmailInvitation };

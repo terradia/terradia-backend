@@ -14,6 +14,7 @@ import companyOpeningDays from "./companyOpeningDays";
 import companyDeliveryDays from "./companyDeliveryDays";
 import companyImages from "./companyImages";
 import payment from "./payment";
+import companyUserInvitation from "./companyUserInvitation";
 
 export default [
   users,
@@ -33,4 +34,5 @@ export default [
   companyOpeningDays,
   companyDeliveryDays,
   payment
+  companyUserInvitation
 ];
