@@ -20,6 +20,8 @@ import CompanyOpeningDayHoursModel from "../../database/models/company-opening-d
 import CompanyTagModel from "../../database/models/company-tag.model";
 import CustomerAddressModel from "../../database/models/customer-address.model";
 import CustomerModel from "../../database/models/customer.model";
+import CompanyDeliveryDayModel from '../../database/models/company-delivery-day.model';
+import CompanyDeliveryDayHoursModel from '../../database/models/company-delivery-day-hours.model';
 
 declare interface Point {
   type: string;
@@ -80,6 +82,10 @@ export const toIncludeWhenGetCompany = [
     model: CompanyOpeningDayModel,
     include: [CompanyOpeningDayHoursModel]
   },
+  {
+    model: CompanyDeliveryDayModel,
+    include: [CompanyDeliveryDayHoursModel]
+  },
   CompanyTagModel
 ];
 
@@ -105,7 +111,11 @@ export default {
           {
             model: CompanyOpeningDayModel,
             include: [CompanyOpeningDayHoursModel]
-          }
+          },
+          {
+            model: CompanyDeliveryDayModel,
+            include: [CompanyDeliveryDayHoursModel]
+          },
         ],
         offset: page * pageSize,
         limit: pageSize
@@ -140,6 +150,10 @@ export default {
           {
             model: CompanyOpeningDayModel,
             include: [CompanyOpeningDayHoursModel]
+          },
+          {
+            model: CompanyDeliveryDayModel,
+            include: [CompanyDeliveryDayHoursModel]
           }
         ]
       });

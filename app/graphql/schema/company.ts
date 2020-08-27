@@ -16,7 +16,6 @@ export default gql`
     logoId: String
     coverId: String
   }
-
   extend type Query {
     getAllCompanies(page: Int, pageSize: Int): [Company]
     getCompany(companyId: ID!): Company
@@ -83,6 +82,7 @@ export default gql`
 
     # Opening Hours
     openingDays: [CompanyOpeningDay]
+    deliveryDays: [CompanyDeliveryDay]
   }
   type GeographicPoint {
     coordinates: [Float]
