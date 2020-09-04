@@ -311,6 +311,19 @@ export default {
         throw new AuthenticationError("Invalid password.");
       }
       return true;
-    }
+    },
+    deleteUser: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        { password }: { password: string },
+        { user }: Context
+      ): Promise<UserModel> => {
+        await UserModel.destroy({
+          where: { id: user.id }
+        });
+        return user;
+      }
+    )
   }
 };
