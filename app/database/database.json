@@ -23,5 +23,14 @@
     "host": { "ENV": "DB_HOST" },
     "port": { "ENV": "DB_PORT" },
     "database": { "ENV": "DB_NAME" }
+  },
+  "deletion": {
+    "driver": "pg",
+    "user": "postgres",
+    "password": "postgres",
+    "host": "localhost",
+    "database": "postgres",
+    "schema": "public",
+    "port": "5432"
   }
 }
