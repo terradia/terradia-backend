@@ -3,7 +3,6 @@
 let dbm;
 let type;
 let seed;
-let oldValidated;
 
 /**
  * We receive the dbmigrate dependency from dbmigrate initially.
@@ -16,16 +15,10 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  db.runSql(
-    `SELECT "public"."Users"."id", "public"."Users"."validated" from "public"."Users"`
-  ).then(res => {
-    oldValidated = res;
-  });
   return db
     .runSql(
       `CREATE TYPE enum_users_status AS ENUM ('VALID', 'UNVALID', 'ARCHIVED');`
     )
-    .then(() => db.removeColumn("Users", "validated"))
     .then(() => {
       return db.addColumn("Users", "status", {
         type: "enum_users_status",
@@ -33,19 +26,38 @@ exports.up = function(db) {
       });
     })
     .then(() => {
-      console.log(oldValidated);
-    });
+      db.runSql(
+        `UPDATE "public"."Users" SET status = 'VALID' WHERE "public"."Users"."validated" = '1';`
+      );
+    })
+    .then(() =>
+      db.runSql(
+        `UPDATE "public"."Users" SET status = 'UNVALID' WHERE "public"."Users"."validated" = '0';`
+      )
+    )
+    .then(() => db.removeColumn("Users", "validated"));
 };
 
 exports.down = function(db) {
   return db
-    .removeColumn("Users", "status")
-    .then(() => {
-      return db.addColumn("Users", "validated", {
-        type: "boolean",
-        allowNull: true
-      });
+    .addColumn("Users", "validated", {
+      type: "boolean",
+      allowNull: true
     })
+    .then(() =>
+      db.runSql(
+        `UPDATE "public"."Users" SET validated = '1' WHERE "public"."Users"."status" = 'VALID';`
+      )
+    )
+    .then(
+      () =>
+        `UPDATE "public"."Users" SET validated = '0' WHERE "public"."Users"."status" = 'UNVALID';`
+    )
+    .then(
+      () =>
+        `UPDATE "public"."Users" SET validated = '0' WHERE "public"."Users"."status" = 'ARCHIVED';`
+    )
+    .then(() => db.removeColumn("Users", "status"))
     .then(() => {
       db.runSql("DROP TYPE IF EXISTS enum_users_status");
     });
