@@ -35,6 +35,9 @@ export default class ProductCompanyImageModel extends Model<
   @Column
   companyImageId!: string;
 
+  @BelongsTo(() => CompanyImageModel, "companyImageId")
+  public companyImage!: string;
+
   @Column
   public createdAt!: Date;
 

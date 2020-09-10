@@ -50,6 +50,8 @@ export default class ProductModel extends Model<ProductModel> {
   @Column
   coverId!: string;
 
+  @BelongsTo(() => ProductCompanyImageModel, "coverId")
+  public cover!: string;
 
   @BelongsToMany(
     () => CompanyImageModel,
@@ -148,18 +150,18 @@ export default class ProductModel extends Model<ProductModel> {
 
   @AfterFind
   static async afterFindHook(data: any) {
-    if (data === undefined) return data;
-    if (data.map !== undefined) {
-      const products: ProductModel[] = data;
-      if (products) {
-        return products.map(async product => {
-          return ProductModel.addCoverToProduct(product);
-        });
-      }
-      return data;
-    } else {
-      const product: ProductModel = data;
-      return ProductModel.addCoverToProduct(product);
-    }
+    // if (data === undefined) return data;
+    // if (data.map !== undefined) {
+    //   const products: ProductModel[] = data;
+    //   if (products) {
+    //     return products.map(async product => {
+    //       return ProductModel.addCoverToProduct(product);
+    //     });
+    //   }
+    //   return data;
+    // } else {
+    //   const product: ProductModel = data;
+    //   return ProductModel.addCoverToProduct(product);
+    // }
   }
 }

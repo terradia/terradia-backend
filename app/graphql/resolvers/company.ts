@@ -19,6 +19,7 @@ import CompanyOpeningDayHoursModel from "../../database/models/company-opening-d
 import CompanyTagModel from "../../database/models/company-tag.model";
 import CustomerAddressModel from "../../database/models/customer-address.model";
 import CustomerModel from "../../database/models/customer.model";
+import ProductCompanyImageModel from "../../database/models/product-company-images.model";
 
 declare interface Point {
   type: string;
@@ -55,7 +56,9 @@ export const toIncludeWhenGetCompany = [
     model: CompanyOpeningDayModel,
     include: [CompanyOpeningDayHoursModel]
   },
-  CompanyTagModel
+  CompanyTagModel,
+  { model: CompanyImageModel, as: "logo" },
+  { model: CompanyImageModel, as: "cover" }
 ];
 
 export default {
@@ -91,7 +94,7 @@ export default {
       _: any,
       { companyId }: { companyId: string }
     ): Promise<CompanyModel | null> => {
-      const company = CompanyModel.findByPk(companyId, {
+      const company = await CompanyModel.findByPk(companyId, {
         include: [
           {
             model: CompanyImageModel,
@@ -110,7 +113,18 @@ export default {
           CompanyReviewModel,
           {
             model: CompanyProductsCategoryModel,
-            include: [ProductModel]
+            include: [
+              {
+                model: ProductModel,
+                include: [
+                  {
+                    model: ProductCompanyImageModel,
+                    as: "cover",
+                    include: [CompanyImageModel]
+                  }
+                ]
+              }
+            ]
           },
           {
             model: CompanyOpeningDayModel,

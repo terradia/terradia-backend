@@ -7,6 +7,7 @@ import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
 import CompanyImageModel from "../../database/models/company-image.model";
 import UnitModel from "../../database/models/unit.model";
+import ProductCompanyImageModel from "../../database/models/product-company-images.model";
 
 export default {
   Query: {
@@ -19,7 +20,12 @@ export default {
         include: [
           { model: CompanyImageModel, as: "images" },
           UnitModel,
-          CompanyImageModel
+          CompanyImageModel,
+          {
+            model: ProductCompanyImageModel,
+            as: "cover",
+            include: [CompanyImageModel]
+          }
         ]
       });
       const categories: CompanyProductsCategoryModel[] = await CompanyProductsCategoryModel.findAll(
@@ -38,7 +44,15 @@ export default {
           companyId,
           companyProductsCategoryId: null
         },
-        include: [UnitModel, { model: CompanyImageModel, as: "images" }]
+        include: [
+          UnitModel,
+          { model: CompanyImageModel, as: "images" },
+          {
+            model: ProductCompanyImageModel,
+            as: "cover",
+            include: [CompanyImageModel]
+          }
+        ]
       });
       const nonCat: CompanyProductsCategoryModel = CompanyProductsCategoryModel.build(
         {
@@ -50,7 +64,15 @@ export default {
           include: [
             {
               model: ProductModel,
-              include: [{ model: CompanyImageModel, as: "images" }, UnitModel]
+              include: [
+                { model: CompanyImageModel, as: "images" },
+                UnitModel,
+                {
+                  model: ProductCompanyImageModel,
+                  as: "cover",
+                  include: [CompanyImageModel]
+                }
+              ]
             },
             CompanyModel
           ]
