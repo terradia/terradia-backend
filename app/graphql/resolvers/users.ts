@@ -314,15 +314,18 @@ export default {
     },
     deleteUser: combineResolvers(
       isAuthenticated,
-      async (
-        _: any,
-        { password }: { password: string },
-        { user }: Context
-      ): Promise<UserModel> => {
-        await UserModel.destroy({
-          where: { id: user.id }
-        });
-        return user;
+      async (_: any, { password }: { password: string }, { user }: Context) => {
+        const [nb, users] = await UserModel.update(
+          { archivedAt: Date.now() },
+          {
+            where: { id: user.id },
+            returning: true
+          }
+        );
+        if (nb == 0) {
+          throw new ApolloError("Can't archive this user account.");
+        }
+        return users[0];
       }
     )
   }
