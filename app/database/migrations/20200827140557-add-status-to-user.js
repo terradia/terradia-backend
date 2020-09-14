@@ -15,6 +15,17 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
+  return db.addColumn("Users", "archivedAt", {
+    type: new String("TIMESTAMPTZ"),
+    allowNull: true
+  });
+};
+
+exports.down = function(db) {
+  return db.removeColumn("Users", "archivedAt");
+};
+
+/*exports.up = function(db) {
   return db
     .runSql(
       `CREATE TYPE enum_users_status AS ENUM ('VALID', 'UNVALID', 'ARCHIVED');`
@@ -61,7 +72,7 @@ exports.down = function(db) {
     .then(() => {
       db.runSql("DROP TYPE IF EXISTS enum_users_status");
     });
-};
+};*/
 
 exports._meta = {
   version: 1
