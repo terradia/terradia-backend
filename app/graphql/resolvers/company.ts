@@ -19,9 +19,8 @@ import CompanyOpeningDayHoursModel from "../../database/models/company-opening-d
 import CompanyTagModel from "../../database/models/company-tag.model";
 import CustomerAddressModel from "../../database/models/customer-address.model";
 import CustomerModel from "../../database/models/customer.model";
-import CompanyDeliveryDayModel from '../../database/models/company-delivery-day.model';
-import CompanyDeliveryDayHoursModel from '../../database/models/company-delivery-day-hours.model';
-import { response } from "express";
+import CompanyDeliveryDayModel from "../../database/models/company-delivery-day.model";
+import CompanyDeliveryDayHoursModel from "../../database/models/company-delivery-day-hours.model";
 
 declare interface Point {
   type: string;
@@ -42,58 +41,6 @@ declare interface CreateCompanyProps {
   logo: { stream: Body; filename: string; mimetype: string; encoding: string };
   cover: { stream: Body; filename: string; mimetype: string; encoding: string };
   officialName?: string;
-}
-
-declare interface HistoricalCompanyInfo {
-  dateFin: string;
-  dateDebut: string;
-  etatAdministratifUniteLegale: string;
-  changementEtatAdministratifUniteLegale: boolean;
-  nomUniteLegale: string;
-  changementNomUniteLegale: string;
-  nomUsageUniteLegale: string;
-  changementNomUsageUniteLegale: boolean;
-  denominationUniteLegale: string;
-  changementDenominationUniteLegale: boolean;
-  denominationUsuelle1UniteLegale: string;
-  denominationUsuelle2UniteLegale: string;
-  denominationUsuelle3UniteLegale: string;
-  changementDenominationUsuelleUniteLegale: boolean;
-  categorieJuridiqueUniteLegale: string;
-  changementCategorieJuridiqueUniteLegale: boolean;
-  activitePrincipaleUniteLegale: string;
-  nomenclatureActivitePrincipaleUniteLegale: string;
-  changementActivitePrincipaleUniteLegale: boolean;
-  nicSiegeUniteLegale: string;
-  changementNicSiegeUniteLegale: boolean;
-  economieSocialeSolidaireUniteLegale: string;
-  changementEconomieSocialeSolidaireUniteLegale: boolean;
-  caractereEmployeurUniteLegale: string;
-  changementCaractereEmployeurUniteLegale: boolean;
-}
-
-interface CompanyInfo {
-  score: number;
-  siren: string;
-  statutDiffusionUniteLegale: string;
-  unitePurgeeUniteLegale: boolean;
-  dateCreationUniteLegale: string;
-  sigleUniteLegale: string;
-  sexeUniteLegale: string;
-  prenom1UniteLegale: string;
-  prenom2UniteLegale: string;
-  prenom3UniteLegale: string;
-  prenom4UniteLegale: string;
-  prenomUsuelUniteLegale: string;
-  pseudonymeUniteLegale: string;
-  identifiantAssociationUniteLegale: string;
-  trancheEffectifsUniteLegale: string;
-  anneeEffectifsUniteLegale: string;
-  dateDernierTraitementUniteLegale: string;
-  nombrePeriodesUniteLegale: number;
-  categorieEntreprise: string;
-  anneeCategorieEntreprise: string;
-  periodesUniteLegale: HistoricalCompanyInfo[];
 }
 
 export const toIncludeWhenGetCompany = [
@@ -121,7 +68,7 @@ export const toIncludeWhenGetCompany = [
 export const isValidSiren = async (
   _: any,
   { siren }: { siren: string }
-): Promise<CompanyInfo> => {
+): Promise<any> => {
   console.log("isValidSiren");
   const json = await fetch(
     process.env.INSEE_SIREN_URL + siren + "&masquerValeursNulles=false",
@@ -131,18 +78,21 @@ export const isValidSiren = async (
         Authorization: "Bearer " + process.env.INSEE_API_TOKEN
       }
     }
-  ).then(async res => {
-    if (!res.ok) {
+  )
+    .then(async res => {
+      /*if (!res.ok) {
       throw new ApolloError("Can't find a comapny associated with this siren");
-    }
-    return await res.json();
-  });
-  console.log(json);
+    }*/
+      return await res.json();
+    })
+    .catch(err => console.log(err));
   if (json === null)
     throw new ApolloError("Error while getting information from the INSEE API");
+  json.etablissements.sort((first: any, second: any) => {
+    return parseInt(second.nic) - parseInt(first.nic);
+  });
   const activityCode =
-    json.etablissements[0].uniteLegale.periodesUniteLegale["0"]
-      .activitePrincipaleUniteLegale;
+    json.etablissements[0].uniteLegale.activitePrincipaleUniteLegale;
   /*if (!activityCode.startsWith("01"))
     throw new ApolloError("Company don't have a producer activity.", "400");*/
   return json.etablissements[0];
@@ -174,7 +124,7 @@ export default {
           {
             model: CompanyDeliveryDayModel,
             include: [CompanyDeliveryDayHoursModel]
-          },
+          }
         ],
         offset: page * pageSize,
         limit: pageSize
@@ -379,12 +329,14 @@ export default {
         offset: page * pageSize
       });
     },
-    checkSiren: pipeResolvers(
-      isValidSiren,
-      (root: any, args: any): Promise<CompanyInfo | null> => {
-        console.log(root);
-        return root; //TODO Chekcer valeur a retourner pertinente puis mettre dans CompanyInfo
-      }
+    checkSiren: combineResolvers(
+      isAuthenticated,
+      pipeResolvers(
+        isValidSiren,
+        (root: any, args: any): Promise<CompanyInfo | null> => {
+          return root;
+        }
+      )
     )
   },
   Mutation: {

@@ -8,6 +8,7 @@ export default gql`
 
   input CompanyUpdateInput {
     name: String
+    officialName: String
     description: String
     email: String
     phone: String
@@ -15,6 +16,10 @@ export default gql`
     siren: String
     logoId: String
     coverId: String
+    firstname: String
+    lastname: String
+    year: String
+    month: String
   }
 
   type CompanyAddress {
