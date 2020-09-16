@@ -299,6 +299,18 @@ export default {
       );
 
       return { token: createToken(user, secret), userId: user.id };
+    },
+    passwordValidation: async (
+      _: any,
+      { password }: { password: string },
+      { user }: { user: UserModel }
+    ) => {
+      const isValid = await UserModel.comparePasswords(password, user.password);
+
+      if (!isValid) {
+        throw new AuthenticationError("Invalid password.");
+      }
+      return true;
     }
   }
 };
