@@ -75,6 +75,13 @@ export default {
       if (!isValid) {
         throw new AuthenticationError("Invalid password.");
       }
+      const nb = await UserModel.update(
+        { archivedAt: null },
+        { where: { id: user.id } }
+      );
+      if (nb[0] == 0) {
+        throw new ApolloError("This account is already delete.");
+      }
       return { token: createToken(user, secret), userId: user.id };
     },
     register: async (
