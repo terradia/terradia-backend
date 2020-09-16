@@ -20,6 +20,7 @@ import CompanyProductsCategoryModel from "./company-products-category.model";
 import CompanyUserModel from "./company-user.model";
 import CartModel from "./cart.model";
 import CompanyOpeningDayModel from "./company-opening-day.model";
+import CompanyDeliveryDayModel from "./company-delivery-day.model";
 import CompanyImageModel from "./company-image.model";
 import CompanyTagModel from "./company-tag.model";
 import CompanyTagRelationsModel from "./company-tag-relations.model";
@@ -37,6 +38,9 @@ export default class CompanyModel extends Model<CompanyModel> {
 
   @Column(DataType.STRING)
   public name!: string;
+
+  @Column(DataType.STRING)
+  public officialName!: string;
 
   @AllowNull(true)
   @Column(DataType.STRING)
@@ -122,6 +126,10 @@ export default class CompanyModel extends Model<CompanyModel> {
   // the opening days of the company
   @HasMany(() => CompanyOpeningDayModel, "companyId")
   public openingDays!: CompanyOpeningDayModel[];
+
+  // the opening days of the company
+  @HasMany(() => CompanyDeliveryDayModel, "companyId")
+  public deliveryDays!: CompanyDeliveryDayModel[];
 
   @BelongsToMany(
     () => CompanyTagModel,

@@ -29,20 +29,20 @@ services:
 #      - "${PGADMIN_PORT:-5050}:80"
 #    restart: unless-stopped
 
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    environment:
-      - NODE_ENV=development
-    env_file:
-      - ./.env
-    volumes:
-      - ./app:/app/app
-    depends_on:
-      - postgres
+#  api:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8000:8000"
+#    environment:
+#      - NODE_ENV=development
+#    env_file:
+#      - ./.env
+#    volumes:
+#      - ./app:/app/app
+#    depends_on:
+#      - postgres
 
 #  nginx:
 #    image: nginx:latest
