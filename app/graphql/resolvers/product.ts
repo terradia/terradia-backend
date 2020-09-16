@@ -49,6 +49,11 @@ export default {
           {
             model: ProductReviewModel,
             include: [{ model: CustomerModel, include: [UserModel] }]
+          },
+          {
+            model: ProductCompanyImageModel,
+            as: "cover",
+            include: [CompanyImageModel]
           }
         ]
       });
