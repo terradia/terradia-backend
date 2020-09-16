@@ -2,6 +2,7 @@ import UserModel from "../../database/models/user.model";
 import { combineResolvers } from "graphql-resolvers";
 import { isUserAndCustomer } from "./authorization";
 import CustomerModel from "../../database/models/customer.model";
+import { ApolloError } from "apollo-server-errors";
 
 import Stripe from "stripe";
 
@@ -17,6 +18,42 @@ declare interface Card {
 
 export default {
   Query: {
+    getStripeCustomerDefaultSource: combineResolvers(
+      isUserAndCustomer,
+      async (
+        _: any,
+        __: any,
+        { user }: { user: UserModel }
+      ): Promise<Stripe.CustomerSource> => {
+        const customer = await stripe.customers.retrieve(
+          user.customer.stripeId
+        );
+        if (!customer.default_source) {
+          throw new ApolloError(
+            "This customer does not have any default source",
+            "404"
+          );
+        }
+        const card = await stripe.customers.retrieveSource(
+          user.customer.stripeId,
+          customer.default_source
+        );
+        return card;
+      }
+    ),
+    getStripeCustomer: combineResolvers(
+      isUserAndCustomer,
+      async (
+        _: any,
+        __: any,
+        { user }: { user: UserModel }
+      ): Promise<Stripe.CustomerSource> => {
+        const customer = await stripe.customers.retrieve(
+          user.customer.stripeId
+        );
+        return customer;
+      }
+    ),
     listCustomerCards: combineResolvers(
       isUserAndCustomer,
       async (
@@ -87,6 +124,20 @@ export default {
           .then(() => {
             //if it has been deleted
           });
+        return true;
+      }
+    ),
+    updateCustomerDefaultSource: combineResolvers(
+      isUserAndCustomer,
+      async (
+        _: any,
+        { cardId }: { cardId: string },
+        { user }: { user: UserModel }
+      ): Promise<boolean> => {
+        const customer = await stripe.customers.update(user.customer.stripeId, {
+          // eslint-disable-next-line @typescript-eslint/camelcase
+          default_source: cardId
+        });
         return true;
       }
     )
