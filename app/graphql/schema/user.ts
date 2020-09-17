@@ -39,6 +39,7 @@ export default gql`
       code: String!
       exponentPushToken: String
     ): SigninAnswer!
+    passwordValidation(password: String!): Boolean
   }
   type SignupAnswer {
     token: String!
