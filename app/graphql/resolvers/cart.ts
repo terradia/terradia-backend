@@ -5,7 +5,7 @@ import CustomerModel from "../../database/models/customer.model";
 import CartProductModel from "../../database/models/cart-product.model";
 import ProductModel from "../../database/models/product.model";
 import { combineResolvers } from "graphql-resolvers";
-import { isUserAndCustomer } from "./authorization";
+import { isAuthenticated, isUserAndCustomer } from "./authorization";
 import CompanyModel from "../../database/models/company.model";
 
 declare interface UserCompanyRoleProps {
