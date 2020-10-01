@@ -60,7 +60,9 @@ export default gql`
     categoryId: ID
     type: String
   }
-
+  type CompanyProductImage {
+    companyImage: CompanyImage!
+  }
   type Product {
     # Resource related data
     id: ID!
@@ -69,7 +71,7 @@ export default gql`
     position: Int
 
     # Images
-    cover: CompanyImage
+    cover: CompanyProductImage
     images: [CompanyImage]
 
     # Date Related

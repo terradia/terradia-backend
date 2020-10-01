@@ -17,6 +17,7 @@ import tagCompanyCategorySchema from "./companyTag";
 import companyOpeningDaysSchema from "./companyOpeningDays";
 import companyDeliveryDaysSchema from "./companyDeliveryDays";
 import companyImagesSchema from "./companyImages";
+import paymentSchema from "./payment";
 
 const linkSchema = gql`
   scalar Date
@@ -50,5 +51,6 @@ export default [
   tagCompanyCategorySchema,
   companyImagesSchema,
   companyOpeningDaysSchema,
-  companyDeliveryDaysSchema
+  companyDeliveryDaysSchema,
+  paymentSchema
 ];

@@ -60,6 +60,9 @@ export default class CustomerModel extends Model<CustomerModel> {
   @HasMany(() => CompanyReviewModel)
   public companyReviews!: CompanyReviewModel[];
 
+  @Column
+  public stripeId!: string;
+
   @BelongsToMany(
     () => CompanyModel,
     () => CustomersFavoriteCompaniesModel
