@@ -148,13 +148,17 @@ export default {
           }
         });
         let currentLength = nonCategories.length;
-        category.products.forEach((element: ProductModel) => {
+        for (const element of category.products) {
+          const elem = await element;
           currentLength++;
           ProductModel.update(
-            { companyProductsCategoryId: null, position: currentLength },
-            { where: { id: element.id } }
+            {
+              companyProductsCategoryId: null,
+              position: currentLength
+            },
+            { where: { id: elem.id } }
           );
-        });
+        }
         await CompanyProductsCategoryModel.destroy({
           where: { id: categoryId }
         });

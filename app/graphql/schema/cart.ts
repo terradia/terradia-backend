@@ -4,6 +4,7 @@ export default gql`
   extend type Query {
     getCart: Cart
     totalCartPrice: Float
+    getCartsByCompany(companyId: String): [Cart]
   }
 
   extend type Mutation {

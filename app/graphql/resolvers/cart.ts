@@ -45,6 +45,28 @@ export default {
         });
       }
     ),
+
+    getCartsByCompany: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        { companyId }: { companyId: string }
+      ): Promise<CartModel[] | null> => {
+        return CartModel.findAll({
+          where: {
+            companyId
+          },
+          include: [
+            CompanyModel,
+            {
+              model: CartProductModel,
+              include: [ProductModel],
+              order: ["updatedAt"]
+            }
+          ]
+        });
+      }
+    ),
     totalCartPrice: combineResolvers(
       isUserAndCustomer,
       async (_: any, __: any, { user }: Context): Promise<number> => {

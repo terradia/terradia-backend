@@ -11,6 +11,7 @@ import customerAddress from "./customerAddress";
 import tagCompanyCategory from "./companyTag";
 import cart from "./cart";
 import companyOpeningDays from "./companyOpeningDays";
+import companyDeliveryDays from "./companyDeliveryDays";
 import companyImages from "./companyImages";
 import payment from "./payment";
 
@@ -30,5 +31,6 @@ export default [
   tagCompanyCategory,
   companyImages,
   companyOpeningDays,
+  companyDeliveryDays,
   payment
 ];

@@ -15,6 +15,7 @@ import customerAddressSchema from "./customerAddress";
 import cartSchema from "./cart";
 import tagCompanyCategorySchema from "./companyTag";
 import companyOpeningDaysSchema from "./companyOpeningDays";
+import companyDeliveryDaysSchema from "./companyDeliveryDays";
 import companyImagesSchema from "./companyImages";
 import paymentSchema from './payment';
 
@@ -50,5 +51,6 @@ export default [
   tagCompanyCategorySchema,
   companyImagesSchema,
   companyOpeningDaysSchema,
+  companyDeliveryDaysSchema,
   paymentSchema
 ];
