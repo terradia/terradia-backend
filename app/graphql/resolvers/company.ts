@@ -67,6 +67,28 @@ const checkSiren: (siren: string) => Promise<string> = async (
   return json.uniteLegale.periodesUniteLegale["0"].denominationUniteLegale;
 };
 
+export const companyIncludes = [
+  { model: CompanyImageModel, as: "logo" },
+  ProductModel,
+  {
+    model: CompanyUserModel,
+    include: [RoleModel, UserModel]
+  },
+  CompanyReviewModel,
+  {
+    model: CompanyProductsCategoryModel,
+    include: [ProductModel]
+  },
+  {
+    model: CompanyOpeningDayModel,
+    include: [CompanyOpeningDayHoursModel]
+  },
+  {
+    model: CompanyDeliveryDayModel,
+    include: [CompanyDeliveryDayHoursModel]
+  },
+]
+
 export const toIncludeWhenGetCompany = [
   ProductModel,
   {

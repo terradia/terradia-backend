@@ -46,7 +46,7 @@ export default class CompanyUserInvitationModel extends Model<
   public company!: CompanyModel;
 
   @Column
-  public status!: "PENDING" | "ACCEPTED" | "DECLINED";
+  public status!: "PENDING" | "ACCEPTED" | "DECLINED" | "CANCELED";
 
   @Column(DataType.DATE)
   public createdAt!: Date;

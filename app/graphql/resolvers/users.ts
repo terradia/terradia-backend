@@ -64,7 +64,7 @@ export default {
       isAuthenticated,
       async (
         _: any,
-        { status }: { status?: "ALL" | "PENDING" | "ACCEPTED" | "DECLINED" },
+        { status }: { status?: "ALL" | "PENDING" | "ACCEPTED" | "DECLINED" | "CANCELED" },
         { user }: { user: UserModel }
       ): Promise<CompanyUserInvitationModel[]> => {
         // 'where' is any because of the sequelize query we do later on.

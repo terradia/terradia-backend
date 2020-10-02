@@ -17,7 +17,7 @@ exports.setup = function(options, seedLink) {
 exports.up = function(db) {
   return db
     .runSql(
-      `CREATE TYPE enum_companiesusersinvitations_status AS ENUM ('PENDING', 'ACCEPTED', 'DECLINED');`
+      `CREATE TYPE enum_companiesusersinvitations_status AS ENUM ('PENDING', 'ACCEPTED', 'DECLINED', 'CANCELED');`
     )
     .then(() => {
       db.createTable("CompaniesUsersInvitations", {
