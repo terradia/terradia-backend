@@ -8,6 +8,7 @@ import CompanyUserModel from "../../database/models/company-user.model";
 import CompanyUserRoleModel from "../../database/models/company-user-role.model";
 import RoleModel from "../../database/models/role.model";
 import { createEmailInvitation } from "../../services/mails/users";
+import { companyIncludes } from "./company";
 
 export const companyUserInvitationIncludes = [UserModel, CompanyModel];
 
@@ -21,10 +22,13 @@ export default {
       ): Promise<CompanyUserInvitationModel[] | null> => {
         const company: CompanyModel | null = await CompanyModel.findOne({
           where: { id: companyId },
-          include: companyUserInvitationIncludes
+          include: companyIncludes
         });
         if (company === null) throw new ApolloError("Company not found", "404");
-        return CompanyUserInvitationModel.findAll({ where: { companyId } });
+        return CompanyUserInvitationModel.findAll({
+          where: { companyId },
+          include: companyUserInvitationIncludes
+        });
       }
     )
   },
@@ -51,7 +55,7 @@ export default {
         // check the email isn't the one from the user that invited
         if (user.email === invitationEmail)
           throw new ApolloError(
-            "Why do you try to invite yourself ? Nice try :)",
+            "You cannot invite yourself",
             "403"
           );
         const company: CompanyModel | null = await CompanyModel.findOne({
@@ -105,10 +109,24 @@ export default {
     cancelInvitation: combineResolvers(
       isAuthenticated,
       async (_: any, { id }: { id: string }): Promise<boolean> => {
-        const invitationDestroyResult: number = await CompanyUserInvitationModel.destroy(
+        const invitation: CompanyUserInvitationModel | null = await CompanyUserInvitationModel.findOne(
           { where: { id } }
         );
-        return invitationDestroyResult !== 0;
+        if (invitation === null)
+          throw new ApolloError(
+            "The invitation does not exist or was deleted",
+            "404"
+          );
+        if (invitation.status !== "PENDING")
+          throw new ApolloError(
+            "You cannot cancel an invitation that was answered or canceled",
+            "404"
+          );
+        CompanyUserInvitationModel.update(
+          { status: "CANCELED" },
+          { where: { id } }
+        );
+        return true;
       }
     ),
     acceptInvitation: combineResolvers(
@@ -124,6 +142,11 @@ export default {
         if (invitation === null)
           throw new ApolloError(
             "The invitation does not exist or was canceled",
+            "404"
+          );
+        if (invitation.status !== "PENDING")
+          throw new ApolloError(
+            "You cannot accept an invitation that was answered or canceled",
             "404"
           );
 
@@ -166,6 +189,11 @@ export default {
         if (invitation === null)
           throw new ApolloError(
             "The invitation does not exist or was deleted",
+            "404"
+          );
+        if (invitation.status !== "PENDING")
+          throw new ApolloError(
+            "You cannot decline an invitation that was answered or canceled",
             "404"
           );
         CompanyUserInvitationModel.update(

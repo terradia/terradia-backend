@@ -44,6 +44,51 @@ declare interface CreateCompanyProps {
   officialName?: string;
 }
 
+const checkSiren: (siren: string) => Promise<string> = async (
+  siren: string
+) => {
+  const json = await fetch(
+    process.env.INSEE_SIREN_URL + siren + "?masquerValeursNulles=true",
+    {
+      method: "GET",
+      headers: {
+        Authorization: "Bearer " + process.env.INSEE_API_TOKEN
+      }
+    }
+  ).then(async res => {
+    if (!res.ok) return null;
+    return await res.json();
+  });
+  if (json === null) return null;
+  const activityCode =
+    json.uniteLegale.periodesUniteLegale["0"].activitePrincipaleUniteLegale;
+  if (!activityCode.startsWith("01"))
+    throw new ApolloError("Company don't have a producer activity.", "400");
+  return json.uniteLegale.periodesUniteLegale["0"].denominationUniteLegale;
+};
+
+export const companyIncludes = [
+  { model: CompanyImageModel, as: "logo" },
+  ProductModel,
+  {
+    model: CompanyUserModel,
+    include: [RoleModel, UserModel]
+  },
+  CompanyReviewModel,
+  {
+    model: CompanyProductsCategoryModel,
+    include: [ProductModel]
+  },
+  {
+    model: CompanyOpeningDayModel,
+    include: [CompanyOpeningDayHoursModel]
+  },
+  {
+    model: CompanyDeliveryDayModel,
+    include: [CompanyDeliveryDayHoursModel]
+  },
+]
+
 export const toIncludeWhenGetCompany = [
   ProductModel,
   {
