@@ -5,6 +5,9 @@ export default gql`
     getAllUsers: [User]!
     doesFacebookAccountExistWithEmail(facebookToken: String!): Boolean!
     getUser: User
+    getMyCompaniesInvitations(
+      status: CompanyUserInvitationStatusRequest = "ALL"
+    ): [CompanyUserInvitation!]
   }
   extend type Mutation {
     register(
