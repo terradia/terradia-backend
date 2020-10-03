@@ -6,7 +6,7 @@
     "host": "localhost",
     "database": "postgres",
     "schema": "public",
-    "port": "5432"
+    "port": { "ENV": "DB_PORT" }
   },
   "deletion": {
     "driver": "pg",
