@@ -33,6 +33,6 @@ export default [
   companyImages,
   companyOpeningDays,
   companyDeliveryDays,
-  payment
+  payment,
   companyUserInvitation
 ];

@@ -23,6 +23,13 @@ async function generateCompanies(): Promise<Company[]> {
   const companiesGenerated: Company[] = [];
   for (let i = 0; i < 10; i++) {
     const address = faker.address.streetAddress(true);
+    const newPoint = {
+      type: "Point",
+      coordinates: [
+        Math.random() * (7.332832 - 7.363075) + 7.363075,
+        Math.random() * (48.878577 - 48.420203) + 48.420203
+      ]
+    };
     const point = {
       type: "Point",
       coordinates: [
@@ -35,11 +42,11 @@ async function generateCompanies(): Promise<Company[]> {
       description: faker.company.catchPhraseDescriptor(),
       address,
       siren: faker.random.number().toString(),
-      phone: faker.random.number().toString(),
-      email: faker.internet.email(),
-      geoPosition: point,
+      geoPosition: newPoint,
       averageMark: parseFloat((Math.random() * 5).toFixed(2)),
-      numberOfMarks: Math.floor(Math.random() * 99) + 1
+      numberOfMarks: Math.floor(Math.random() * 99) + 1,
+      email: faker.internet.email(),
+      phone: faker.phone.phoneNumber()
     });
   }
   return companiesGenerated;

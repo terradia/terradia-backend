@@ -126,27 +126,27 @@ export default class ProductModel extends Model<ProductModel> {
   @BelongsTo(() => UnitModel)
   public unit!: UnitModel;
 
-  public cover!: CompanyImageModel | null;
+  // public cover!: CompanyImageModel | null;
 
-  public static async addCoverToProduct(
-    product: ProductModel
-  ): Promise<ProductModel> {
-    if (product.coverId !== null) {
-      const productCover: ProductCompanyImageModel | null = await ProductCompanyImageModel.findOne(
-        {
-          where: { id: product.coverId }
-        }
-      );
-      if (productCover) {
-        product.cover = await CompanyImageModel.findOne({
-          where: { id: productCover.companyImageId }
-        });
-      }
-    } else {
-      product.cover = null;
-    }
-    return product;
-  }
+  // public static async addCoverToProduct(
+  //   product: ProductModel
+  // ): Promise<ProductModel> {
+  //   if (product.coverId !== null) {
+  //     const productCover: ProductCompanyImageModel | null = await ProductCompanyImageModel.findOne(
+  //       {
+  //         where: { id: product.coverId }
+  //       }
+  //     );
+  //     if (productCover) {
+  //       product.cover = await CompanyImageModel.findOne({
+  //         where: { id: productCover.companyImageId }
+  //       });
+  //     }
+  //   } else {
+  //     product.cover = null;
+  //   }
+  //   return product;
+  // }
 
   @AfterFind
   static async afterFindHook(data: any) {

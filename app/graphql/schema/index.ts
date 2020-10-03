@@ -53,6 +53,6 @@ export default [
   companyImagesSchema,
   companyOpeningDaysSchema,
   companyDeliveryDaysSchema,
-  paymentSchema
+  paymentSchema,
   companyUserInvitationSchema
 ];

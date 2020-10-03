@@ -40,37 +40,37 @@ export default class CompanyProductsCategoryModel extends Model<
   @HasMany(() => ProductModel)
   public products!: ProductModel[];
 
-  @AfterFind
-  static async afterFindHook(data: any) {
-    if (!data) return data;
-    if (data.map !== undefined) {
-      const categories: CompanyProductsCategoryModel[] = data;
-      if (categories) {
-        return categories.map(async category => {
-          if (!category.products) return category;
-          const products = await category.products.map(
-            async (product: ProductModel) => {
-              const res = await ProductModel.addCoverToProduct(product);
-              return res;
-            }
-          );
-          //@ts-ignore
-          category.products = products;
-          return category;
-        });
-      }
-      return categories;
-    } else {
-      const category: CompanyProductsCategoryModel = data;
-      if (!category.products) return category;
-      //@ts-ignore
-      category.products = await category.products.map(
-        async (product: ProductModel) => {
-          const res = await ProductModel.addCoverToProduct(product);
-          return res;
-        }
-      );
-      return category;
-    }
-  }
+  // @AfterFind
+  // static async afterFindHook(data: any) {
+  //   if (!data) return data;
+  //   if (data.map !== undefined) {
+  //     const categories: CompanyProductsCategoryModel[] = data;
+  //     if (categories) {
+  //       return categories.map(async category => {
+  //         if (!category.products) return category;
+  //         const products = await category.products.map(
+  //           async (product: ProductModel) => {
+  //             const res = await ProductModel.addCoverToProduct(product);
+  //             return res;
+  //           }
+  //         );
+  //         //@ts-ignore
+  //         category.products = products;
+  //         return category;
+  //       });
+  //     }
+  //     return categories;
+  //   } else {
+  //     const category: CompanyProductsCategoryModel = data;
+  //     if (!category.products) return category;
+  //     //@ts-ignore
+  //     category.products = await category.products.map(
+  //       async (product: ProductModel) => {
+  //         const res = await ProductModel.addCoverToProduct(product);
+  //         return res;
+  //       }
+  //     );
+  //     return category;
+  //   }
+  // }
 }
