@@ -319,7 +319,7 @@ export default {
         ]
       });
       if (userFetched) {
-        return userFetched.companies.map(companyInfo => {
+        return userFetched.companies.map((companyInfo) => {
           return companyInfo.company;
         });
       }
@@ -467,7 +467,37 @@ export default {
           });
           return newCompany;
         }
-      )
+        const ownerRole: RoleModel | null = await RoleModel.findOne({
+          where: { slugName: "owner" }
+        }).then((elem) => elem);
+        if (ownerRole == null)
+          throw new ApolloError(
+            "There is no owner Role in the DB, cannot create Company. Try to seed the DB.",
+            "500"
+          );
+        /*const officialName = await checkSiren(args.siren);
+        if (officialName === null) {
+          throw new ApolloError(
+            "Can not find company based on the given siren.",
+            "400"
+          );
+        }
+        args.officialName = officialName;*/
+        const newCompany: CompanyModel = await CompanyModel.create({
+          ...args,
+          geoPosition: point
+        });
+        await CompanyUserModel.create({
+          // @ts-ignore
+          companyId: newCompany.id,
+          userId: user.id,
+          role: ownerRole.id
+        }).then((userCompany) => {
+          // @ts-ignore
+          userCompany.addRole(ownerRole.id);
+        });
+        return newCompany;
+      }
     ),
     deleteCompany: combineResolvers(
       isAuthenticated,
@@ -548,7 +578,7 @@ export default {
         await CompanyUserModel.create({
           companyId,
           userId
-        }).then(userCompany => {
+        }).then((userCompany) => {
           CompanyUserRoleModel.create({
             companyUserId: userCompany.id,
             roleId: userRole.id
