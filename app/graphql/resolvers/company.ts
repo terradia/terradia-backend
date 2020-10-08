@@ -44,6 +44,29 @@ declare interface CreateCompanyProps {
   officialName?: string;
 }
 
+const checkSiren: (siren: string) => Promise<string> = async (
+  siren: string
+) => {
+  const json = await fetch(
+    process.env.INSEE_SIREN_URL + siren + "?masquerValeursNulles=true",
+    {
+      method: "GET",
+      headers: {
+        Authorization: "Bearer " + process.env.INSEE_API_TOKEN
+      }
+    }
+  ).then(async (res) => {
+    if (!res.ok) return null;
+    return await res.json();
+  });
+  if (json === null) return null;
+  const activityCode =
+    json.uniteLegale.periodesUniteLegale["0"].activitePrincipaleUniteLegale;
+  if (!activityCode.startsWith("01"))
+    throw new ApolloError("Company don't have a producer activity.", "400");
+  return json.uniteLegale.periodesUniteLegale["0"].denominationUniteLegale;
+};
+
 export const toIncludeWhenGetCompany = [
   ProductModel,
   {
@@ -274,7 +297,7 @@ export default {
         ]
       });
       if (userFetched) {
-        return userFetched.companies.map(companyInfo => {
+        return userFetched.companies.map((companyInfo) => {
           return companyInfo.company;
         });
       }
@@ -422,7 +445,37 @@ export default {
           });
           return newCompany;
         }
-      )
+        const ownerRole: RoleModel | null = await RoleModel.findOne({
+          where: { slugName: "owner" }
+        }).then((elem) => elem);
+        if (ownerRole == null)
+          throw new ApolloError(
+            "There is no owner Role in the DB, cannot create Company. Try to seed the DB.",
+            "500"
+          );
+        /*const officialName = await checkSiren(args.siren);
+        if (officialName === null) {
+          throw new ApolloError(
+            "Can not find company based on the given siren.",
+            "400"
+          );
+        }
+        args.officialName = officialName;*/
+        const newCompany: CompanyModel = await CompanyModel.create({
+          ...args,
+          geoPosition: point
+        });
+        await CompanyUserModel.create({
+          // @ts-ignore
+          companyId: newCompany.id,
+          userId: user.id,
+          role: ownerRole.id
+        }).then((userCompany) => {
+          // @ts-ignore
+          userCompany.addRole(ownerRole.id);
+        });
+        return newCompany;
+      }
     ),
     deleteCompany: combineResolvers(
       isAuthenticated,
@@ -503,7 +556,7 @@ export default {
         await CompanyUserModel.create({
           companyId,
           userId
-        }).then(userCompany => {
+        }).then((userCompany) => {
           CompanyUserRoleModel.create({
             companyUserId: userCompany.id,
             roleId: userRole.id
