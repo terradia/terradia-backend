@@ -55,7 +55,11 @@ const checkSiren: (siren: string) => Promise<string> = async (
         Authorization: "Bearer " + process.env.INSEE_API_TOKEN
       }
     }
+<<<<<<< HEAD
   ).then(async res => {
+=======
+  ).then(async (res) => {
+>>>>>>> companyLeader
     if (!res.ok) return null;
     return await res.json();
   });
@@ -67,6 +71,7 @@ const checkSiren: (siren: string) => Promise<string> = async (
   return json.uniteLegale.periodesUniteLegale["0"].denominationUniteLegale;
 };
 
+<<<<<<< HEAD
 export const companyIncludes = [
   { model: CompanyImageModel, as: "logo" },
   ProductModel,
@@ -89,6 +94,8 @@ export const companyIncludes = [
   },
 ]
 
+=======
+>>>>>>> companyLeader
 export const toIncludeWhenGetCompany = [
   ProductModel,
   {
