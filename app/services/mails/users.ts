@@ -57,4 +57,23 @@ const createEmailInvitation = (
   sendMail(mail);
 };
 
-export { createEmailRegister, createEmailInvitation };
+const forgotPasswordEmail = (
+  to: string,
+  firstName: string,
+  code: string
+): void => {
+  const passwordMail = {
+    to,
+    from: FROM,
+    subject: "Code d'accès à Terradia",
+    templateId: "d-7f05f91f4da4453794f4e4fc965f4dc0",
+    dynamic_template_data: {
+      subject: "Code d'accès à Terradia",
+      user_name: firstName,
+      code_change_mail: code
+    }
+  };
+  sendMail(passwordMail);
+};
+
+export { createEmailRegister, createEmailInvitation, forgotPasswordEmail };

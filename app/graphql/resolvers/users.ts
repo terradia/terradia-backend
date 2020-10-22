@@ -11,6 +11,7 @@ import fetch from "node-fetch";
 import userController from "../../controllers/user";
 import CompanyUserInvitationModel from "../../database/models/company-user-invitation.model";
 import { companyUserInvitationIncludes } from "./companyUserInvitation";
+import { forgotPasswordEmail } from "../../services/mails/users";
 
 const createToken = async (
   user: UserModel,
@@ -64,12 +65,16 @@ export default {
       isAuthenticated,
       async (
         _: any,
-        { status }: { status?: "ALL" | "PENDING" | "ACCEPTED" | "DECLINED" | "CANCELED" },
+        {
+          status
+        }: {
+          status?: "ALL" | "PENDING" | "ACCEPTED" | "DECLINED" | "CANCELED";
+        },
         { user }: { user: UserModel }
       ): Promise<CompanyUserInvitationModel[]> => {
         // 'where' is any because of the sequelize query we do later on.
         const where: any = { invitationEmail: user.email };
-        if (status !==  "ALL") where["status"] = status;
+        if (status !== "ALL") where["status"] = status;
         return CompanyUserInvitationModel.findAll({
           where,
           include: companyUserInvitationIncludes
@@ -285,9 +290,9 @@ export default {
         { passwordForgot: randomCode },
         { where: { email } }
       );
-      // if (res[0]) {
-      //   createEmailAccountRecovery(email, randomCode, user.locale);
-      // }
+      if (res[0]) {
+        forgotPasswordEmail(email, user.firstName, randomCode.toString());
+      }
       return res[0];
     },
     signInWithgeneratedCode: async (
