@@ -11,6 +11,7 @@ export default gql`
     saveCard(cardId: String!): Card!
     deleteCard(cardId: String!): Boolean
     updateCustomerDefaultSource(cardId: String!): Boolean
+    createACharge: Boolean
   }
   type StripeCustomer {
     id: String!

@@ -1,10 +1,14 @@
 import UserModel from "../../database/models/user.model";
 import { combineResolvers } from "graphql-resolvers";
-import { isUserAndCustomer } from "./authorization";
+import { isUserAndCustomer, isUserAndStripeCustomer } from "./authorization";
 import CustomerModel from "../../database/models/customer.model";
 import { ApolloError } from "apollo-server-errors";
 
 import Stripe from "stripe";
+import CartModel from "../../database/models/cart.model";
+import CompanyModel from "../../database/models/company.model";
+import CartProductModel from "../../database/models/cart-product.model";
+import ProductModel from "../../database/models/product.model";
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY, {
   apiVersion: "2020-03-02"
@@ -19,7 +23,7 @@ declare interface Card {
 export default {
   Query: {
     getStripeCustomerDefaultSource: combineResolvers(
-      isUserAndCustomer,
+      isUserAndStripeCustomer,
       async (
         _: any,
         __: any,
@@ -42,7 +46,7 @@ export default {
       }
     ),
     getStripeCustomer: combineResolvers(
-      isUserAndCustomer,
+      isUserAndStripeCustomer,
       async (
         _: any,
         __: any,
@@ -55,7 +59,7 @@ export default {
       }
     ),
     listCustomerCards: combineResolvers(
-      isUserAndCustomer,
+      isUserAndStripeCustomer,
       async (
         _: any,
         {
@@ -101,7 +105,7 @@ export default {
       }
     ),
     saveCard: combineResolvers(
-      isUserAndCustomer,
+      isUserAndStripeCustomer,
       async (
         _: any,
         { cardId }: { cardId: string },
@@ -113,7 +117,7 @@ export default {
       }
     ),
     deleteCard: combineResolvers(
-      isUserAndCustomer,
+      isUserAndStripeCustomer,
       async (
         _: any,
         { cardId }: { cardId: string },
@@ -128,7 +132,7 @@ export default {
       }
     ),
     updateCustomerDefaultSource: combineResolvers(
-      isUserAndCustomer,
+      isUserAndStripeCustomer,
       async (
         _: any,
         { cardId }: { cardId: string },
@@ -138,6 +142,61 @@ export default {
           // eslint-disable-next-line @typescript-eslint/camelcase
           default_source: cardId
         });
+        return true;
+      }
+    ),
+    createACharge: combineResolvers(
+      isUserAndStripeCustomer,
+      async (
+        _: any,
+        __: any,
+        { user }: { user: UserModel }
+      ): Promise<boolean> => {
+        //Get current cart
+        const customer: CustomerModel = user.customer;
+        if (!customer) {
+          throw new ApolloError("this user is not a customer", "400");
+        }
+        if (customer.cart === null) {
+          throw new ApolloError("this customer does not have a cart", "400");
+        }
+        const cart = await CartModel.findOne({
+          where: {
+            customerId: user.customer.id
+          },
+          include: [
+            CompanyModel,
+            {
+              model: CartProductModel,
+              include: [ProductModel],
+              order: ["updatedAt"]
+            }
+          ]
+        });
+        if (!cart) {
+          throw new ApolloError("this customer does not have a cart", "400");
+        }
+        //Get current card
+        const stripeCustomer = await stripe.customers.retrieve(
+          user.customer.stripeId
+        );
+        if (!stripeCustomer.default_source) {
+          throw new ApolloError(
+            "This customer does not have any default source",
+            "404"
+          );
+        }
+        try {
+          const charge = await stripe.charges.create({
+            amount: cart.totalPrice * 100,
+            currency: "eur",
+            source: stripeCustomer.default_source,
+            customer: stripeCustomer.id,
+            description: "Commande pour un panier"
+          });
+        } catch (e) {
+          throw new ApolloError(e.toString(), "404");
+        }
         return true;
       }
     )
