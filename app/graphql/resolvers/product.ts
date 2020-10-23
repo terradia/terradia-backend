@@ -18,6 +18,7 @@ import {
 } from "../../uploadS3";
 import ProductCompanyImageModel from "../../database/models/product-company-images.model";
 import { CompanyImageData } from "./companyImages";
+import client from "../../database/elastic/server";
 
 interface ProductsPositionsData {
   productId: string;
@@ -150,7 +151,16 @@ export default {
           const product: ProductModel = await ProductModel.create({
             ...args,
             position: pos
-          }).then(product => {
+          }).then(async product => {
+            await client.index({
+              index: "product",
+              id: product.id,
+              body: {
+                id: product.id,
+                name: product.name,
+                description: product.description
+              }
+            });
             ProductCompanyImageModel.create({
               productId: product.id,
               companyImageId: args.coverId
