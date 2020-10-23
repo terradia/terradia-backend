@@ -1,3 +1,4 @@
 requests
 py4j
 aws-psycopg2
+sendgrid
