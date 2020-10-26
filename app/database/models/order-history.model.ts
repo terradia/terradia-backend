@@ -14,12 +14,13 @@ import {
 import CustomerModel from "./customer.model";
 import CompanyModel from "./company.model";
 import OrderProductModel from "./order-product.model";
+import OrderProductHistoryModel from "./order-product-history.model";
 
 @Table({
-  tableName: "Orders",
+  tableName: "OrdersHistory",
   timestamps: true
 })
-export default class OrderModel extends Model<OrderModel> {
+export default class OrderHistoryModel extends Model<OrderHistoryModel> {
   @IsUUID(4)
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -31,7 +32,7 @@ export default class OrderModel extends Model<OrderModel> {
   public code!: string;
 
   @ForeignKey(() => CustomerModel)
-  @AllowNull(false)
+  @AllowNull(true)
   @Column(DataType.UUID)
   public customerId!: string;
 
@@ -39,15 +40,27 @@ export default class OrderModel extends Model<OrderModel> {
   public customer!: CustomerModel;
 
   @ForeignKey(() => CompanyModel)
-  @AllowNull(false)
+  @AllowNull(true)
   @Column(DataType.UUID)
   public companyId!: string;
 
   @BelongsTo(() => CompanyModel)
   public company!: CompanyModel;
 
-  @HasMany(() => OrderProductModel, "orderId")
-  public products!: OrderProductModel[];
+  @AllowNull(false)
+  @Column(DataType.STRING)
+  public companyName!: string;
+
+  @AllowNull(true)
+  @Column(DataType.STRING)
+  public companyLogo!: string;
+
+  @AllowNull(false)
+  @Column(DataType.STRING)
+  public companyAddress!: string;
+
+  @HasMany(() => OrderProductHistoryModel, "orderHistoryId")
+  public products!: OrderProductHistoryModel[];
 
   @Column
   public createdAt!: Date;
@@ -61,10 +74,10 @@ export default class OrderModel extends Model<OrderModel> {
   @Column(DataType.NUMBER)
   public numberProducts!: number
 
-  @Column
-  public status!: "PENDING" | "ACCEPTED" | "AVAILABLE" | "DECLINED" | "CANCELED"
-
   @AllowNull(true)
   @Column
   public decliningReason!: string
+
+  @Column
+  public status!: "FINISHED" | "DECLINED" | "CANCELED"
 }

@@ -68,7 +68,7 @@ export default gql`
     id: ID!
     name: String!
     description: String!
-    position: Int
+    position: Int # position in the category of the company
 
     # Images
     cover: CompanyProductImage

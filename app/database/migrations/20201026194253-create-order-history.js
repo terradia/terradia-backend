@@ -17,10 +17,10 @@ exports.setup = function(options, seedLink) {
 exports.up = function(db) {
   return db
     .runSql(
-      `CREATE TYPE enum_order_status AS ENUM ('PENDING', 'ACCEPTED', 'AVAILABLE', 'DECLINED', 'CANCELED');`
+      `CREATE TYPE enum_orders_history_status AS ENUM ('FINISHED', 'DECLINED', 'CANCELED');`
     )
     .then(() => {
-      return db.createTable("Orders", {
+      db.createTable("OrdersHistory", {
         id: {
           type: "uuid",
           primaryKey: true,
@@ -33,10 +33,22 @@ exports.up = function(db) {
         },
         customerId: {
           type: "uuid",
-          allowNull: false
+          allowNull: true
         },
         companyId: {
           type: "uuid",
+          allowNull: true
+        },
+        companyName: {
+          type: "string",
+          allowNull: false
+        },
+        companyLogo: {
+          type: "string",
+          allowNull: true
+        },
+        companyAddress: {
+          type: "string",
           allowNull: false
         },
         createdAt: {
@@ -60,25 +72,29 @@ exports.up = function(db) {
           allowNull: true
         },
         status: {
-          type: "enum_order_status",
-          defaultValue: "PENDING"
+          type: "enum_orders_history_status",
+          defaultValue: "FINISHED"
         }
       });
     })
     .then(() => {
-      return db.createTable("OrdersProducts", {
+      return db.createTable("OrdersProductsHistory", {
         id: {
           type: "uuid",
           primaryKey: true,
           notNull: true,
           defaultValue: new String("uuid_generate_v4()")
         },
-        productId: {
+        orderHistoryId: {
           type: "uuid",
           allowNull: false
         },
-        orderId: {
+        productId: {
           type: "uuid",
+          allowNull: true
+        },
+        name: {
+          type: "string",
           allowNull: false
         },
         quantity: {
@@ -88,19 +104,35 @@ exports.up = function(db) {
         price: {
           type: "float",
           allowNull: false
+        },
+        unitId: {
+          type: "uuid",
+          allowNull: false
+        },
+        quantityForUnit: {
+          type: "integer",
+          allowNull: false
         }
+      });
+    })
+    .then(() => {
+      return db.addColumn("Carts", "numberProducts", {
+        type: "integer"
       });
     });
 };
 
 exports.down = function(db) {
   return db
-    .dropTable("OrdersProducts")
+    .dropTable("OrdersProductsHistory")
     .then(() => {
-      return db.dropTable("Orders");
+      return db.dropTable("OrdersHistory");
     })
     .then(() => {
-      return db.runSql('DROP TYPE IF EXISTS "enum_order_status";');
+      return db.runSql('DROP TYPE IF EXISTS "enum_orders_history_status";');
+    })
+    .then(() => {
+      return db.removeColumn("Carts", "numberProducts");
     });
 };
 

@@ -28,7 +28,7 @@ export default class OrderProductModel extends Model<OrderProductModel> {
   public productId!: string;
 
   @BelongsTo(() => ProductModel)
-  public product!: string;
+  public product!: ProductModel;
 
   @ForeignKey(() => OrderModel)
   @AllowNull(false)
