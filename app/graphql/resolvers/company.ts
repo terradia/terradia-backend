@@ -335,60 +335,24 @@ export default {
       _: any,
       { userId }: { userId: string }
     ): Promise<CompanyUserModel[] | undefined> => {
-      return (
-        await UserModel.findByPk(userId, {
-          include: [
-            {
-              model: CompanyUserModel,
-              include: [
-                {
-                  model: CompanyModel,
-                  include: [
-                    {
-                      model: CompanyImageModel,
-                      as: "logo"
-                    },
-                    {
-                      model: CompanyImageModel,
-                      as: "cover"
-                    },
-                    { model: CompanyImageModel, as: "companyImages" },
-                    ProductModel,
-                    {
-                      model: CompanyUserModel,
-                      include: [RoleModel, UserModel]
-                    },
-                    CompanyReviewModel,
-                    {
-                      model: CompanyProductsCategoryModel,
-                      include: [
-                        {
-                          model: ProductModel,
-                          include: [
-                            {
-                              model: ProductCompanyImageModel,
-                              as: "cover",
-                              include: [CompanyImageModel]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      model: CompanyOpeningDayModel,
-                      include: [CompanyOpeningDayHoursModel]
-                    },
-                    {
-                      model: CompanyDeliveryDayModel,
-                      include: [CompanyDeliveryDayHoursModel]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        })
-      )?.companies;
+      return CompanyUserModel.findAll({
+        where: { userId: userId },
+        include: [
+          {
+            model: CompanyModel,
+            include: [
+              {
+                model: CompanyImageModel,
+                as: "logo"
+              },
+              {
+                model: CompanyImageModel,
+                as: "cover"
+              }
+            ]
+          }
+        ]
+      });
     },
     searchCompanies: async (
       _: any,
