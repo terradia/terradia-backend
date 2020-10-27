@@ -25,7 +25,7 @@ function generateReviews<T extends CompanyModel | ProductModel>
 (model: T, customers: CustomerModel[]): isCompany<T> {
     let reviewsGenerated: isCompany<T> = [] as unknown as isCompany<T>;
     const rand: number = Math.floor(Math.random() * 100);
-    const id: string = (model instanceof CompanyModel) ? "CompanyId" : "productId";
+    const id: string = (model instanceof CompanyModel) ? "companyId" : "productId";
     for (let i = 0; i < rand; i++) {
         let customerMark = Math.floor(Math.random() * 4) + 1;
         reviewsGenerated.push({

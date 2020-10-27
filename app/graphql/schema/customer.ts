@@ -15,7 +15,7 @@ export default gql`
 
   type Customer {
     id: String!
-    user: User!
+    user: User
     companyReviews: [CompanyReview]
     favoriteCompanies: [Company]
 

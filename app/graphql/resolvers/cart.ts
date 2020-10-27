@@ -14,6 +14,7 @@ import CompanyModel from "../../database/models/company.model";
 import OrderModel from "../../database/models/order.model";
 import OrderProductModel from "../../database/models/order-product.model";
 import { OrderIncludes } from "./order";
+import UnitModel from "../../database/models/unit.model";
 
 declare interface UserCompanyRoleProps {
   companyUserId: string;
@@ -45,7 +46,10 @@ export default {
             CompanyModel,
             {
               model: CartProductModel,
-              include: [ProductModel],
+              include: [{
+                model: ProductModel,
+                include: [UnitModel]
+              }],
               order: ["updatedAt"]
             }
           ]
@@ -261,7 +265,7 @@ export default {
       async (_: any, __: any, { user }: Context): Promise<OrderModel> => {
         // Get the cart of the user
         const cart = await CartModel.findOne({
-          where: { id: user.customer.cartId },
+          where: { customerId: user.customer.id },
           include: [{ model: CartProductModel, include: [ProductModel] }]
         });
         if (!cart)
@@ -269,6 +273,7 @@ export default {
 
         // Create an order from the cart
         const order = await OrderModel.create({
+          code: "" + Math.floor(1000 + Math.random() * 9000),
           companyId: cart.companyId,
           customerId: cart.customerId,
           price: cart.totalPrice,
