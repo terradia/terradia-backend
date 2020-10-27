@@ -86,8 +86,8 @@ export const companyIncludes = [
   {
     model: CompanyDeliveryDayModel,
     include: [CompanyDeliveryDayHoursModel]
-  },
-]
+  }
+];
 
 export const toIncludeWhenGetCompany = [
   ProductModel,
@@ -99,7 +99,10 @@ export const toIncludeWhenGetCompany = [
     model: CompanyProductsCategoryModel,
     include: [ProductModel]
   },
-  CompanyReviewModel,
+  {
+    model: CompanyReviewModel,
+    include: [{ model: CustomerModel, include: [UserModel] }]
+  },
   {
     model: CompanyOpeningDayModel,
     include: [CompanyOpeningDayHoursModel]
@@ -199,7 +202,10 @@ export default {
             model: CompanyUserModel,
             include: [RoleModel, UserModel]
           },
-          CompanyReviewModel,
+          {
+            model: CompanyReviewModel,
+            include: [{ model: CustomerModel, include: [UserModel] }]
+          },
           {
             model: CompanyProductsCategoryModel,
             include: [
@@ -334,7 +340,51 @@ export default {
           include: [
             {
               model: CompanyUserModel,
-              include: [CompanyModel]
+              include: [
+                {
+                  model: CompanyModel,
+                  include: [
+                    {
+                      model: CompanyImageModel,
+                      as: "logo"
+                    },
+                    {
+                      model: CompanyImageModel,
+                      as: "cover"
+                    },
+                    { model: CompanyImageModel, as: "companyImages" },
+                    ProductModel,
+                    {
+                      model: CompanyUserModel,
+                      include: [RoleModel, UserModel]
+                    },
+                    CompanyReviewModel,
+                    {
+                      model: CompanyProductsCategoryModel,
+                      include: [
+                        {
+                          model: ProductModel,
+                          include: [
+                            {
+                              model: ProductCompanyImageModel,
+                              as: "cover",
+                              include: [CompanyImageModel]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      model: CompanyOpeningDayModel,
+                      include: [CompanyOpeningDayHoursModel]
+                    },
+                    {
+                      model: CompanyDeliveryDayModel,
+                      include: [CompanyDeliveryDayHoursModel]
+                    }
+                  ]
+                }
+              ]
             }
           ]
         })
