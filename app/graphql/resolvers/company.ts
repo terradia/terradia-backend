@@ -406,7 +406,7 @@ export default {
       isAuthenticated,
       pipeResolvers(
         isValidSiren,
-        (root: any, args: any): Promise<CompanyInfo | null> => {
+        (root: any, args: any): Promise<any | null> => {
           return root;
         }
       )
