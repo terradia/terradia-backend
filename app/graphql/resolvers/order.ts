@@ -18,7 +18,7 @@ interface Context {
 export const OrderIncludes = [
   { model: OrderProductModel, include: [ProductModel] },
   CustomerModel,
-  { model: CompanyModel, include: [CompanyImageModel] }
+  { model: CompanyModel, include: [{ model: CompanyImageModel, as: "logo" }] }
 ];
 
 const OrderHistoryIncludes = [
