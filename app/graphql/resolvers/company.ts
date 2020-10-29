@@ -5,7 +5,7 @@ import CompanyReviewModel from "../../database/models/company-review.model";
 import CompanyProductsCategoryModel from "../../database/models/company-products-category.model";
 import CompanyUserModel from "../../database/models/company-user.model";
 import RoleModel from "../../database/models/role.model";
-import NodeGeocoder, { Geocoder } from "node-geocoder";
+import NodeGeocoder, { Entry, Geocoder } from "node-geocoder";
 import { ApolloError } from "apollo-server-errors";
 import fetch from "node-fetch";
 import { Op, Sequelize } from "sequelize";
@@ -44,34 +44,6 @@ declare interface CreateCompanyProps {
   officialName?: string;
 }
 
-const checkSiren: (siren: string) => Promise<string> = async (
-  siren: string
-) => {
-  const json = await fetch(
-    process.env.INSEE_SIREN_URL + siren + "?masquerValeursNulles=true",
-    {
-      method: "GET",
-      headers: {
-        Authorization: "Bearer " + process.env.INSEE_API_TOKEN
-      }
-    }
-<<<<<<< HEAD
-  ).then(async res => {
-=======
-  ).then(async (res) => {
->>>>>>> companyLeader
-    if (!res.ok) return null;
-    return await res.json();
-  });
-  if (json === null) return null;
-  const activityCode =
-    json.uniteLegale.periodesUniteLegale["0"].activitePrincipaleUniteLegale;
-  if (!activityCode.startsWith("01"))
-    throw new ApolloError("Company don't have a producer activity.", "400");
-  return json.uniteLegale.periodesUniteLegale["0"].denominationUniteLegale;
-};
-
-<<<<<<< HEAD
 export const companyIncludes = [
   { model: CompanyImageModel, as: "logo" },
   ProductModel,
@@ -91,11 +63,9 @@ export const companyIncludes = [
   {
     model: CompanyDeliveryDayModel,
     include: [CompanyDeliveryDayHoursModel]
-  },
-]
+  }
+];
 
-=======
->>>>>>> companyLeader
 export const toIncludeWhenGetCompany = [
   ProductModel,
   {
@@ -135,14 +105,16 @@ export const isValidSiren = async (
     }
   )
     .then(async res => {
-      /*if (!res.ok) {
-      throw new ApolloError("Can't find a comapny associated with this siren");
-    }*/
       return await res.json();
     })
     .catch(err => console.log(err));
   if (json === null)
-    throw new ApolloError("Error while getting information from the INSEE API");
+    throw new ApolloError("Error while getting information from the INSEE API"); // TODO Add translation key
+  if (json.header.statut === 404) {
+    throw new ApolloError(
+      "Can't find a company associated with siren: " + siren
+    );
+  }
   json.etablissements.sort((first: any, second: any) => {
     return parseInt(second.nic) - parseInt(first.nic);
   });
@@ -326,7 +298,7 @@ export default {
         ]
       });
       if (userFetched) {
-        return userFetched.companies.map((companyInfo) => {
+        return userFetched.companies.map(companyInfo => {
           return companyInfo.company;
         });
       }
@@ -403,7 +375,24 @@ export default {
           return root;
         }
       )
-    )
+    ),
+    geocode: combineResolvers(isAuthenticated, async (_, args) => {
+      const geocoder: Geocoder = NodeGeocoder({
+        provider: "openstreetmap"
+      });
+      return await geocoder.geocode(args.address).then(res => {
+        if (res.length === 0) {
+          throw new ApolloError(
+            "No location found using provided address",
+            "500"
+          );
+        }
+        const ret = res.filter(value => {
+          return value.streetNumber;
+        })[0];
+        return ret || res[0];
+      });
+    })
   },
   Mutation: {
     createCompany: combineResolvers(
@@ -455,10 +444,13 @@ export default {
           if (!root) {
             new ApolloError("can not find company in the insee api");
           }
-          /*args.name =
-            root.uniteLegale.periodesUniteLegale[0].denominationUniteLegale;
-          args.officialName =
-            root.uniteLegale.periodesUniteLegale[0].denominationUniteLegale;*/
+          console.log(root.uniteLegale);
+          if (!args.name) {
+            args.name = root.uniteLegale.denominationUsuelle1UniteLegale;
+          }
+          if (args.officialName) {
+            args.officialName = root.uniteLegale.denominationUniteLegale;
+          }
           const newCompany: CompanyModel = await CompanyModel.create({
             ...args,
             geoPosition: point
@@ -474,37 +466,7 @@ export default {
           });
           return newCompany;
         }
-        const ownerRole: RoleModel | null = await RoleModel.findOne({
-          where: { slugName: "owner" }
-        }).then((elem) => elem);
-        if (ownerRole == null)
-          throw new ApolloError(
-            "There is no owner Role in the DB, cannot create Company. Try to seed the DB.",
-            "500"
-          );
-        /*const officialName = await checkSiren(args.siren);
-        if (officialName === null) {
-          throw new ApolloError(
-            "Can not find company based on the given siren.",
-            "400"
-          );
-        }
-        args.officialName = officialName;*/
-        const newCompany: CompanyModel = await CompanyModel.create({
-          ...args,
-          geoPosition: point
-        });
-        await CompanyUserModel.create({
-          // @ts-ignore
-          companyId: newCompany.id,
-          userId: user.id,
-          role: ownerRole.id
-        }).then((userCompany) => {
-          // @ts-ignore
-          userCompany.addRole(ownerRole.id);
-        });
-        return newCompany;
-      }
+      )
     ),
     deleteCompany: combineResolvers(
       isAuthenticated,
@@ -585,7 +547,7 @@ export default {
         await CompanyUserModel.create({
           companyId,
           userId
-        }).then((userCompany) => {
+        }).then(userCompany => {
           CompanyUserRoleModel.create({
             companyUserId: userCompany.id,
             roleId: userRole.id
