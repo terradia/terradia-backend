@@ -141,7 +141,9 @@ export default {
             status: historyStatus,
             price: order.price,
             numberProducts: order.numberProducts,
-            decliningReason: order.decliningReason
+            decliningReason: order.decliningReason,
+            companyId: order.companyId,
+            customerId: order.customerId,
           },
           {}
         );
