@@ -4,8 +4,8 @@ from dbCleaner import make_conn, fetch_data
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
-
 def handler(event, context):
+    sendingEmail = 'no-reply@terradia.eu'
     result = []
     try:
         query_cmd = "delete from public.\"Companies\" where public.\"Companies\".\"archivedAt\" < NOW() - interval '1 minutes'"
@@ -15,15 +15,10 @@ def handler(event, context):
         conn = make_conn()
 
         result = fetch_data(conn, query_cmd)
-        # recup valeur retour fetch data si result != null alors suppression a eu lieu et il faut envoyer mail
-        # si plusieurs entreprises supprimées => tout dans result
-        # 3 = email ;
-        # 2 = nom de la companie ;
-        # 16 = siren ;
         if result:
             for item in result:
                 message = Mail(
-                    from_email = 'no-reply@terradia.eu',
+                    from_email = sendingEmail,
                     to_emails=item[3],
                     subject='Suppression de votre entreprise sur Terradia')
                 message.dynamic_template_data = {

@@ -11,7 +11,7 @@ import fetch from "node-fetch";
 import userController from "../../controllers/user";
 import CompanyUserInvitationModel from "../../database/models/company-user-invitation.model";
 import { companyUserInvitationIncludes } from "./companyUserInvitation";
-import { forgotPasswordEmail } from "../../services/mails/users";
+import { forgotPasswordEmail, passwordEditEmail } from "../../services/mails/users";
 
 const createToken = async (
   user: UserModel,
@@ -128,7 +128,7 @@ export default {
       });
       if (emailAlreadyTaken) {
         throw new ApolloError(
-          "Il semblerais qu'il existe déjà un utilisateur avec cet email.",
+          "Il semblerait qu'il existe déjà un utilisateur avec cet email.",
           "403"
         );
       }
@@ -341,6 +341,7 @@ export default {
       if (!isValid) {
         throw new AuthenticationError("Invalid password.");
       }
+      passwordEditEmail(user.email, user.firstName);
       return true;
     },
     deleteUser: combineResolvers(
