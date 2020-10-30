@@ -69,7 +69,7 @@
     "apollo-server": "^2.16.1",
     "apollo-server-express": "^2.16.1",
     "aws-sdk": "^2.656.0",
-    "bcrypt": "^3.0.8",
+    "bcrypt": "^5.0.0",
     "bcrypt-nodejs": "^0.0.3",
     "bcryptjs": "^2.4.3",
     "compression": "latest",
