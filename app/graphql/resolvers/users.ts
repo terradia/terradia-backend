@@ -92,6 +92,13 @@ export default {
       if (!isValid) {
         throw new AuthenticationError("Invalid password.");
       }
+      const nb = await UserModel.update(
+        { archivedAt: null },
+        { where: { id: user.id } }
+      );
+      if (nb[0] == 0) {
+        throw new ApolloError("This account is already delete.");
+      }
       return { token: createToken(user, secret), userId: user.id };
     },
     register: async (
@@ -330,6 +337,22 @@ export default {
         throw new AuthenticationError("Invalid password.");
       }
       return true;
-    }
+    },
+    deleteUser: combineResolvers(
+      isAuthenticated,
+      async (_: any, { password }: { password: string }, { user }: Context) => {
+        const [nb, users] = await UserModel.update(
+          { archivedAt: Date.now() },
+          {
+            where: { id: user.id },
+            returning: true
+          }
+        );
+        if (nb == 0) {
+          throw new ApolloError("Can't archive this user account.");
+        }
+        return users[0];
+      }
+    )
   }
 };
