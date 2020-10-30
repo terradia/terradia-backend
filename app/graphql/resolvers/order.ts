@@ -10,6 +10,8 @@ import CompanyImageModel from "../../database/models/company-image.model";
 import { ApolloError } from "apollo-server-errors";
 import OrderHistoryModel from "../../database/models/order-history.model";
 import OrderProductHistoryModel from "../../database/models/order-product-history.model";
+import { OrderHistoryIncludes } from "./order-history";
+import { WhereOptions } from "sequelize";
 
 interface Context {
   user: UserModel;
@@ -19,12 +21,6 @@ export const OrderIncludes = [
   { model: OrderProductModel, include: [ProductModel] },
   CustomerModel,
   { model: CompanyModel, include: [{ model: CompanyImageModel, as: "logo" }] }
-];
-
-const OrderHistoryIncludes = [
-  { model: OrderProductHistoryModel, include: [ProductModel] },
-  CustomerModel,
-  CompanyModel
 ];
 
 export default {
@@ -65,13 +61,23 @@ export default {
         _: any,
         {
           companyId,
-          status = "PENDING"
-        }: { companyId: string; status: string },
+          status,
+          limit,
+          offset
+        }: {
+          companyId: string;
+          status?: string;
+          limit?: number;
+          offset?: number;
+        },
         __: Context
       ): Promise<OrderModel[]> => {
+        const whereCondition = { companyId, status };
         return OrderModel.findAll({
-          where: { companyId, status },
-          include: OrderIncludes
+          where: whereCondition as WhereOptions,
+          include: OrderIncludes,
+          limit,
+          offset
         });
       }
     )
@@ -106,10 +112,12 @@ export default {
           { where: { id }, returning: true }
         );
 
-        return OrderModel.findOne({
+        const orderResult = await OrderModel.findOne({
           where: { id: order.id },
           include: OrderIncludes
         });
+        if (!orderResult) throw new ApolloError("error", "404");
+        return orderResult;
       }
     ),
     receiveOrder: combineResolvers(
@@ -143,7 +151,7 @@ export default {
             numberProducts: order.numberProducts,
             decliningReason: order.decliningReason,
             companyId: order.companyId,
-            customerId: order.customerId,
+            customerId: order.customerId
           },
           {}
         );
@@ -164,10 +172,12 @@ export default {
 
         // TODO : send mail to the user
 
-        return OrderHistoryModel.findOne({
+        const orderHistoryResult = await OrderHistoryModel.findOne({
           where: { id: orderHistory.id },
           include: OrderHistoryIncludes
         });
+        if (!orderHistoryResult) throw new ApolloError("Error", "404");
+        return orderHistoryResult;
       }
     ),
     acceptOrder: combineResolvers(
@@ -192,15 +202,16 @@ export default {
 
         // TODO : send mail to the user
 
-        // TODO : change the status of the order to "AVAILABLE"
-        const returnValues = await OrderModel.update(
+        await OrderModel.update(
           { status: "AVAILABLE" },
           { where: { id }, returning: true }
         );
-        return OrderModel.findOne({
+        const orderResult = await OrderModel.findOne({
           where: { id: order.id },
           include: OrderIncludes
         });
+        if (!orderResult) throw new ApolloError("error", "404");
+        return orderResult;
       }
     ),
     declineOrder: combineResolvers(
@@ -209,7 +220,7 @@ export default {
         _: any,
         { id, reason }: { id: string; reason: string },
         __: Context
-      ): Promise<OrderModel | null> => {
+      ): Promise<OrderModel> => {
         const order = await OrderModel.findOne({
           where: { id },
           include: OrderIncludes
@@ -224,14 +235,16 @@ export default {
         // TODO : cancel payment on stripe
 
         // TODO : send mail to the user
-        const returnValues = await OrderModel.update(
+        await OrderModel.update(
           { status: "DECLINED", decliningReason: reason },
           { where: { id }, returning: true }
         );
-        return OrderModel.findOne({
+        const orderResult = await OrderModel.findOne({
           where: { id: order.id },
           include: OrderIncludes
         });
+        if (!orderResult) throw new ApolloError("error", "404");
+        return orderResult;
       }
     )
   }

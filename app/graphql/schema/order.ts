@@ -2,12 +2,27 @@ import { gql } from "apollo-server";
 
 export default gql`
   extend type Query {
-    # Customer Queries
+    # Customer Only Queries
     getMyOrders(status: String = "PENDING"): [Order]
     getOrder(id: ID!): Order
+    getMyOrderHistories(status: String): [OrderHistory]
+    getOrderHistory(id: ID!): OrderHistory
 
     # Company Queries
-    getCurrentOrders(companyId: ID!, status: String = "PENDING"): [Order]
+    getCurrentOrders(
+      companyId: ID!
+      status: String
+      limit: Int = 10
+      offset: Int = 0
+    ): [Order]
+    getCompanyOrderHistories(
+      companyId: ID!
+      status: String
+      limit: Int = 10
+      offset: Int = 0
+      fromDate: Date
+      toDate: Date
+    ): [OrderHistory]
   }
   extend type Mutation {
     cancelOrder(id: ID!): Order

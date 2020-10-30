@@ -16,6 +16,7 @@ import companyImages from "./companyImages";
 import payment from "./payment";
 import companyUserInvitation from "./companyUserInvitation";
 import order from "./order";
+import orderHistory from "./order-history";
 
 export default [
   users,
@@ -36,5 +37,6 @@ export default [
   companyDeliveryDays,
   payment,
   companyUserInvitation,
-  order
+  order,
+  orderHistory
 ];
