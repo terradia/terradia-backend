@@ -66,6 +66,31 @@ export default {
           ]
         });
       }
+    ),
+    totalCartPrice: combineResolvers(
+      isUserAndCustomer,
+      async (_: any, __: any, { user }: Context): Promise<number> => {
+        const customer: CustomerModel = user.customer;
+        if (!customer) {
+          throw new ApolloError("this user is not a customer", "400");
+        }
+        if (customer.cart === null) {
+          throw new ApolloError("this customer does not have a cart", "400");
+        }
+        const cart = await CartModel.findOne({
+          where: {
+            customerId: user.customer.id
+          },
+          include: [
+            CompanyModel,
+            {
+              model: CartProductModel
+            }
+          ]
+        });
+        const deliveryPrice = 10;
+        return cart ? cart.totalPrice + deliveryPrice : 0;
+      }
     )
   },
   Mutation: {

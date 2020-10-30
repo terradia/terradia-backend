@@ -41,4 +41,10 @@ export default class ProductReviewModel extends Model<ProductReviewModel> {
 
   @BelongsTo(() => ProductModel)
   public product!: ProductModel;
+
+  @Column
+  public createdAt!: Date;
+
+  @Column
+  public updatedAt!: Date;
 }

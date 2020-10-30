@@ -11,17 +11,17 @@ import fetch from "node-fetch";
 import { Op, Sequelize } from "sequelize";
 import { Fn, Literal } from "sequelize/types/lib/utils";
 import CompanyUserRoleModel from "../../database/models/company-user-role.model";
-import { combineResolvers } from "graphql-resolvers";
+import { combineResolvers, pipeResolvers } from "graphql-resolvers";
 import { isAuthenticated, isUserAndCustomer } from "./authorization";
-import { uploadToS3SaveAsCompanyAvatarOrCover } from "../../uploadS3";
 import CompanyImageModel from "../../database/models/company-image.model";
 import CompanyOpeningDayModel from "../../database/models/company-opening-day.model";
 import CompanyOpeningDayHoursModel from "../../database/models/company-opening-day-hours.model";
 import CompanyTagModel from "../../database/models/company-tag.model";
 import CustomerAddressModel from "../../database/models/customer-address.model";
 import CustomerModel from "../../database/models/customer.model";
-import CompanyDeliveryDayModel from '../../database/models/company-delivery-day.model';
-import CompanyDeliveryDayHoursModel from '../../database/models/company-delivery-day-hours.model';
+import ProductCompanyImageModel from "../../database/models/product-company-images.model";
+import CompanyDeliveryDayModel from "../../database/models/company-delivery-day.model";
+import CompanyDeliveryDayHoursModel from "../../database/models/company-delivery-day-hours.model";
 
 declare interface Point {
   type: string;
@@ -67,6 +67,28 @@ const checkSiren: (siren: string) => Promise<string> = async (
   return json.uniteLegale.periodesUniteLegale["0"].denominationUniteLegale;
 };
 
+export const companyIncludes = [
+  { model: CompanyImageModel, as: "logo" },
+  ProductModel,
+  {
+    model: CompanyUserModel,
+    include: [RoleModel, UserModel]
+  },
+  CompanyReviewModel,
+  {
+    model: CompanyProductsCategoryModel,
+    include: [ProductModel]
+  },
+  {
+    model: CompanyOpeningDayModel,
+    include: [CompanyOpeningDayHoursModel]
+  },
+  {
+    model: CompanyDeliveryDayModel,
+    include: [CompanyDeliveryDayHoursModel]
+  }
+];
+
 export const toIncludeWhenGetCompany = [
   ProductModel,
   {
@@ -77,7 +99,10 @@ export const toIncludeWhenGetCompany = [
     model: CompanyProductsCategoryModel,
     include: [ProductModel]
   },
-  CompanyReviewModel,
+  {
+    model: CompanyReviewModel,
+    include: [{ model: CustomerModel, include: [UserModel] }]
+  },
   {
     model: CompanyOpeningDayModel,
     include: [CompanyOpeningDayHoursModel]
@@ -86,8 +111,43 @@ export const toIncludeWhenGetCompany = [
     model: CompanyDeliveryDayModel,
     include: [CompanyDeliveryDayHoursModel]
   },
-  CompanyTagModel
+  CompanyTagModel,
+  { model: CompanyImageModel, as: "logo" },
+  { model: CompanyImageModel, as: "cover" }
 ];
+
+export const isValidSiren = async (
+  _: any,
+  { siren }: { siren: string }
+): Promise<any> => {
+  console.log("isValidSiren");
+  const json = await fetch(
+    process.env.INSEE_SIREN_URL + siren + "&masquerValeursNulles=false",
+    {
+      method: "GET",
+      headers: {
+        Authorization: "Bearer " + process.env.INSEE_API_TOKEN
+      }
+    }
+  )
+    .then(async res => {
+      /*if (!res.ok) {
+      throw new ApolloError("Can't find a comapny associated with this siren");
+    }*/
+      return await res.json();
+    })
+    .catch(err => console.log(err));
+  if (json === null)
+    throw new ApolloError("Error while getting information from the INSEE API");
+  json.etablissements.sort((first: any, second: any) => {
+    return parseInt(second.nic) - parseInt(first.nic);
+  });
+  const activityCode =
+    json.etablissements[0].uniteLegale.activitePrincipaleUniteLegale;
+  /*if (!activityCode.startsWith("01"))
+    throw new ApolloError("Company don't have a producer activity.", "400");*/
+  return json.etablissements[0];
+};
 
 export default {
   Query: {
@@ -115,7 +175,7 @@ export default {
           {
             model: CompanyDeliveryDayModel,
             include: [CompanyDeliveryDayHoursModel]
-          },
+          }
         ],
         offset: page * pageSize,
         limit: pageSize
@@ -126,7 +186,7 @@ export default {
       _: any,
       { companyId }: { companyId: string }
     ): Promise<CompanyModel | null> => {
-      const company = CompanyModel.findByPk(companyId, {
+      const company = await CompanyModel.findByPk(companyId, {
         include: [
           {
             model: CompanyImageModel,
@@ -142,10 +202,24 @@ export default {
             model: CompanyUserModel,
             include: [RoleModel, UserModel]
           },
-          CompanyReviewModel,
+          {
+            model: CompanyReviewModel,
+            include: [{ model: CustomerModel, include: [UserModel] }]
+          },
           {
             model: CompanyProductsCategoryModel,
-            include: [ProductModel]
+            include: [
+              {
+                model: ProductModel,
+                include: [
+                  {
+                    model: ProductCompanyImageModel,
+                    as: "cover",
+                    include: [CompanyImageModel]
+                  }
+                ]
+              }
+            ]
           },
           {
             model: CompanyOpeningDayModel,
@@ -261,16 +335,24 @@ export default {
       _: any,
       { userId }: { userId: string }
     ): Promise<CompanyUserModel[] | undefined> => {
-      return (
-        await UserModel.findByPk(userId, {
-          include: [
-            {
-              model: CompanyUserModel,
-              include: [CompanyModel]
-            }
-          ]
-        })
-      )?.companies;
+      return CompanyUserModel.findAll({
+        where: { userId: userId },
+        include: [
+          {
+            model: CompanyModel,
+            include: [
+              {
+                model: CompanyImageModel,
+                as: "logo"
+              },
+              {
+                model: CompanyImageModel,
+                as: "cover"
+              }
+            ]
+          }
+        ]
+      });
     },
     searchCompanies: async (
       _: any,
@@ -319,74 +401,87 @@ export default {
         limit: pageSize,
         offset: page * pageSize
       });
-    }
+    },
+    checkSiren: combineResolvers(
+      isAuthenticated,
+      pipeResolvers(
+        isValidSiren,
+        (root: any, args: any): Promise<any | null> => {
+          return root;
+        }
+      )
+    )
   },
   Mutation: {
     createCompany: combineResolvers(
       isAuthenticated,
-      async (
-        _: any,
-        args: CreateCompanyProps,
-        { user }: Context
-      ): Promise<CompanyModel> => {
-        //TODO Check if user is null for every function that use the user as context
-        let point: Point = {
-          type: "",
-          coordinates: []
-        };
-        const geocoder: Geocoder = NodeGeocoder({ provider: "openstreetmap" });
-        await geocoder.geocode(args.address, function(err, res) {
-          if (err)
+      pipeResolvers(
+        isValidSiren,
+        async (
+          root: any,
+          args: CreateCompanyProps,
+          { user }: Context
+        ): Promise<CompanyModel> => {
+          //TODO Check if user is null for every function that use the user as context
+          let point: Point = {
+            type: "",
+            coordinates: []
+          };
+          const geocoder: Geocoder = NodeGeocoder({
+            provider: "openstreetmap"
+          });
+          await geocoder.geocode(args.address, function(err, res) {
+            if (err)
+              throw new ApolloError(
+                "Error while get geo data from address",
+                "500"
+              );
+            //If coordinates are not found, avoid server crash
+            if (res.length == 0) {
+              return;
+            }
+            point = {
+              type: "Point",
+              coordinates: [
+                parseFloat(String(res[0].longitude)),
+                parseFloat(String(res[0].latitude))
+              ]
+            };
+          });
+          if (point.coordinates.length == 0) {
+            throw new ApolloError("This address does not exist", "400");
+          }
+          const ownerRole: RoleModel | null = await RoleModel.findOne({
+            where: { slugName: "owner" }
+          }).then(elem => elem);
+          if (ownerRole == null)
             throw new ApolloError(
-              "Error while get geo data from address",
+              "There is no owner Role in the DB, cannot create Company. Try to seed the DB.",
               "500"
             );
-          //If coordinates are not found, avoid server crash
-          if (res.length == 0) {
-            return;
+          if (!root) {
+            new ApolloError("can not find company in the insee api");
           }
-          point = {
-            type: "Point",
-            coordinates: [
-              parseFloat(String(res[0].longitude)),
-              parseFloat(String(res[0].latitude))
-            ]
-          };
-        });
-        if (point.coordinates.length == 0) {
-          throw new ApolloError("This address does not exist", "400");
+          /*args.name =
+            root.uniteLegale.periodesUniteLegale[0].denominationUniteLegale;
+          args.officialName =
+            root.uniteLegale.periodesUniteLegale[0].denominationUniteLegale;*/
+          const newCompany: CompanyModel = await CompanyModel.create({
+            ...args,
+            geoPosition: point
+          });
+          await CompanyUserModel.create({
+            // @ts-ignore
+            companyId: newCompany.id,
+            userId: user.id,
+            role: ownerRole.id
+          }).then(userCompany => {
+            // @ts-ignore
+            userCompany.addRole(ownerRole.id);
+          });
+          return newCompany;
         }
-        const ownerRole: RoleModel | null = await RoleModel.findOne({
-          where: { slugName: "owner" }
-        }).then(elem => elem);
-        if (ownerRole == null)
-          throw new ApolloError(
-            "There is no owner Role in the DB, cannot create Company. Try to seed the DB.",
-            "500"
-          );
-        const officialName = await checkSiren(args.siren);
-        if (officialName === null) {
-          throw new ApolloError(
-            "Can not find company based on the given siren.",
-            "400"
-          );
-        }
-        args.officialName = officialName;
-        const newCompany: CompanyModel = await CompanyModel.create({
-          ...args,
-          geoPosition: point
-        });
-        await CompanyUserModel.create({
-          // @ts-ignore
-          companyId: newCompany.id,
-          userId: user.id,
-          role: ownerRole.id
-        }).then(userCompany => {
-          // @ts-ignore
-          userCompany.addRole(ownerRole.id);
-        });
-        return newCompany;
-      }
+      )
     ),
     deleteCompany: combineResolvers(
       isAuthenticated,
@@ -501,6 +596,22 @@ export default {
         });
         companyUser.destroy();
         return CompanyModel.findByPk(companyId);
+      }
+    ),
+    restoreCompany: combineResolvers(
+      isAuthenticated,
+      async (_: any, { companyId }, { user }: Context) => {
+        const [nb, company] = await CompanyModel.update(
+          { archivedAt: null },
+          {
+            where: { id: companyId },
+            returning: true
+          }
+        );
+        if (nb == 0) {
+          throw new ApolloError("Can't find the requested company");
+        }
+        return company[0];
       }
     )
   }

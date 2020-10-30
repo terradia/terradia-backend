@@ -9,7 +9,8 @@ import { uploadToS3 } from "../../uploadS3";
 import { createEmailRegister } from "../../services/mails/users";
 import fetch from "node-fetch";
 import userController from "../../controllers/user";
-import { FetchError } from "node-fetch";
+import CompanyUserInvitationModel from "../../database/models/company-user-invitation.model";
+import { companyUserInvitationIncludes } from "./companyUserInvitation";
 
 const createToken = async (
   user: UserModel,
@@ -58,7 +59,23 @@ export default {
         where: { email: data.email }
       });
       return userFound.length > 0;
-    }
+    },
+    getMyCompaniesInvitations: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        { status }: { status?: "ALL" | "PENDING" | "ACCEPTED" | "DECLINED" | "CANCELED" },
+        { user }: { user: UserModel }
+      ): Promise<CompanyUserInvitationModel[]> => {
+        // 'where' is any because of the sequelize query we do later on.
+        const where: any = { invitationEmail: user.email };
+        if (status !==  "ALL") where["status"] = status;
+        return CompanyUserInvitationModel.findAll({
+          where,
+          include: companyUserInvitationIncludes
+        });
+      }
+    )
   },
   Mutation: {
     login: async (
@@ -100,6 +117,7 @@ export default {
       },
       { secret }: { secret: string }
     ): Promise<{ userId: string; token: Promise<string>; message: string }> => {
+      // TODO : make that it's possible to register with an invitation id which makes that it auto accept it.
       const emailAlreadyTaken = await UserModel.findOne({
         where: { email }
       });
@@ -201,6 +219,7 @@ export default {
       },
       { secret }: { secret: string }
     ): Promise<{ userId: string; token: Promise<string>; message: string }> => {
+      // TODO : make that it's possible to register with an invitation id which makes that it auto accept it.
       let data: any = await fetch(
         `https://graph.facebook.com/me?fields=id,name,email,first_name,last_name&access_token=${facebookToken}`
       );

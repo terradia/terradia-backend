@@ -6,7 +6,7 @@
     "host": "localhost",
     "database": "postgres",
     "schema": "public",
-    "port": "5432"
+    "port": { "ENV": "DB_PORT" }
   },
   "deletion": {
     "driver": "pg",
@@ -15,7 +15,7 @@
     "host": "localhost",
     "database": "postgres",
     "schema": "public",
-    "port": "5432"
+    "port": { "ENV": "DB_PORT" }
   },
   "dev": {
     "driver": "pg",
@@ -24,7 +24,7 @@
     "host": "localhost",
     "database": "terradia_db",
     "schema": "public",
-    "port": "5432"
+    "port": { "ENV": "DB_PORT" }
   },
   "prod": {
     "driver": "pg",

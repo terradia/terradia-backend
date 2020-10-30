@@ -41,4 +41,10 @@ export default class CompanyReviewModel extends Model<CompanyReviewModel> {
 
   @BelongsTo(() => CompanyModel)
   public company!: CompanyModel;
+
+  @Column
+  public createdAt!: Date;
+
+  @Column
+  public updatedAt!: Date;
 }
