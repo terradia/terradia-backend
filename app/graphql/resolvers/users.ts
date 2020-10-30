@@ -11,7 +11,11 @@ import fetch from "node-fetch";
 import userController from "../../controllers/user";
 import CompanyUserInvitationModel from "../../database/models/company-user-invitation.model";
 import { companyUserInvitationIncludes } from "./companyUserInvitation";
-import { forgotPasswordEmail, passwordEditEmail } from "../../services/mails/users";
+import {
+  forgotPasswordEmail,
+  passwordEditEmail,
+  reactivateUserAccountEmail
+} from "../../services/mails/users";
 
 const createToken = async (
   user: UserModel,
@@ -97,12 +101,16 @@ export default {
       if (!isValid) {
         throw new AuthenticationError("Invalid password.");
       }
-      const nb = await UserModel.update(
-        { archivedAt: null },
-        { where: { id: user.id } }
-      );
-      if (nb[0] == 0) {
-        throw new ApolloError("This account is already delete.");
+      if (user.archivedAt !== null) {
+        const nb = await UserModel.update(
+          { archivedAt: null },
+          { where: { id: user.id } }
+        );
+        if (nb[0] == 0) {
+          throw new ApolloError("This account is already deleted.");
+        } else {
+          reactivateUserAccountEmail(user.email, user.firstName);
+        }
       }
       return { token: createToken(user, secret), userId: user.id };
     },

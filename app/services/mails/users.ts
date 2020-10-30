@@ -90,9 +90,24 @@ const passwordEditEmail = (to: string, firstName: string): void => {
   sendMail(passwordEditMail);
 };
 
+const reactivateUserAccountEmail = (to: string, firstName: string): void => {
+  const reactivateUserAccount = {
+    to,
+    from: FROM,
+    subject: "Votre compte Terradia vient d'être réactivé",
+    templateId: "d-a1892924f3904e1a9ad363d6369ed842",
+    dynamic_template_data: {
+      subject: "Votre compte Terradia vient d'être réactivé",
+      user_name: firstName
+    }
+  };
+  sendMail(reactivateUserAccount);
+};
+
 export {
   createEmailRegister,
   createEmailInvitation,
   forgotPasswordEmail,
-  passwordEditEmail
+  passwordEditEmail,
+  reactivateUserAccountEmail
 };
