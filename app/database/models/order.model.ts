@@ -1,4 +1,5 @@
 import {
+  AfterCreate,
   AllowNull,
   BelongsTo,
   Column,
@@ -26,7 +27,6 @@ export default class OrderModel extends Model<OrderModel> {
   @Column(DataType.UUID)
   public id!: string;
 
-  @AllowNull(false)
   @Column(DataType.STRING)
   public code!: string;
 
@@ -59,12 +59,17 @@ export default class OrderModel extends Model<OrderModel> {
   public price!: number;
 
   @Column(DataType.NUMBER)
-  public numberProducts!: number
+  public numberProducts!: number;
 
   @Column
-  public status!: "PENDING" | "ACCEPTED" | "AVAILABLE" | "DECLINED" | "CANCELED"
+  public status!:
+    | "PENDING"
+    | "ACCEPTED"
+    | "AVAILABLE"
+    | "DECLINED"
+    | "CANCELED";
 
   @AllowNull(true)
   @Column
-  public decliningReason!: string
+  public decliningReason!: string;
 }

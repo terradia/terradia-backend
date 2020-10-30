@@ -56,6 +56,7 @@ export const upProducts: () => Promise<void> = async () => {
 };
 
 export const downProducts: () => Promise<number> = () => {
+  console.log("=== Downing Products ===");
   return ProductModel.destroy({ where: {} }).catch(err => {
     console.log(err);
   });

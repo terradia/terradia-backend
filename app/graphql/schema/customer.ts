@@ -22,6 +22,8 @@ export default gql`
     # Ordering related data
     cart: Cart
     # orders
+    orders: [Order]
+    ordersHistory: [OrderHistory]
     # receipts
   }
 `;

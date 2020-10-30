@@ -43,16 +43,20 @@ export default {
       }
     ),
     getOrder: combineResolvers(
-      isUserAndCustomer,
-      (
+      isAuthenticated,
+      async (
         _: any,
         { id }: { id: string },
         { user }: Context
       ): Promise<OrderModel | null> => {
-        return OrderModel.findOne({
-          where: { id: id, customerId: user.customer.id },
+        const order = await OrderModel.findOne({
+          where: { id: id },
           include: OrderIncludes
         });
+        if (!order) throw new ApolloError("Order not found", "40#");
+        if (order.customerId !== user.customer.id)
+          throw new ApolloError("This is not one of your orders", "403");
+        return order;
       }
     ),
     getCurrentOrders: combineResolvers(
@@ -79,7 +83,7 @@ export default {
         _: any,
         { id }: { id: string },
         __: Context
-      ): Promise<OrderModel> => {
+      ): Promise<OrderModel | null> => {
         const order = await OrderModel.findOne({
           where: { id },
           include: OrderIncludes
@@ -97,11 +101,15 @@ export default {
         // TODO : send mail to the user
 
         // the order will be removed automatically after 24h
-        const returnValues = await OrderModel.update(
+        await OrderModel.update(
           { status: "CANCELED" },
           { where: { id }, returning: true }
         );
-        return returnValues[1][0];
+
+        return OrderModel.findOne({
+          where: { id: order.id },
+          include: OrderIncludes
+        });
       }
     ),
     receiveOrder: combineResolvers(
@@ -126,17 +134,21 @@ export default {
         // transform Order in OrderHistory
         const orderHistory = await OrderHistoryModel.create(
           {
-            ...order,
+            code: order.code,
             companyName: order.company.name,
             companyLogo: order.company.logo,
             companyAddress: order.company.address,
-            status: historyStatus
+            status: historyStatus,
+            price: order.price,
+            numberProducts: order.numberProducts,
+            decliningReason: order.decliningReason
           },
           {}
         );
         // Create all the OrderProductHistory with all data
         order.products.map(async (orderProduct: OrderProductModel) => {
           await OrderProductHistoryModel.create({
+            orderHistoryId: orderHistory.id,
             productId: orderProduct.product.id,
             name: orderProduct.product.name,
             quantity: orderProduct.quantity,
@@ -162,7 +174,7 @@ export default {
         _: any,
         { id }: { id: string },
         __: Context
-      ): Promise<OrderModel> => {
+      ): Promise<OrderModel | null> => {
         const order = await OrderModel.findOne({
           where: { id },
           include: OrderIncludes
@@ -170,7 +182,7 @@ export default {
         if (!order) throw new ApolloError("This order doesn't exist", "404");
         if (order.status !== "PENDING")
           throw new ApolloError(
-            "The order isn't pending, you cannot cancel it",
+            "The order isn't pending, you cannot accept it",
             "401"
           );
 
@@ -183,7 +195,10 @@ export default {
           { status: "AVAILABLE" },
           { where: { id }, returning: true }
         );
-        return returnValues[1][0];
+        return OrderModel.findOne({
+          where: { id: order.id },
+          include: OrderIncludes
+        });
       }
     ),
     declineOrder: combineResolvers(
@@ -192,15 +207,15 @@ export default {
         _: any,
         { id, reason }: { id: string; reason: string },
         __: Context
-      ): Promise<OrderModel> => {
+      ): Promise<OrderModel | null> => {
         const order = await OrderModel.findOne({
           where: { id },
           include: OrderIncludes
         });
         if (!order) throw new ApolloError("This order doesn't exist", "404");
-        if (order.status === "AVAILABLE")
+        if (order.status !== "PENDING")
           throw new ApolloError(
-            "The order is already accepted, you cannot decline it, contact support",
+            "Cannot decline order that is not pending",
             "401"
           );
 
@@ -211,7 +226,10 @@ export default {
           { status: "DECLINED", decliningReason: reason },
           { where: { id }, returning: true }
         );
-        return returnValues[1][0];
+        return OrderModel.findOne({
+          where: { id: order.id },
+          include: OrderIncludes
+        });
       }
     )
   }

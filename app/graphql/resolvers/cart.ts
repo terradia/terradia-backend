@@ -15,6 +15,7 @@ import OrderModel from "../../database/models/order.model";
 import OrderProductModel from "../../database/models/order-product.model";
 import { OrderIncludes } from "./order";
 import UnitModel from "../../database/models/unit.model";
+import { where } from "sequelize";
 
 declare interface UserCompanyRoleProps {
   companyUserId: string;
@@ -46,10 +47,12 @@ export default {
             CompanyModel,
             {
               model: CartProductModel,
-              include: [{
-                model: ProductModel,
-                include: [UnitModel]
-              }],
+              include: [
+                {
+                  model: ProductModel,
+                  include: [UnitModel]
+                }
+              ],
               order: ["updatedAt"]
             }
           ]
@@ -273,12 +276,26 @@ export default {
 
         // Create an order from the cart
         const order = await OrderModel.create({
-          code: "" + Math.floor(1000 + Math.random() * 9000),
           companyId: cart.companyId,
           customerId: cart.customerId,
           price: cart.totalPrice,
           numberProducts: cart.numberProducts,
           status: "PENDING"
+        }).then(order => {
+          const today = new Date();
+          OrderModel.update(
+            {
+              code:
+                order.id.substr(0, 4) +
+                today
+                  .toISOString()
+                  .substr(0, 10)
+                  .replace("-", "")
+                  .replace("-", "")
+            },
+            { where: { id: order.id } }
+          );
+          return order;
         });
         // Create the products of the order
         cart.products.map(async (cartProduct: CartProductModel, index) => {

@@ -27,7 +27,7 @@ export default class OrderProductHistoryModel extends Model<OrderProductHistoryM
   @ForeignKey(() => OrderHistoryModel)
   @AllowNull(false)
   @Column(DataType.UUID)
-  public orderId!: string;
+  public orderHistoryId!: string;
 
   @BelongsTo(() => OrderHistoryModel)
   public orderHistory!: string;

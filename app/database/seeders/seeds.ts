@@ -23,6 +23,7 @@ import {
   upCompanyProductsCategories
 } from "./companyProductsCategories";
 import { downUnits, upUnits } from "./unit";
+import { downOrders, upOrders } from "./orders";
 
 // @ts-ignore
 sequelize.addModels([
@@ -50,6 +51,7 @@ export const up: () => void = async () => {
     await upCustomersAddress();
     await upProductsReviews();
     await upUnits();
+    await upOrders();
     debug("init:seed")(chalk.green("Every seeds went well"));
   } catch (err) {
     throw err;
@@ -67,5 +69,6 @@ export const down: () => void = async () => {
   await downProductsReviews();
   await downCustomersAddress();
   await downUnits();
+  await downOrders();
   debug("init:seed")(chalk.green("All relevant data were erased"));
 };

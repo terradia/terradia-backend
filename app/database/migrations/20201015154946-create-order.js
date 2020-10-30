@@ -29,7 +29,6 @@ exports.up = function(db) {
         },
         code: {
           type: "string",
-          allowNull: false
         },
         customerId: {
           type: "uuid",
