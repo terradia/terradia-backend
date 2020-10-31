@@ -152,15 +152,6 @@ export default {
             ...args,
             position: pos
           }).then(async product => {
-            await client.index({
-              index: "product",
-              id: product.id,
-              body: {
-                id: product.id,
-                name: product.name,
-                description: product.description
-              }
-            });
             ProductCompanyImageModel.create({
               productId: product.id,
               companyImageId: args.coverId
@@ -168,6 +159,15 @@ export default {
               product.update({ coverId: image.id });
             });
             return product;
+          });
+          await client.index({
+            index: "product",
+            id: product.id,
+            body: {
+              id: product.id,
+              name: product.name,
+              description: product.description
+            }
           });
           return product.toJSON();
         } else throw new ApolloError("This company does not exist", "404");

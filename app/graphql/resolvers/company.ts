@@ -22,6 +22,7 @@ import CustomerModel from "../../database/models/customer.model";
 import ProductCompanyImageModel from "../../database/models/product-company-images.model";
 import CompanyDeliveryDayModel from "../../database/models/company-delivery-day.model";
 import CompanyDeliveryDayHoursModel from "../../database/models/company-delivery-day-hours.model";
+import client from "../../database/elastic/server";
 
 declare interface Point {
   type: string;
@@ -86,8 +87,8 @@ export const companyIncludes = [
   {
     model: CompanyDeliveryDayModel,
     include: [CompanyDeliveryDayHoursModel]
-  },
-]
+  }
+];
 
 export const toIncludeWhenGetCompany = [
   ProductModel,
@@ -345,6 +346,19 @@ export default {
       { query }: { query: string },
       { user }: { user: UserModel }
     ): Promise<CompanyModel[]> => {
+      const res = await client.search({
+        index: "product",
+        body: {
+          query: {
+            multi_match: {
+              query: query,
+              fields: ["name", "description"]
+            }
+          }
+        }
+      });
+      const par = res.body.hits.hits.map(item => item._source);
+      // return par;
       const comp = await CompanyModel.findAll({
         //TODO: Search by tag
         //https://stackoverflow.com/questions/31258158/how-to-implement-search-feature-using-sequelizejs/37326395
@@ -455,6 +469,13 @@ export default {
           const newCompany: CompanyModel = await CompanyModel.create({
             ...args,
             geoPosition: point
+          });
+          await client.index({
+            index: "compagnies",
+            id: newCompany.id,
+            body: {
+              ...args
+            }
           });
           await CompanyUserModel.create({
             // @ts-ignore
