@@ -61,6 +61,9 @@ export default class OrderModel extends Model<OrderModel> {
   @Column(DataType.NUMBER)
   public numberProducts!: number;
 
+  @Column(DataType.STRING)
+  public stripePaymentIntent!: string;
+
   @Column
   public status!:
     | "PENDING"

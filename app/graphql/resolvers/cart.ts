@@ -16,7 +16,11 @@ import OrderProductModel from "../../database/models/order-product.model";
 import { OrderIncludes } from "./order";
 import UnitModel from "../../database/models/unit.model";
 import { where } from "sequelize";
+import Stripe from "stripe";
 
+const stripe = new Stripe(process.env.STRIPE_API_KEY, {
+  apiVersion: "2020-03-02"
+});
 declare interface UserCompanyRoleProps {
   companyUserId: string;
   roleId: string;
@@ -273,14 +277,36 @@ export default {
         });
         if (!cart)
           throw new ApolloError("This customer does not have a cart", "404");
+        //Get current card
+        const stripeCustomer = await stripe.customers.retrieve(
+          user.customer.stripeId
+        );
+        if (!stripeCustomer.default_source) {
+          throw new ApolloError(
+            "This customer does not have any default source",
+            "404"
+          );
+        }
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: cart.totalPrice * 100,
+          currency: "eur",
+          // eslint-disable-next-line @typescript-eslint/camelcase
+          payment_method_types: ["card"],
+          customer: stripeCustomer.id,
+          // eslint-disable-next-line @typescript-eslint/camelcase
+          payment_method: stripeCustomer.default_source
+        });
 
         // Create an order from the cart
+        if (!paymentIntent)
+          throw new ApolloError("The payment has been refused", "404");
         const order = await OrderModel.create({
           companyId: cart.companyId,
           customerId: cart.customerId,
           price: cart.totalPrice,
           numberProducts: cart.numberProducts,
-          status: "PENDING"
+          status: "PENDING",
+          stripePaymentIntent: paymentIntent.id
         }).then(order => {
           const today = new Date();
           OrderModel.update(
@@ -308,6 +334,7 @@ export default {
         });
         // Destroy the cart of the user
         CartModel.destroy({ where: { id: cart.id } });
+        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
         // @ts-ignore
         return OrderModel.findOne({
           where: { id: order.id },

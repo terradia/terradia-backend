@@ -12,7 +12,11 @@ import OrderHistoryModel from "../../database/models/order-history.model";
 import OrderProductHistoryModel from "../../database/models/order-product-history.model";
 import { OrderHistoryIncludes } from "./order-history";
 import { WhereOptions } from "sequelize";
+import Stripe from "stripe";
 
+const stripe = new Stripe(process.env.STRIPE_API_KEY, {
+  apiVersion: "2020-03-02"
+});
 interface Context {
   user: UserModel;
 }
@@ -102,8 +106,11 @@ export default {
             "401"
           );
 
-        // TODO : cancel the payment on stripe
-
+        const paymentIntent = await stripe.paymentIntents.cancel(
+          order.stripePaymentIntent
+        );
+        if (!paymentIntent)
+          throw new ApolloError("Cannot cancel the payment", "404");
         // TODO : send mail to the user
 
         // the order will be removed automatically after 24h
@@ -199,7 +206,11 @@ export default {
           );
 
         // TODO : request payment with stripe
-
+        const paymentIntent = await stripe.paymentIntents.confirm(
+          order.stripePaymentIntent
+        );
+        if (!paymentIntent)
+          throw new ApolloError("The payment has been refused", "404");
         // TODO : send mail to the user
 
         await OrderModel.update(
@@ -233,7 +244,11 @@ export default {
           );
 
         // TODO : cancel payment on stripe
-
+        const paymentIntent = await stripe.paymentIntents.cancel(
+          order.stripePaymentIntent
+        );
+        if (!paymentIntent)
+          throw new ApolloError("Cannot cancel the payment", "404");
         // TODO : send mail to the user
         await OrderModel.update(
           { status: "DECLINED", decliningReason: reason },
