@@ -288,7 +288,7 @@ export default {
           );
         }
         const paymentIntent = await stripe.paymentIntents.create({
-          amount: cart.totalPrice * 100,
+          amount: (cart.totalPrice * 100).toFixed(0),
           currency: "eur",
           // eslint-disable-next-line @typescript-eslint/camelcase
           payment_method_types: ["card"],
@@ -308,16 +308,9 @@ export default {
           status: "PENDING",
           stripePaymentIntent: paymentIntent.id
         }).then(order => {
-          const today = new Date();
           OrderModel.update(
             {
-              code:
-                order.id.substr(0, 4) +
-                today
-                  .toISOString()
-                  .substr(0, 10)
-                  .replace("-", "")
-                  .replace("-", "")
+              code: order.id.substr(0, 6)
             },
             { where: { id: order.id } }
           );

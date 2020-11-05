@@ -60,10 +60,12 @@ export default {
         { status }: { status?: string },
         { user }: Context
       ): Promise<OrderHistoryModel[]> => {
-        const whereCondition: { customerId: string; status?: string } = {
-          customerId: user.customer.id,
-          status
-        };
+        let whereCondition = {};
+        if (status) {
+          whereCondition = { customerId: user.customer.id, status };
+        } else {
+          whereCondition = { customerId: user.customer.id };
+        }
         return OrderHistoryModel.findAll({
           where: whereCondition as WhereOptions,
           include: OrderHistoryIncludes

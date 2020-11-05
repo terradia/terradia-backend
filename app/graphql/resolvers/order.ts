@@ -33,11 +33,17 @@ export default {
       isUserAndCustomer,
       (
         _: any,
-        { status = "PENDING" }: { status?: string },
+        { status }: { status?: string },
         { user }: Context
       ): Promise<OrderModel[]> => {
+        let where = {};
+        if (status) {
+          where = { customerId: user.customer.id, status };
+        } else {
+          where = { customerId: user.customer.id };
+        }
         return OrderModel.findAll({
-          where: { customerId: user.customer.id, status },
+          where,
           include: OrderIncludes
         });
       }
@@ -93,7 +99,7 @@ export default {
         _: any,
         { id }: { id: string },
         __: Context
-      ): Promise<OrderModel | null> => {
+      ): Promise<OrderHistoryModel | null> => {
         const order = await OrderModel.findOne({
           where: { id },
           include: OrderIncludes
@@ -114,17 +120,47 @@ export default {
         // TODO : send mail to the user
 
         // the order will be removed automatically after 24h
-        await OrderModel.update(
-          { status: "CANCELED" },
-          { where: { id }, returning: true }
-        );
+        const historyStatus = "DECLINED";
 
-        const orderResult = await OrderModel.findOne({
-          where: { id: order.id },
-          include: OrderIncludes
+        // transform Order in OrderHistory
+        const orderHistory = await OrderHistoryModel.create(
+          {
+            code: order.code,
+            companyName: order.company.name,
+            companyLogo: order.company.logo,
+            companyAddress: order.company.address,
+            status: historyStatus,
+            price: order.price,
+            numberProducts: order.numberProducts,
+            decliningReason: order.decliningReason,
+            companyId: order.companyId,
+            customerId: order.customerId
+          },
+          {}
+        );
+        // Create all the OrderProductHistory with all data
+        order.products.map(async (orderProduct: OrderProductModel) => {
+          await OrderProductHistoryModel.create({
+            orderHistoryId: orderHistory.id,
+            productId: orderProduct.product.id,
+            name: orderProduct.product.name,
+            quantity: orderProduct.quantity,
+            price: orderProduct.price,
+            unitId: orderProduct.product.unitId,
+            quantityForUnit: orderProduct.product.quantityForUnit
+          });
         });
-        if (!orderResult) throw new ApolloError("error", "404");
-        return orderResult;
+        // destroy Order
+        OrderModel.destroy({ where: { id: order.id } });
+
+        // TODO : send mail to the user
+
+        const orderHistoryResult = await OrderHistoryModel.findOne({
+          where: { id: orderHistory.id },
+          include: OrderHistoryIncludes
+        });
+        if (!orderHistoryResult) throw new ApolloError("Error", "404");
+        return orderHistoryResult;
       }
     ),
     receiveOrder: combineResolvers(
@@ -151,7 +187,7 @@ export default {
           {
             code: order.code,
             companyName: order.company.name,
-            companyLogo: order.company.logo,
+            companyLogo: order.company.logo.filename,
             companyAddress: order.company.address,
             status: historyStatus,
             price: order.price,
@@ -231,7 +267,7 @@ export default {
         _: any,
         { id, reason }: { id: string; reason: string },
         __: Context
-      ): Promise<OrderModel> => {
+      ): Promise<OrderHistoryModel> => {
         const order = await OrderModel.findOne({
           where: { id },
           include: OrderIncludes
@@ -250,16 +286,48 @@ export default {
         if (!paymentIntent)
           throw new ApolloError("Cannot cancel the payment", "404");
         // TODO : send mail to the user
-        await OrderModel.update(
-          { status: "DECLINED", decliningReason: reason },
-          { where: { id }, returning: true }
+        const historyStatus = "DECLINED";
+
+        // transform Order in OrderHistory
+        const orderHistory = await OrderHistoryModel.create(
+          {
+            code: order.code,
+            companyName: order.company.name,
+            companyLogo: order.company.logo,
+            companyAddress: order.company.address,
+            status: historyStatus,
+            price: order.price,
+            numberProducts: order.numberProducts,
+            decliningReason: order.decliningReason,
+            companyId: order.companyId,
+            customerId: order.customerId,
+            orderCreationDate: order.createdAt
+          },
+          {}
         );
-        const orderResult = await OrderModel.findOne({
-          where: { id: order.id },
-          include: OrderIncludes
+        // Create all the OrderProductHistory with all data
+        order.products.map(async (orderProduct: OrderProductModel) => {
+          await OrderProductHistoryModel.create({
+            orderHistoryId: orderHistory.id,
+            productId: orderProduct.product.id,
+            name: orderProduct.product.name,
+            quantity: orderProduct.quantity,
+            price: orderProduct.price,
+            unitId: orderProduct.product.unitId,
+            quantityForUnit: orderProduct.product.quantityForUnit
+          });
         });
-        if (!orderResult) throw new ApolloError("error", "404");
-        return orderResult;
+        // destroy Order
+        OrderModel.destroy({ where: { id: order.id } });
+
+        // TODO : send mail to the user
+
+        const orderHistoryResult = await OrderHistoryModel.findOne({
+          where: { id: orderHistory.id },
+          include: OrderHistoryIncludes
+        });
+        if (!orderHistoryResult) throw new ApolloError("Error", "404");
+        return orderHistoryResult;
       }
     )
   }

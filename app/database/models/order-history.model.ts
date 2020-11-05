@@ -68,16 +68,19 @@ export default class OrderHistoryModel extends Model<OrderHistoryModel> {
   @Column
   public updatedAt!: Date;
 
+  @Column
+  public orderCreationDate!: Date;
+
   @Column(DataType.NUMBER)
   public price!: number;
 
   @Column(DataType.NUMBER)
-  public numberProducts!: number
+  public numberProducts!: number;
 
   @AllowNull(true)
   @Column
-  public decliningReason!: string
+  public decliningReason!: string;
 
   @Column
-  public status!: "FINISHED" | "DECLINED" | "CANCELED"
+  public status!: "FINISHED" | "DECLINED" | "CANCELED";
 }

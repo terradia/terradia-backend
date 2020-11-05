@@ -3,7 +3,7 @@ import { gql } from "apollo-server";
 export default gql`
   extend type Query {
     # Customer Only Queries
-    getMyOrders(status: String = "PENDING"): [Order]
+    getMyOrders(status: String): [Order]
     getOrder(id: ID!): Order
     getMyOrderHistories(status: String): [OrderHistory]
     getOrderHistory(id: ID!): OrderHistory
@@ -25,11 +25,11 @@ export default gql`
     ): [OrderHistory]
   }
   extend type Mutation {
-    cancelOrder(id: ID!): Order
+    cancelOrder(id: ID!): OrderHistory
     receiveOrder(id: ID!): OrderHistory
 
     acceptOrder(id: ID!): Order
-    declineOrder(id: ID!, reason: String): Order
+    declineOrder(id: ID!, reason: String): OrderHistory
   }
   type Order {
     id: String!
@@ -75,6 +75,7 @@ export default gql`
     numberProducts: Int!
     decliningReason: String
     status: OrderHistoryStatus
+    orderCreationDate: Date!
   }
 
   type OrderProductHistory {

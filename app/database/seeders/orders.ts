@@ -37,23 +37,16 @@ const generateOrders = async (): Promise<OrderModel[]> => {
             numberProducts: Math.floor(Math.random() * 100),
             status: "PENDING"
           }).then(async order => {
-            const today = new Date();
             await OrderModel.update(
               {
-                code:
-                  order.id.substr(0, 4) +
-                  today
-                    .toISOString()
-                    .substr(0, 10)
-                    .replace("-", "")
-                    .replace("-", "")
+                code: order.id.substr(0, 6)
               },
               { where: { id: order.id } }
             );
             const randomProduct =
               company.products[
                 Math.floor(Math.random() * company.products.length)
-                ];
+              ];
             try {
               if (order && randomProduct) {
                 await OrderProductModel.create({
