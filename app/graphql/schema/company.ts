@@ -22,6 +22,15 @@ export default gql`
     month: String
   }
 
+  input GeocoderQueryInput {
+    street: String
+    city: String
+    county: String
+    state: String
+    country: String
+    postalcode: String
+  }
+
   type CompanyAddress {
     complementAdresseEtablissement: String
     numeroVoieEtablissement: String
@@ -110,6 +119,38 @@ export default gql`
     periodesEtablissement: CompanyDates
   }
 
+  type CompanyGeoExtra {
+    googlePlaceId: String
+    confidence: Int
+  }
+
+  type CompanyGeoAdministrativeLevels {
+    level1long: String
+    level1short: String
+    level2long: String
+    level2short: String
+  }
+
+  type CompanyGeo {
+    formattedAddress: String
+    latitude: Float
+    longitude: Float
+    extra: CompanyGeoExtra
+    administrativeLevels: CompanyGeoAdministrativeLevels
+    city: String
+    streetName: String
+    streetNumber: String
+    country: String
+    countryCode: String
+    zipcode: String
+    provider: String
+    state: String
+    stateCode: String
+    county: String
+    district: String
+    building: String
+  }
+
   extend type Query {
     getAllCompanies(page: Int, pageSize: Int): [Company]
     getCompany(companyId: ID!): Company
@@ -125,6 +166,7 @@ export default gql`
     getCompanies: [Company]
     searchCompanies(query: String!): [Company]
     checkSiren(siren: String!): CompanyInfo
+    geocode(address: String!, query: GeocoderQueryInput): [CompanyGeo]
   }
 
   extend type Mutation {
