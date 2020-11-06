@@ -135,7 +135,7 @@ export default {
         { invitationId }: { invitationId: string }
       ): Promise<CompanyUserInvitationModel | null> => {
         const invitation: CompanyUserInvitationModel | null = await CompanyUserInvitationModel.findOne(
-          { where: { id: invitationId } }
+          { where: { id: invitationId }, include: [CompanyModel] }
         );
         // check the invitation does exist
         if (invitation === null)
