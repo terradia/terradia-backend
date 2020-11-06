@@ -21,3 +21,12 @@ export const isUserAndStripeCustomer = combineResolvers(
       ? skip
       : new ForbiddenError("You are not a stripe customer")
 );
+
+export const isUserInCompany = combineResolvers(
+  isAuthenticated,
+  (parents, { companyId }: { companyId: string }, { user: { companies } }) => {
+    if (companies.findIndex(elem => elem.companyId === companyId) !== -1)
+      return skip;
+    new ForbiddenError("Your are not in this company");
+  }
+);

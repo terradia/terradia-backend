@@ -93,6 +93,8 @@ export default gql`
     unit: Unit
     quantityForUnit: Float!
     price: Float!
+      
+    advises: [CompanyProductAdvise]
   }
   type Unit {
     id: ID!
