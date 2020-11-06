@@ -44,7 +44,8 @@ export default {
         }
         return OrderModel.findAll({
           where,
-          include: OrderIncludes
+          include: OrderIncludes,
+          order: [["createdAt", "DESC"]]
         });
       }
     ),
