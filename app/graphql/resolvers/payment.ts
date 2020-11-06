@@ -62,12 +62,7 @@ export default {
       isUserAndStripeCustomer,
       async (
         _: any,
-        {
-          number,
-          expMonth,
-          expYear,
-          cvc
-        }: { number: string; expMonth: number; expYear: number; cvc: number },
+        __,
         { user }: { user: UserModel }
       ): Promise<Stripe.CustomerSource[]> => {
         const data = await stripe.customers.listSources(
@@ -75,6 +70,32 @@ export default {
           { object: "card", limit: 20 }
         );
         return data.data;
+      }
+    ),
+    getPaymentIntents: combineResolvers(
+      isUserAndStripeCustomer,
+      async (
+        _: any,
+        { paymentId }: { paymentId: string },
+        { user }: { user: UserModel }
+      ): Promise<Stripe.PaymentIntent> => {
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentId);
+        return paymentIntent;
+      }
+    ),
+    getPaymentIntentsCard: combineResolvers(
+      isUserAndStripeCustomer,
+      async (
+        _: any,
+        { paymentId }: { paymentId: string },
+        { user }: { user: UserModel }
+      ): Promise<Stripe.Card> => {
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentId);
+        const card = await stripe.customers.retrieveSource(
+          paymentIntent.customer,
+          paymentIntent.payment_method
+        );
+        return card;
       }
     )
   },

@@ -15,13 +15,17 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.addColumn("Orders", "stripePaymentIntent", {
+  db.addColumn("Orders", "stripePaymentIntent", {
+    type: "string"
+  });
+  return db.addColumn("OrdersHistory", "stripePaymentIntent", {
     type: "string"
   });
 };
 
 exports.down = function(db) {
-  return db.removeColumn("Orders", "stripePaymentIntent");
+  db.removeColumn("Orders", "stripePaymentIntent");
+  return db.removeColumn("OrdersHistory", "stripePaymentIntent");
 };
 
 exports._meta = {

@@ -43,6 +43,7 @@ export default gql`
     numberProducts: Int!
     status: OrderStatus!
     decliningReason: String
+    stripePaymentIntent: String
   }
   type OrderProduct {
     id: String!
@@ -76,6 +77,7 @@ export default gql`
     decliningReason: String
     status: OrderHistoryStatus
     orderCreationDate: Date!
+    stripePaymentIntent: String
   }
 
   type OrderProductHistory {
