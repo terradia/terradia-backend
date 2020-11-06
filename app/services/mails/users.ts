@@ -104,10 +104,26 @@ const reactivateUserAccountEmail = (to: string, firstName: string): void => {
   sendMail(reactivateUserAccount);
 };
 
+const archivedUserAccountEmail = (to: string, firstName: string, lastName: string): void => {
+  const archivedUserAccount = {
+    to,
+    from: FROM,
+    subject: "Votre compte Terradia est désormais archivé",
+    templateId: "d-f64b44b2605b43cd9bf3e4859914eff3",
+    dynamic_template_data: {
+      subject: "Votre compte Terradia est désormais archivé",
+      user_name: firstName,
+      last_name: lastName
+    }
+  };
+  sendMail(archivedUserAccount);
+};
+
 export {
   createEmailRegister,
   createEmailInvitation,
   forgotPasswordEmail,
   passwordEditEmail,
-  reactivateUserAccountEmail
+  reactivateUserAccountEmail,
+  archivedUserAccountEmail
 };

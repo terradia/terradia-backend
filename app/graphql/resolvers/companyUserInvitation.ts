@@ -8,6 +8,8 @@ import CompanyUserModel from "../../database/models/company-user.model";
 import CompanyUserRoleModel from "../../database/models/company-user-role.model";
 import RoleModel from "../../database/models/role.model";
 import { createEmailInvitation } from "../../services/mails/users";
+import { newCollaboratorCompanyEmail } from "../../services/mails/companies";
+
 import { companyIncludes } from "./company";
 
 export const companyUserInvitationIncludes = [UserModel, CompanyModel];
@@ -54,10 +56,7 @@ export default {
           );
         // check the email isn't the one from the user that invited
         if (user.email === invitationEmail)
-          throw new ApolloError(
-            "You cannot invite yourself",
-            "403"
-          );
+          throw new ApolloError("You cannot invite yourself", "403");
         const company: CompanyModel | null = await CompanyModel.findOne({
           where: { id: companyId }
         });
@@ -94,15 +93,15 @@ export default {
         );
         if (invitation === null)
           throw new ApolloError("The invitation creation failed", "500");
-        // createEmailInvitation(
-        //   invitationEmail,
-        //   invitation.id,
-        //   isTerradiaUser
-        //     ? `${userToInvite?.firstName} ${userToInvite?.lastName}`
-        //     : undefined,
-        //   `${user?.firstName} ${user?.lastName}`,
-        //   company.name
-        // );
+        createEmailInvitation(
+          invitationEmail,
+          invitation.id,
+          isTerradiaUser
+            ? `${userToInvite?.firstName} ${userToInvite?.lastName}`
+            : undefined,
+          `${user?.firstName} ${user?.lastName}`,
+          company.name
+        );
         return invitation;
       }
     ),
@@ -173,10 +172,20 @@ export default {
             roleId: userRole.id
           });
         });
-        await CompanyUserInvitationModel.update(
+        const nb = await CompanyUserInvitationModel.update(
           { status: "ACCEPTED" },
           { where: { id: invitationId } }
         );
+        if (nb[0] !== 0) {
+          console.log("INVITATION ACCEPTEE");
+          //TODO: reparer ca, c'est cassé
+          newCollaboratorCompanyEmail(
+            invitation.company.email,
+            invitation.company.name,
+            invitedUser.firstName,
+            invitedUser.lastName
+          );
+        }
         return CompanyUserInvitationModel.findByPk(invitationId);
       }
     ),

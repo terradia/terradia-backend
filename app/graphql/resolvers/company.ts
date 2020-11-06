@@ -22,6 +22,7 @@ import CustomerModel from "../../database/models/customer.model";
 import ProductCompanyImageModel from "../../database/models/product-company-images.model";
 import CompanyDeliveryDayModel from "../../database/models/company-delivery-day.model";
 import CompanyDeliveryDayHoursModel from "../../database/models/company-delivery-day-hours.model";
+import { archivedCompanieEmail, restoreCompanieEmail } from "../../services/mails/companies";
 
 declare interface Point {
   type: string;
@@ -495,6 +496,12 @@ export default {
         );
         if (nb == 0) {
           throw new ApolloError("Can't find the requested company");
+        } else {
+          archivedCompanieEmail(
+            company[0].email,
+            company[0].name,
+            user.firstName
+          );
         }
         return company[0];
       }
@@ -610,6 +617,8 @@ export default {
         );
         if (nb == 0) {
           throw new ApolloError("Can't find the requested company");
+        } else {
+          restoreCompanieEmail(company[0].email, company[0].name, user.firstName, user.lastName);
         }
         return company[0];
       }
