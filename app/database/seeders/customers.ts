@@ -21,6 +21,7 @@ export const upCustomers: () => Promise<CustomerModel[]> = async () => {
 };
 
 export const downCustomers: () => Promise<number> = () => {
+  console.log("=== Downing Customers ===");
   return CustomerModel.destroy({ where: {} }).catch(err => {
     console.log(err);
   });

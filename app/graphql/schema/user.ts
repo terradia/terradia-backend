@@ -42,6 +42,7 @@ export default gql`
       code: String!
       exponentPushToken: String
     ): SigninAnswer!
+    deleteUser(password: String): User!
     passwordValidation(password: String!): Boolean
   }
   type SignupAnswer {
@@ -69,5 +70,6 @@ export default gql`
     # Customer related
     customer: Customer
     createdAt: Date
+    archivedAt: Date
   }
 `;

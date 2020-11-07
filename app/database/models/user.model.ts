@@ -75,6 +75,8 @@ export default class UserModel extends Model<UserModel> {
   @Column
   public passwordForgot!: string;
 
+  @Column(DataType.DATE)
+  public archivedAt!: Date;
 
   // All companies for each user
   @HasMany(() => CompanyUserModel)

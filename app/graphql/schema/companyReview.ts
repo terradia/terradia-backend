@@ -20,5 +20,7 @@ export default gql`
     customerMark: Int!
     customer: Customer
     company: Company
+    createdAt: Date
+    updatedAt: Date
   }
 `;

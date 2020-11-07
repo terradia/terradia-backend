@@ -68,7 +68,7 @@ export default gql`
     id: ID!
     name: String!
     description: String!
-    position: Int
+    position: Int # position in the category of the company
 
     # Images
     cover: CompanyProductImage
@@ -93,6 +93,9 @@ export default gql`
     unit: Unit
     quantityForUnit: Float!
     price: Float!
+      
+    advises: [CompanyProductAdvise]
+    numberAdvises: Int
   }
   type Unit {
     id: ID!

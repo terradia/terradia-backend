@@ -22,6 +22,7 @@ import CustomerModel from "../../database/models/customer.model";
 import ProductCompanyImageModel from "../../database/models/product-company-images.model";
 import CompanyDeliveryDayModel from "../../database/models/company-delivery-day.model";
 import CompanyDeliveryDayHoursModel from "../../database/models/company-delivery-day-hours.model";
+import CompanyTagRelationsModel from "../../database/models/company-tag-relations.model";
 import client from "../../database/elastic/server";
 
 declare interface Point {
@@ -100,7 +101,10 @@ export const toIncludeWhenGetCompany = [
     model: CompanyProductsCategoryModel,
     include: [ProductModel]
   },
-  CompanyReviewModel,
+  {
+    model: CompanyReviewModel,
+    include: [{ model: CustomerModel, include: [UserModel] }]
+  },
   {
     model: CompanyOpeningDayModel,
     include: [CompanyOpeningDayHoursModel]
@@ -194,27 +198,10 @@ export default {
             model: CompanyImageModel,
             as: "cover"
           },
-          { model: CompanyImageModel, as: "companyImages" },
-          ProductModel,
+          CompanyTagModel,
           {
             model: CompanyUserModel,
             include: [RoleModel, UserModel]
-          },
-          CompanyReviewModel,
-          {
-            model: CompanyProductsCategoryModel,
-            include: [
-              {
-                model: ProductModel,
-                include: [
-                  {
-                    model: ProductCompanyImageModel,
-                    as: "cover",
-                    include: [CompanyImageModel]
-                  }
-                ]
-              }
-            ]
           },
           {
             model: CompanyOpeningDayModel,
@@ -330,16 +317,24 @@ export default {
       _: any,
       { userId }: { userId: string }
     ): Promise<CompanyUserModel[] | undefined> => {
-      return (
-        await UserModel.findByPk(userId, {
-          include: [
-            {
-              model: CompanyUserModel,
-              include: [CompanyModel]
-            }
-          ]
-        })
-      )?.companies;
+      return CompanyUserModel.findAll({
+        where: { userId: userId },
+        include: [
+          {
+            model: CompanyModel,
+            include: [
+              {
+                model: CompanyImageModel,
+                as: "logo"
+              },
+              {
+                model: CompanyImageModel,
+                as: "cover"
+              }
+            ]
+          }
+        ]
+      });
     },
     searchCompanies: async (
       _: any,
@@ -406,7 +401,7 @@ export default {
       isAuthenticated,
       pipeResolvers(
         isValidSiren,
-        (root: any, args: any): Promise<CompanyInfo | null> => {
+        (root: any, args: any): Promise<any | null> => {
           return root;
         }
       )
