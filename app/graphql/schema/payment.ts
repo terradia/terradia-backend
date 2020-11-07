@@ -5,6 +5,8 @@ export default gql`
     listCustomerCards: [Card]
     getStripeCustomer: StripeCustomer
     getStripeCustomerDefaultSource: Card
+    getPaymentIntents(paymentId: String!): PaymentIntent
+    getPaymentIntentsCard(paymentId: String!): Card
   }
   extend type Mutation {
     createStripeCustomer: Boolean!
@@ -23,5 +25,9 @@ export default gql`
     exp_year: Int!
     id: String!
     brand: String!
+  }
+  type PaymentIntent {
+    id: String!
+    payment_method: Card
   }
 `;

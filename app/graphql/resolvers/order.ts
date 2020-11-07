@@ -13,6 +13,7 @@ import OrderProductHistoryModel from "../../database/models/order-product-histor
 import { OrderHistoryIncludes } from "./order-history";
 import { WhereOptions } from "sequelize";
 import Stripe from "stripe";
+import UnitModel from "../../database/models/unit.model";
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY, {
   apiVersion: "2020-03-02"
@@ -22,7 +23,10 @@ interface Context {
 }
 
 export const OrderIncludes = [
-  { model: OrderProductModel, include: [ProductModel] },
+  {
+    model: OrderProductModel,
+    include: [{ model: ProductModel, include: [UnitModel] }]
+  },
   CustomerModel,
   { model: CompanyModel, include: [{ model: CompanyImageModel, as: "logo" }] }
 ];
