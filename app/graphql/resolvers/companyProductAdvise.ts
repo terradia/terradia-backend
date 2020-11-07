@@ -79,14 +79,19 @@ export default {
           content: string;
         }
       ): Promise<CompanyProductAdviseModel | null> => {
-        const company = CompanyModel.findOne({ where: { id: companyId } });
+        const company = await CompanyModel.findOne({
+          where: { id: companyId }
+        });
         if (!company) throw new ApolloError("Company not found.", "404");
-        const product = ProductModel.findOne({
+        const product = await ProductModel.findOne({
           where: { id: productId, companyId }
         });
         if (!product) throw new ApolloError("Product not found.", "404");
 
-        console.log({ companyId, productId, title, content });
+        await ProductModel.update(
+          { numberAdvises: product.numberAdvises + 1 },
+          { where: { id: productId } }
+        );
 
         return CompanyProductAdviseModel.create({
           companyId,
@@ -115,11 +120,7 @@ export default {
           where: { id }
         });
         if (!advise) throw new ApolloError("Advise not found.", "404");
-        console.log(companies, advise.companyId);
-        if (
-          companies.findIndex(elem => elem.companyId === advise.companyId) ===
-          -1
-        )
+        if (companies.findIndex(e => e.companyId === advise.companyId) === -1)
           throw new ForbiddenError("You are not in this company.");
 
         await CompanyProductAdviseModel.update(
@@ -156,11 +157,17 @@ export default {
           where: { id }
         });
         if (!advise) throw new ApolloError("Advise not found.", "404");
-        if (
-          companies.findIndex(elem => elem.companyId === advise.companyId) ===
-          -1
-        )
+        if (companies.findIndex(e => e.companyId === advise.companyId) === -1)
           throw new ForbiddenError("You are not in this company.");
+
+        const product = await ProductModel.findOne({
+          where: { id: advise.productId }
+        });
+        if (!product) throw new ApolloError("Product not found.", "404");
+        await ProductModel.update(
+          { numberAdvises: product.numberAdvises - 1 },
+          { where: { id: advise.productId } }
+        );
 
         CompanyProductAdviseModel.destroy({ where: { id } });
         return advise;

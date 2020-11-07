@@ -22,6 +22,7 @@ import CustomerModel from "../../database/models/customer.model";
 import ProductCompanyImageModel from "../../database/models/product-company-images.model";
 import CompanyDeliveryDayModel from "../../database/models/company-delivery-day.model";
 import CompanyDeliveryDayHoursModel from "../../database/models/company-delivery-day-hours.model";
+import CompanyTagRelationsModel from "../../database/models/company-tag-relations.model";
 
 declare interface Point {
   type: string;
@@ -196,30 +197,10 @@ export default {
             model: CompanyImageModel,
             as: "cover"
           },
-          { model: CompanyImageModel, as: "companyImages" },
-          ProductModel,
+          CompanyTagModel,
           {
             model: CompanyUserModel,
             include: [RoleModel, UserModel]
-          },
-          {
-            model: CompanyReviewModel,
-            include: [{ model: CustomerModel, include: [UserModel] }]
-          },
-          {
-            model: CompanyProductsCategoryModel,
-            include: [
-              {
-                model: ProductModel,
-                include: [
-                  {
-                    model: ProductCompanyImageModel,
-                    as: "cover",
-                    include: [CompanyImageModel]
-                  }
-                ]
-              }
-            ]
           },
           {
             model: CompanyOpeningDayModel,

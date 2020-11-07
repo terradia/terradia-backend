@@ -95,6 +95,7 @@ export default gql`
     price: Float!
       
     advises: [CompanyProductAdvise]
+    numberAdvises: Int
   }
   type Unit {
     id: ID!

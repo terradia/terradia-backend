@@ -126,6 +126,9 @@ export default class ProductModel extends Model<ProductModel> {
   @BelongsTo(() => UnitModel)
   public unit!: UnitModel;
 
+  @Column(DataType.INTEGER)
+  public numberAdvises!: number;
+
   // public cover!: CompanyImageModel | null;
 
   // public static async addCoverToProduct(
