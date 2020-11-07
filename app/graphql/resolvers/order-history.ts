@@ -68,7 +68,8 @@ export default {
         }
         return OrderHistoryModel.findAll({
           where: whereCondition as WhereOptions,
-          include: OrderHistoryIncludes
+          include: OrderHistoryIncludes,
+          order: [["createdAt", "DESC"]]
         });
       }
     ),
