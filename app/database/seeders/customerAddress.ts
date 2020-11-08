@@ -50,7 +50,7 @@ export const upCustomersAddress: () => void = async () => {
       customerAddressesGenerated = customerAddressesGenerated.concat(tmp);
     });
     await CustomerAddressModel.bulkCreate(customerAddressesGenerated);
-    customers.forEach(async customer => {
+    for (const customer of customers) {
       const customerAddr = await CustomerAddressModel.findAll({
         where: { customerId: customer.id }
       });
@@ -62,13 +62,14 @@ export const upCustomersAddress: () => void = async () => {
           { where: { id: customer.id } }
         );
       }
-    });
+    }
   } catch (err) {
     throw err;
   }
 };
 
 export const downCustomersAddress: () => Promise<number> = () => {
+  console.log("=== Downing CustomerAddresses ===");
   return CustomerAddressModel.destroy({ where: {} }).catch(err => {
     console.log(err);
   });

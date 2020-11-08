@@ -62,6 +62,7 @@ export const upCompanies: () => Promise<CompanyModel[]> = async () => {
 };
 
 export const downCompanies: () => Bluebird<number | void> = () => {
+  console.log("=== Downing Companies ===");
   return CompanyModel.destroy({ where: {} }).catch(err => {
     console.log(err);
   });

@@ -19,7 +19,9 @@ const roles = [
 export const upRoles: () => Promise<RoleModel[]> = () =>
   RoleModel.bulkCreate(roles);
 
-export const downRoles: () => Bluebird<number | void> = () =>
-  RoleModel.destroy({ where: {} }).catch(err => {
+export const downRoles: () => Bluebird<number | void> = () => {
+  console.log("=== Downing Roles ===");
+  return RoleModel.destroy({ where: {} }).catch(err => {
     console.log(err);
   });
+};

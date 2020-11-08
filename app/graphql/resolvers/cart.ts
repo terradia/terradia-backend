@@ -5,9 +5,22 @@ import CustomerModel from "../../database/models/customer.model";
 import CartProductModel from "../../database/models/cart-product.model";
 import ProductModel from "../../database/models/product.model";
 import { combineResolvers } from "graphql-resolvers";
-import { isAuthenticated, isUserAndCustomer } from "./authorization";
+import {
+  isAuthenticated,
+  isUserAndCustomer,
+  isUserAndStripeCustomer
+} from "./authorization";
 import CompanyModel from "../../database/models/company.model";
+import OrderModel from "../../database/models/order.model";
+import OrderProductModel from "../../database/models/order-product.model";
+import { OrderIncludes } from "./order";
+import UnitModel from "../../database/models/unit.model";
+import { where } from "sequelize";
+import Stripe from "stripe";
 
+const stripe = new Stripe(process.env.STRIPE_API_KEY, {
+  apiVersion: "2020-03-02"
+});
 declare interface UserCompanyRoleProps {
   companyUserId: string;
   roleId: string;
@@ -38,7 +51,12 @@ export default {
             CompanyModel,
             {
               model: CartProductModel,
-              include: [ProductModel],
+              include: [
+                {
+                  model: ProductModel,
+                  include: [UnitModel]
+                }
+              ],
               order: ["updatedAt"]
             }
           ]
@@ -131,7 +149,8 @@ export default {
           cart = await CartModel.create({
             customerId: customer.id,
             companyId: product.companyId,
-            totalPrice: 0
+            totalPrice: 0,
+            numberProducts: 0
           });
         }
         const cartProduct: CartProductModel | null = await CartProductModel.findOne(
@@ -141,7 +160,8 @@ export default {
         );
         await CartModel.update(
           {
-            totalPrice: cart.totalPrice + quantity * product.price
+            totalPrice: cart.totalPrice + quantity * product.price,
+            numberProducts: cart.numberProducts + quantity
           },
           { where: { id: cart.id } }
         );
@@ -224,7 +244,10 @@ export default {
               cart.totalPrice -
               // the quantity to remove is superior or equal than the quantity in the Cart
               (quantity >= product.quantity ? product.quantity : quantity) *
-                product.product.price
+                product.product.price,
+            numberProducts:
+              cart.numberProducts -
+              (cart.numberProducts > quantity ? quantity : cart.numberProducts)
           },
           { where: { id: cart.id } }
         );
@@ -242,6 +265,74 @@ export default {
           );
           return quantity;
         }
+      }
+    ),
+    validateCart: combineResolvers(
+      isUserAndStripeCustomer,
+      async (_: any, __: any, { user }: Context): Promise<OrderModel> => {
+        // Get the cart of the user
+        const cart = await CartModel.findOne({
+          where: { customerId: user.customer.id },
+          include: [{ model: CartProductModel, include: [ProductModel] }]
+        });
+        if (!cart)
+          throw new ApolloError("This customer does not have a cart", "404");
+        //Get current card
+        const stripeCustomer = await stripe.customers.retrieve(
+          user.customer.stripeId
+        );
+        if (!stripeCustomer.default_source) {
+          throw new ApolloError(
+            "This customer does not have any default source",
+            "404"
+          );
+        }
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: (cart.totalPrice * 100).toFixed(0),
+          currency: "eur",
+          // eslint-disable-next-line @typescript-eslint/camelcase
+          payment_method_types: ["card"],
+          customer: stripeCustomer.id,
+          // eslint-disable-next-line @typescript-eslint/camelcase
+          payment_method: stripeCustomer.default_source
+        });
+
+        // Create an order from the cart
+        if (!paymentIntent)
+          throw new ApolloError("The payment has been refused", "404");
+        const order = await OrderModel.create({
+          companyId: cart.companyId,
+          customerId: cart.customerId,
+          price: cart.totalPrice,
+          numberProducts: cart.numberProducts,
+          status: "PENDING",
+          stripePaymentIntent: paymentIntent.id
+        }).then(order => {
+          OrderModel.update(
+            {
+              code: order.id.substr(0, 6)
+            },
+            { where: { id: order.id } }
+          );
+          return order;
+        });
+        // Create the products of the order
+        cart.products.map(async (cartProduct: CartProductModel, index) => {
+          await OrderProductModel.create({
+            orderId: order.id,
+            productId: cartProduct.productId,
+            quantity: cartProduct.quantity,
+            price: cartProduct.quantity * cartProduct.product.price
+          });
+        });
+        // Destroy the cart of the user
+        CartModel.destroy({ where: { id: cart.id } });
+        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        // @ts-ignore
+        return OrderModel.findOne({
+          where: { id: order.id },
+          include: OrderIncludes
+        });
       }
     )
   }
