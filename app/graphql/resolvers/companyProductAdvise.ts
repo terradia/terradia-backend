@@ -39,7 +39,8 @@ export default {
           where,
           include: CompanyProductAdviseIncludes,
           limit,
-          offset
+          offset,
+          order: [["createdAt", "DESC"]]
         });
       }
     ),
