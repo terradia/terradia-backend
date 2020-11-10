@@ -33,10 +33,7 @@ export default {
           user.customer.stripeId
         );
         if (!customer.default_source) {
-          throw new ApolloError(
-            "SourceNotFound",
-            "404"
-          );
+          throw new ApolloError("SourceNotFound", "404");
         }
         const card = await stripe.customers.retrieveSource(
           user.customer.stripeId,
@@ -176,10 +173,10 @@ export default {
         //Get current cart
         const customer: CustomerModel = user.customer;
         if (!customer) {
-          throw new ApolloError("this user is not a customer", "400");
+          throw new ApolloError("NotACustomer", "400");
         }
         if (customer.cart === null) {
-          throw new ApolloError("this customer does not have a cart", "400");
+          throw new ApolloError("NoCart", "400");
         }
         const cart = await CartModel.findOne({
           where: {
@@ -195,17 +192,14 @@ export default {
           ]
         });
         if (!cart) {
-          throw new ApolloError("this customer does not have a cart", "400");
+          throw new ApolloError("NoCart", "400");
         }
         //Get current card
         const stripeCustomer = await stripe.customers.retrieve(
           user.customer.stripeId
         );
         if (!stripeCustomer.default_source) {
-          throw new ApolloError(
-            "This customer does not have any default source",
-            "404"
-          );
+          throw new ApolloError("SourceNotFound", "404");
         }
         try {
           const charge = await stripe.charges.create({

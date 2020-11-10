@@ -9,7 +9,6 @@ import OrderHistoryModel from "../../database/models/order-history.model";
 import OrderProductHistoryModel from "../../database/models/order-product-history.model";
 import { Op } from "sequelize";
 import { WhereOptions } from "sequelize/types/lib/model";
-import sequelize from "../../database/models";
 
 interface Context {
   user: UserModel;
@@ -43,13 +42,9 @@ export default {
           where: { id },
           include: OrderHistoryIncludes
         });
-        if (!orderHistory)
-          throw new ApolloError("Cannot find orderHistory", "404");
+        if (!orderHistory) throw new ApolloError("HistoryNotFound", "404");
         if (user.customer.id !== orderHistory.customerId)
-          throw new ApolloError(
-            "This is not one of your order histories",
-            "404"
-          );
+          throw new ApolloError("WrongUser", "404");
         return orderHistory;
       }
     ),
@@ -60,7 +55,7 @@ export default {
         { status }: { status?: string },
         { user }: Context
       ): Promise<OrderHistoryModel[]> => {
-        let whereCondition = {};
+        let whereCondition;
         if (status) {
           whereCondition = { customerId: user.customer.id, status };
         } else {

@@ -27,11 +27,7 @@ export default {
           limit: number;
         }
       ): Promise<CompanyProductAdviseModel[]> => {
-        if (!companyId && !productId)
-          throw new ApolloError(
-            "You should have at least the productId or the companyId",
-            "401"
-          );
+        if (!companyId && !productId) throw new ApolloError("NoFilter", "401");
         const where: WhereOptions = {};
         if (productId) where["productId"] = productId;
         if (companyId) where["companyId"] = companyId;
@@ -83,11 +79,11 @@ export default {
         const company = await CompanyModel.findOne({
           where: { id: companyId }
         });
-        if (!company) throw new ApolloError("Company not found.", "404");
+        if (!company) throw new ApolloError("CompanyNotFound", "404");
         const product = await ProductModel.findOne({
           where: { id: productId, companyId }
         });
-        if (!product) throw new ApolloError("Product not found.", "404");
+        if (!product) throw new ApolloError("ProductNotFound", "404");
 
         await ProductModel.update(
           { numberAdvises: product.numberAdvises + 1 },
@@ -120,9 +116,9 @@ export default {
         const advise = await CompanyProductAdviseModel.findOne({
           where: { id }
         });
-        if (!advise) throw new ApolloError("Advise not found.", "404");
+        if (!advise) throw new ApolloError("AdviseNotFound", "404");
         if (companies.findIndex(e => e.companyId === advise.companyId) === -1)
-          throw new ForbiddenError("You are not in this company.");
+          throw new ForbiddenError("AccessDenied");
 
         await CompanyProductAdviseModel.update(
           {
@@ -135,7 +131,7 @@ export default {
           where: { id },
           include: CompanyProductAdviseIncludes
         });
-        if (!adviseReturn) throw new ApolloError("ERROR.", "500");
+        if (!adviseReturn) throw new ApolloError("AdviseNotFound", "404");
         return adviseReturn;
       }
     ),
@@ -157,14 +153,14 @@ export default {
         const advise = await CompanyProductAdviseModel.findOne({
           where: { id }
         });
-        if (!advise) throw new ApolloError("Advise not found.", "404");
+        if (!advise) throw new ApolloError("AdviseNotFound", "404");
         if (companies.findIndex(e => e.companyId === advise.companyId) === -1)
-          throw new ForbiddenError("You are not in this company.");
+          throw new ForbiddenError("AccessDenied");
 
         const product = await ProductModel.findOne({
           where: { id: advise.productId }
         });
-        if (!product) throw new ApolloError("Product not found.", "404");
+        if (!product) throw new ApolloError("ProductNotFound", "404");
         await ProductModel.update(
           { numberAdvises: product.numberAdvises - 1 },
           { where: { id: advise.productId } }

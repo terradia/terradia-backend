@@ -64,9 +64,9 @@ export default {
           where: { id: id },
           include: OrderIncludes
         });
-        if (!order) throw new ApolloError("Order not found", "40#");
+        if (!order) throw new ApolloError("OrderNotFound", "404");
         if (order.customerId !== user.customer.id)
-          throw new ApolloError("This is not one of your orders", "403");
+          throw new ApolloError("WrongUser", "403");
         return order;
       }
     ),
@@ -110,18 +110,14 @@ export default {
           include: OrderIncludes
         });
 
-        if (!order) throw new ApolloError("This order doesn't exist", "404");
+        if (!order) throw new ApolloError("OrderNotFound", "404");
         if (order.status !== "PENDING")
-          throw new ApolloError(
-            "The order isn't pending, you cannot cancel it",
-            "401"
-          );
+          throw new ApolloError("NotPending", "401");
 
         const paymentIntent = await stripe.paymentIntents.cancel(
           order.stripePaymentIntent
         );
-        if (!paymentIntent)
-          throw new ApolloError("Cannot cancel the payment", "404");
+        if (!paymentIntent) throw new ApolloError("NotCancelable", "404");
         // TODO : send mail to the user
 
         // the order will be removed automatically after 24h
@@ -164,7 +160,7 @@ export default {
           where: { id: orderHistory.id },
           include: OrderHistoryIncludes
         });
-        if (!orderHistoryResult) throw new ApolloError("Error", "404");
+        if (!orderHistoryResult) throw new ApolloError("OrderNotFound", "404");
         return orderHistoryResult;
       }
     ),
@@ -180,9 +176,9 @@ export default {
           include: OrderIncludes
         });
 
-        if (!order) throw new ApolloError("This order doesn't exist", "404");
+        if (!order) throw new ApolloError("OrderNotFound", "404");
         if (order.status !== "AVAILABLE")
-          throw new ApolloError("Order wasn't validated", "401");
+          throw new ApolloError("NotValidated", "401");
 
         const historyStatus =
           order.status === "AVAILABLE" ? "FINISHED" : order.status;
@@ -224,7 +220,7 @@ export default {
           where: { id: orderHistory.id },
           include: OrderHistoryIncludes
         });
-        if (!orderHistoryResult) throw new ApolloError("Error", "404");
+        if (!orderHistoryResult) throw new ApolloError("OrderNotFound", "404");
         return orderHistoryResult;
       }
     ),
@@ -239,7 +235,7 @@ export default {
           where: { id },
           include: OrderIncludes
         });
-        if (!order) throw new ApolloError("This order doesn't exist", "404");
+        if (!order) throw new ApolloError("OrderNotFound", "404");
         if (order.status !== "PENDING")
           throw new ApolloError(
             "The order isn't pending, you cannot accept it",
@@ -250,8 +246,7 @@ export default {
         const paymentIntent = await stripe.paymentIntents.confirm(
           order.stripePaymentIntent
         );
-        if (!paymentIntent)
-          throw new ApolloError("The payment has been refused", "404");
+        if (!paymentIntent) throw new ApolloError("PayementRefused", "404");
         // TODO : send mail to the user
 
         await OrderModel.update(
@@ -262,7 +257,7 @@ export default {
           where: { id: order.id },
           include: OrderIncludes
         });
-        if (!orderResult) throw new ApolloError("error", "404");
+        if (!orderResult) throw new ApolloError("OrderNotFound", "404");
         return orderResult;
       }
     ),
@@ -277,19 +272,15 @@ export default {
           where: { id },
           include: OrderIncludes
         });
-        if (!order) throw new ApolloError("This order doesn't exist", "404");
+        if (!order) throw new ApolloError("OrderNotFound", "404");
         if (order.status !== "PENDING")
-          throw new ApolloError(
-            "Cannot decline order that is not pending",
-            "401"
-          );
+          throw new ApolloError("NotDeclinable", "401");
 
         // TODO : cancel payment on stripe
         const paymentIntent = await stripe.paymentIntents.cancel(
           order.stripePaymentIntent
         );
-        if (!paymentIntent)
-          throw new ApolloError("Cannot cancel the payment", "404");
+        if (!paymentIntent) throw new ApolloError("NotCancelable", "404");
         // TODO : send mail to the user
         const historyStatus = "DECLINED";
 
@@ -331,7 +322,7 @@ export default {
           where: { id: orderHistory.id },
           include: OrderHistoryIncludes
         });
-        if (!orderHistoryResult) throw new ApolloError("Error", "404");
+        if (!orderHistoryResult) throw new ApolloError("OrderNotFound", "404");
         return orderHistoryResult;
       }
     )
