@@ -57,7 +57,7 @@ export default {
           }
         ]
       });
-      if (!product) throw new ApolloError("This product does not exist", "404");
+      if (!product) throw new ApolloError("ProductNotFound", "404");
       return product;
     },
     getProductsByCompany: async (
@@ -67,7 +67,7 @@ export default {
       const company: CompanyModel | null = await CompanyModel.findOne({
         where: { id: companyId }
       });
-      if (!company) throw new ApolloError("This company does not exist", "404");
+      if (!company) throw new ApolloError("CompanyNotFound", "404");
       return ProductModel.findAll({
         where: { companyId }
       });
@@ -77,7 +77,7 @@ export default {
       { companyId }: { companyId: string }
     ): Promise<CategoryModel[]> => {
       const company = CompanyModel.findOne({ where: { id: companyId } });
-      if (!company) throw new ApolloError("This company does not exist", "404");
+      if (!company) throw new ApolloError("CompanyNotFound", "404");
       return CategoryModel.findAll({
         include: [
           {
@@ -102,11 +102,7 @@ export default {
       _: any,
       { id, notation, name }: { id?: string; notation?: string; name?: string }
     ): Promise<UnitModel | null> => {
-      if (!name && !notation && !id)
-        throw new ApolloError(
-          "You should at least give one of the three arguments",
-          "400"
-        );
+      if (!name && !notation && !id) throw new ApolloError("NoFilter", "400");
       const options: { id?: string; notation?: string; name?: string } = {};
       if (id) options["id"] = id;
       else if (notation) options["notation"] = notation;
@@ -115,7 +111,7 @@ export default {
         // @ts-ignore
         where: options
       });
-      if (!unit) throw new ApolloError("Cannot find this unit.", "404");
+      if (!unit) throw new ApolloError("UnitNotFound", "404");
       return unit;
     }
   },
@@ -160,7 +156,7 @@ export default {
             return product;
           });
           return product.toJSON();
-        } else throw new ApolloError("This company does not exist", "404");
+        } else throw new ApolloError("CompanyNotFound", "404");
       }
     ),
     addCategoryToProduct: combineResolvers(
@@ -180,11 +176,7 @@ export default {
               categoryId: category.id
             }
           });
-        } else
-          throw new ApolloError(
-            `The category ${categoryName} doesn't exists.`,
-            "404"
-          );
+        } else throw new ApolloError(`CategoryNotFound`, "404");
         const product: ProductModel | null = await ProductModel.findOne({
           where: { id: productId },
           include: [CategoryModel]
@@ -265,13 +257,10 @@ export default {
           coverId?: string;
         }
       ): Promise<ProductModel | null> => {
-        if (args.productId === undefined)
-          throw new ApolloError("You need to provide an ID.", "400");
         const product: ProductModel | null = await ProductModel.findOne({
           where: { id: args.productId }
         });
-        if (!product)
-          throw new ApolloError("The product does not exist", "404");
+        if (!product) throw new ApolloError("ProductNotFound", "404");
         const cover: any = {};
         let newResource: any = undefined;
         if (args.coverId) {
@@ -296,11 +285,7 @@ export default {
             returning: true
           }
         );
-        if (productResult[0] === 0)
-          throw new ApolloError(
-            "Could not update any field in Database, are you sure the product you want to update exists ?",
-            "400"
-          );
+        if (productResult[0] === 0) throw new ApolloError("UpdateError", "400");
         return ProductModel.findOne({ where: { id: args.productId } });
       }
     ),
@@ -309,10 +294,7 @@ export default {
       isAuthenticated,
       async (_: any, { productId }: { productId: string }): Promise<number> => {
         if (productId === undefined)
-          throw new ApolloError(
-            "The product you try to delete, does not exist.",
-            "404"
-          );
+          throw new ApolloError("ProductNotFound", "404");
         return ProductModel.destroy({
           where: { id: productId }
         });
@@ -331,13 +313,12 @@ export default {
         const product: ProductModel | null = await ProductModel.findOne({
           where: { id: productId }
         });
-        if (!product) throw new ApolloError("Product not found", "404");
+        if (!product) throw new ApolloError("ProductNotFound", "404");
 
         const companyImage: CompanyImageModel | null = await CompanyImageModel.findOne(
           { where: { id: companyImageId } }
         );
-        if (!companyImage)
-          throw new ApolloError("CompanyImage not found", "404");
+        if (!companyImage) throw new ApolloError("ImageNotFound", "404");
 
         const newResource = await ProductCompanyImageModel.create({
           productId,
@@ -365,7 +346,7 @@ export default {
         const product: ProductModel | null = await ProductModel.findOne({
           where: { id: productId }
         });
-        if (!product) throw new ApolloError("Product not found", "404");
+        if (!product) throw new ApolloError("ProductNotFound", "404");
 
         // create the image in S3
         const { stream, filename } = await image;
@@ -403,13 +384,13 @@ export default {
         const product: ProductModel | null = await ProductModel.findOne({
           where: { id: productId }
         });
-        if (!product) throw new ApolloError("Product not found", "404");
+        if (!product) throw new ApolloError("ProductNotFound", "404");
         const companyImage: CompanyImageModel | null = await CompanyImageModel.findOne(
           {
             where: { id: companyImageId }
           }
         );
-        if (!companyImage) throw new ApolloError("Image not found", "404");
+        if (!companyImage) throw new ApolloError("ImageNotFound", "404");
 
         await ProductCompanyImageModel.destroy({
           where: { productId, companyImageId }
@@ -429,13 +410,13 @@ export default {
         const product: ProductModel | null = await ProductModel.findOne({
           where: { id: productId }
         });
-        if (!product) throw new ApolloError("Product not found", "404");
+        if (!product) throw new ApolloError("ProductNotFound", "404");
         const companyImage: CompanyImageModel | null = await CompanyImageModel.findOne(
           {
             where: { id: companyImageId }
           }
         );
-        if (!companyImage) throw new ApolloError("Image not found", "404");
+        if (!companyImage) throw new ApolloError("ImageNotFound", "404");
 
         let ret: ProductCompanyImageModel | null = await ProductCompanyImageModel.findOne(
           { where: { productId, companyImageId } }

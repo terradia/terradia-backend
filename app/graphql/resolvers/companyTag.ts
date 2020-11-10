@@ -21,10 +21,7 @@ export default {
         { companyTagId, slugName }: { companyTagId?: string; slugName?: string }
       ): Promise<CompanyTagModel | null> => {
         if (!companyTagId && !slugName) {
-          throw new ApolloError(
-            "You should at least give a name or the id of the tag you want",
-            "400"
-          );
+          throw new ApolloError("NoFilter", "400");
         } else {
           const where: WhereOptions = companyTagId
             ? { id: companyTagId }
@@ -55,11 +52,11 @@ export default {
       async (
         _: any,
         { companyTagId }: { companyTagId: string }
-      ): Promise<CompanyTagModel> => {
+      ): Promise<CompanyTagModel> => {p
         const tag = await CompanyTagModel.findOne({
           where: { id: companyTagId }
         });
-        if (!tag) throw new ApolloError("The tag does not exists", "404");
+        if (!tag) throw new ApolloError("TagNotFound", "404");
         await CompanyTagModel.destroy({ where: { id: companyTagId } });
         await CompanyTagRelationsModel.destroy({
           where: { tagId: companyTagId }
@@ -76,12 +73,12 @@ export default {
         const tag = await CompanyTagModel.findOne({
           where: { id: companyTagId }
         });
-        if (!tag) throw new ApolloError("The tag does not exists", "404");
+        if (!tag) throw new ApolloError("TagNotFound", "404");
         const company = await CompanyModel.findOne({
           where: { id: companyId }
         });
         if (!company)
-          throw new ApolloError("The company does not exists.", "404");
+          throw new ApolloError("CompanyNotFound", "404");
 
         await CompanyTagRelationsModel.findOrCreate({
           where: { tagId: companyTagId, companyId }
@@ -101,10 +98,10 @@ export default {
         const tag = await CompanyTagModel.findOne({
           where: { id: companyTagId }
         });
-        if (!tag) throw new ApolloError("The tag does not exists", "404");
+        if (!tag) throw new ApolloError("TagNotFound", "404");
         const company = CompanyModel.findOne({ where: { id: companyId } });
         if (!company)
-          throw new ApolloError("The company does not exists.", "404");
+          throw new ApolloError("CompanyNotFound", "404");
 
         const result: number = await CompanyTagRelationsModel.destroy({
           where: {
@@ -114,7 +111,7 @@ export default {
         });
         if (result === 0)
           throw new ApolloError(
-            "This tag is not attributed to this company",
+            "TagNotLinked",
             "404"
           );
         return CompanyModel.findOne({

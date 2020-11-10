@@ -73,12 +73,23 @@ const startServer = async (): Promise<void> => {
       // TOKEN_SECRET is the secret to generate the tokens of the users. It is in the env
       return { user, secret: process.env.TOKEN_SECRET };
     },
+
     formatError: error => {
-      const message = error.message
-        .replace("SequelizeValidationError: ", "")
-        .replace("Validation error: ", "")
-        .replace("GraphQL error:", "")
-        .trim();
+      const type = error.source?.body
+        .substr(0, error.source?.body.indexOf(" "))
+        .toLowerCase();
+      let location;
+      if (error.path) {
+        location = `ApolloError.${type}.${error.path[0]}.`;
+      } else location = "";
+      const message = location.concat(
+        error.message
+          .replace("SequelizeValidationError: ", "")
+          .replace("Validation error: ", "")
+          .replace("GraphQL error:", "")
+          .trim()
+      );
+
       return {
         ...error,
         message

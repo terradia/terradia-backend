@@ -51,7 +51,7 @@ export default {
         { user }: argumentsData
       ): Promise<CompanyReviewModel | null> => {
         if (!user.customer)
-          throw new ApolloError("User is not a customer", "500");
+          throw new ApolloError("NotACustomer", "500");
         const customer: Partial<CustomerModelMember> = user.customer.toJSON();
         if (customer && customer.id !== undefined) {
           const company: CompanyModel | null = await CompanyModel.findByPk(
@@ -78,7 +78,7 @@ export default {
               }
             });
             if (!review) {
-              throw new ApolloError("can't create the review", "500");
+              throw new ApolloError("NoReviewCreated", "500");
             }
 
             const avg: number = company.averageMark;
@@ -100,7 +100,7 @@ export default {
               ]
             });
           } else {
-            throw new ApolloError("This company does not exists", "404");
+            throw new ApolloError("CompanyNotFound", "404");
           }
         } else {
           throw new ApolloError(

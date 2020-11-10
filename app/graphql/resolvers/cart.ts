@@ -38,10 +38,10 @@ export default {
         // TODO : Check if the products are available
         const customer: CustomerModel = user.customer;
         if (!customer) {
-          throw new ApolloError("this user is not a customer", "400");
+          throw new ApolloError("NotACustomer", "400");
         }
         if (customer.cart === null) {
-          throw new ApolloError("this customer does not have a cart", "400");
+          throw new ApolloError("NoCart", "400");
         }
         return CartModel.findOne({
           where: {
@@ -63,7 +63,6 @@ export default {
         });
       }
     ),
-
     getCartsByCompany: combineResolvers(
       isAuthenticated,
       async (
@@ -90,10 +89,10 @@ export default {
       async (_: any, __: any, { user }: Context): Promise<number> => {
         const customer: CustomerModel = user.customer;
         if (!customer) {
-          throw new ApolloError("this user is not a customer", "400");
+          throw new ApolloError("NotACustomer", "400");
         }
         if (customer.cart === null) {
-          throw new ApolloError("this customer does not have a cart", "400");
+          throw new ApolloError("NoCart", "400");
         }
         const cart = await CartModel.findOne({
           where: {
@@ -124,17 +123,9 @@ export default {
           where: { id: productId }
         });
         if (!product)
-          throw new ApolloError(
-            "Cannot find this product",
-            "RESOURCE_NOT_FOUND"
-          );
-        if (!customer)
-          throw new ApolloError("This user is not a customer", "400");
-        if (quantity < 0)
-          throw new ApolloError(
-            "You should add products, not remove them ;)",
-            "400"
-          );
+          throw new ApolloError("ProductNotFound", "RESOURCE_NOT_FOUND");
+        if (!customer) throw new ApolloError("NotACustomer", "400");
+        if (quantity < 0) throw new ApolloError("NegativeQuantity", "400");
 
         let cart: CartModel | null = await CartModel.findOne({
           where: { customerId: customer.id }
@@ -202,20 +193,10 @@ export default {
       ): Promise<number> => {
         const customer: CustomerModel | null = user.customer;
         if (!customer)
-          throw new ApolloError(
-            "This user is not a customer",
-            "RESOURCE_NOT_FOUND"
-          );
+          throw new ApolloError("NotACustomer", "RESOURCE_NOT_FOUND");
         if (!cartProductId && !productId)
-          throw new ApolloError(
-            "You should precise at least a cartProduct of a productId",
-            "400"
-          );
-        if (quantity < 0)
-          throw new ApolloError(
-            "You should remove products, not add them ;)",
-            "400"
-          );
+          throw new ApolloError("NoFilter", "400");
+        if (quantity < 0) throw new ApolloError("NegativeQuantity", "400");
 
         const cart: CartModel | null = await CartModel.findOne({
           where: { customerId: customer.id }
@@ -225,9 +206,7 @@ export default {
             "This customer does not have a Cart",
             "RESOURCE_NOT_FOUND"
           );
-
-        let product: CartProductModel | null;
-        product = await CartProductModel.findOne({
+        const product = await CartProductModel.findOne({
           where: productId
             ? { productId: productId, cartId: cart.id }
             : { id: cartProductId, cartId: cart.id },

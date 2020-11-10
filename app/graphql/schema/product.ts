@@ -24,7 +24,7 @@ export default gql`
     addCategoryToProduct(categoryName: String!, productId: String!): Product!
 
     updateProduct(
-      productId: String
+      productId: String!
       name: String
       description: String
       unitId: String

@@ -26,7 +26,7 @@ export default {
         });
         if (!company)
           throw new ApolloError(
-            "The company does not exists", // TODO : translate
+            "CompanyNotFound", // TODO : translate
             "404"
           );
         const days: string[] = [
@@ -39,10 +39,7 @@ export default {
           "sunday"
         ];
         if (days.findIndex(d => d === day) === -1)
-          throw new ApolloError(
-            "The day is invalid. It should be : 'monday', 'tuesday', 'wednesday', 'thursday', 'saturday', 'sunday'",
-            "400"
-          );
+          throw new ApolloError("InvalidDay", "400");
         const result: [
           CompanyDeliveryDayModel,
           boolean
@@ -151,7 +148,7 @@ export default {
           }
         );
         if (!companyDeliveryDay)
-          throw new ApolloError("Cannot find this resource", "404");
+          throw new ApolloError("DeliveryDayNotFound", "404");
         await CompanyDeliveryDayModel.destroy({
           where: { id: DeliveryDayId }
         });
@@ -175,11 +172,11 @@ export default {
           { where: { id: hourId } }
         );
         if (tmp[0] === 0)
-          throw new ApolloError("Could not update the resource", "404");
+          throw new ApolloError("UpdateError", "404");
         const h: CompanyDeliveryDayHoursModel | null = await CompanyDeliveryDayHoursModel.findOne(
           { where: { id: hourId }, include: [CompanyDeliveryDayModel] }
         );
-        if (!h) throw new ApolloError("This hours does not exist", "404");
+        if (!h) throw new ApolloError("HourNotFound", "404");
         return h;
       }
     ),
@@ -192,7 +189,7 @@ export default {
         const h: CompanyDeliveryDayHoursModel | null = await CompanyDeliveryDayHoursModel.findOne(
           { where: { id: hourId }, include: [CompanyDeliveryDayModel] }
         );
-        if (!h) throw new ApolloError("Cannot find this resource", "404");
+        if (!h) throw new ApolloError("DeliveryHourNotFound", "404");
         await CompanyDeliveryDayHoursModel.destroy({
           where: { id: hourId }
         });

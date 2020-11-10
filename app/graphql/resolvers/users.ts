@@ -54,7 +54,7 @@ export default {
         `https://graph.facebook.com/me?fields=id,name,email&access_token=${facebookToken}`
       );
       data = (await data.json()) as FacebookObject;
-      if (data.error) throw new ApolloError("Facebook account not found");
+      if (data.error) throw new ApolloError("AccountNotFound");
       const userFound = await UserModel.findAll({
         where: { email: data.email }
       });
@@ -64,12 +64,16 @@ export default {
       isAuthenticated,
       async (
         _: any,
-        { status }: { status?: "ALL" | "PENDING" | "ACCEPTED" | "DECLINED" | "CANCELED" },
+        {
+          status
+        }: {
+          status?: "ALL" | "PENDING" | "ACCEPTED" | "DECLINED" | "CANCELED";
+        },
         { user }: { user: UserModel }
       ): Promise<CompanyUserInvitationModel[]> => {
         // 'where' is any because of the sequelize query we do later on.
         const where: any = { invitationEmail: user.email };
-        if (status !==  "ALL") where["status"] = status;
+        if (status !== "ALL") where["status"] = status;
         return CompanyUserInvitationModel.findAll({
           where,
           include: companyUserInvitationIncludes
@@ -85,19 +89,19 @@ export default {
     ): Promise<{ userId: string; token: Promise<string> }> => {
       const user = await UserModel.findByLogin(email);
       if (!user) {
-        throw new UserInputError("No user found with this login credentials.");
+        throw new UserInputError("UserNotFound");
       }
       const isValid = await UserModel.comparePasswords(password, user.password);
 
       if (!isValid) {
-        throw new AuthenticationError("Invalid password.");
+        throw new AuthenticationError("InvalidPassword");
       }
       const nb = await UserModel.update(
         { archivedAt: null },
         { where: { id: user.id } }
       );
       if (nb[0] == 0) {
-        throw new ApolloError("This account is already delete.");
+        throw new ApolloError("UserDeleted");
       }
       return { token: createToken(user, secret), userId: user.id };
     },
@@ -122,10 +126,7 @@ export default {
         where: { email }
       });
       if (emailAlreadyTaken) {
-        throw new ApolloError(
-          "Il semblerais qu'il existe déjà un utilisateur avec cet email.",
-          "403"
-        );
+        throw new ApolloError("UserAlreadyExist", "403");
       }
       const user = await UserModel.create({ ...userInformations, email });
 
@@ -143,7 +144,7 @@ export default {
       return {
         token: createToken(user, secret),
         userId: user.id,
-        message: `Un email de confirmation a été envoyé a cette adresse email : ${user.email}, clique sur le lien dans le mail afin valider ton compte !`
+        message: "ConfirmationEmail"
       };
     },
     updateUser: combineResolvers(
@@ -161,7 +162,7 @@ export default {
       ): Promise<UserModel> => {
         const currentUser = await UserModel.findByPk(user.id);
         if (!currentUser) {
-          throw new ApolloError("User not found", "404");
+          throw new ApolloError("UserNotFound", "404");
         }
         const toUpdate =
           args.email && args.email != currentUser.email
@@ -175,7 +176,7 @@ export default {
           }
         );
         if (userResult[0] === 0)
-          throw new ApolloError("Could not update this user", "400");
+          throw new ApolloError("UpdateError", "400");
         return userResult[1][0];
       }
     ),
@@ -224,7 +225,7 @@ export default {
         `https://graph.facebook.com/me?fields=id,name,email,first_name,last_name&access_token=${facebookToken}`
       );
       data = (await data.json()) as FacebookObject;
-      if (data.error) throw new ApolloError("Facebook account not found");
+      if (data.error) throw new ApolloError("AccountNotFound");
       const [user] = await UserModel.findOrCreate({
         where: { email: data.email },
         defaults: {
@@ -261,10 +262,10 @@ export default {
         where: { email: data.email }
       });
       if (!user) {
-        throw new UserInputError("No user found with this login credentials.");
+        throw new UserInputError("UserNotFound");
       }
       if (user.facebookId && data.id !== user.facebookId)
-        throw new ApolloError("Account doesnt match");
+        throw new ApolloError("NotMatch");
       await UserModel.update(
         { facebookId: data.id, exponentPushToken },
         { where: { id: user.id } }
@@ -277,7 +278,7 @@ export default {
     ) => {
       const user = await UserModel.findOne({ where: { email } });
       if (!user) {
-        throw new ApolloError("Account doesnt exist");
+        throw new ApolloError("UserNotFound");
       }
       const randomCode = Math.floor(100000 + Math.random() * 900000);
       console.log(randomCode);
@@ -302,7 +303,7 @@ export default {
       const user = await UserModel.findByLogin(email);
 
       if (!user) {
-        throw new UserInputError("No user found with this login credentials.");
+        throw new UserInputError("UserNotFound");
       }
 
       /**
@@ -317,7 +318,7 @@ export default {
       const isValid = user.passwordForgot === code;
 
       if (!isValid) {
-        throw new AuthenticationError("Invalid code.");
+        throw new AuthenticationError("InvalidCode");
       }
       await UserModel.update(
         { exponentPushToken, passwordForgot: null },
@@ -334,7 +335,7 @@ export default {
       const isValid = await UserModel.comparePasswords(password, user.password);
 
       if (!isValid) {
-        throw new AuthenticationError("Invalid password.");
+        throw new AuthenticationError("InvalidPassword");
       }
       return true;
     },
@@ -349,7 +350,7 @@ export default {
           }
         );
         if (nb == 0) {
-          throw new ApolloError("Can't archive this user account.");
+          throw new ApolloError("UserNotDeleted");
         }
         return users[0];
       }

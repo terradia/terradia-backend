@@ -34,7 +34,7 @@ export default {
         );
         if (!customer.default_source) {
           throw new ApolloError(
-            "This customer does not have any default source",
+            "SourceNotFound",
             "404"
           );
         }

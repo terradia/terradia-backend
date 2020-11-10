@@ -24,7 +24,7 @@ export default {
           where: { id: companyId },
           include: companyIncludes
         });
-        if (company === null) throw new ApolloError("Company not found", "404");
+        if (company === null) throw new ApolloError("CompanyNotFound", "404");
         return CompanyUserInvitationModel.findAll({
           where: { companyId },
           include: companyUserInvitationIncludes
@@ -48,29 +48,20 @@ export default {
         );
         // check the user that invites is in the company
         if (companyUser === null)
-          throw new ApolloError(
-            "You don't have the right to invite a user in a company you are not inside",
-            "403"
-          );
+          throw new ApolloError("NotPartOfCompany", "403");
         // check the email isn't the one from the user that invited
         if (user.email === invitationEmail)
-          throw new ApolloError(
-            "You cannot invite yourself",
-            "403"
-          );
+          throw new ApolloError("NotSelfInvite", "403");
         const company: CompanyModel | null = await CompanyModel.findOne({
           where: { id: companyId }
         });
-        if (company === null) throw new ApolloError("Company not found", "404");
+        if (company === null) throw new ApolloError("CompanyNotFound", "404");
         const existingInvitation: CompanyUserInvitationModel | null = await CompanyUserInvitationModel.findOne(
           { where: { companyId, invitationEmail, status: "PENDING" } }
         );
         // check the company hasn't yet invited this email
         if (existingInvitation !== null)
-          throw new ApolloError(
-            "You can only invite one time the same member.",
-            "400"
-          );
+          throw new ApolloError("InvitationExist", "400");
 
         // check the email is the mail of a terradia user
         const userToInvite = await UserModel.findOne({
@@ -82,7 +73,7 @@ export default {
             { where: { userId: userToInvite.id, companyId } }
           );
           if (companyUser1 !== null)
-            throw new ApolloError("User already in the company", "403");
+            throw new ApolloError("NoInvitationCreated", "403");
         }
 
         // create the invitation on the DB
@@ -113,15 +104,9 @@ export default {
           { where: { id } }
         );
         if (invitation === null)
-          throw new ApolloError(
-            "The invitation does not exist or was deleted",
-            "404"
-          );
+          throw new ApolloError("NotFoundOrCanceled", "404");
         if (invitation.status !== "PENDING")
-          throw new ApolloError(
-            "You cannot cancel an invitation that was answered or canceled",
-            "404"
-          );
+          throw new ApolloError("AlreadyAcceptedOrCanceled", "404");
         CompanyUserInvitationModel.update(
           { status: "CANCELED" },
           { where: { id } }
@@ -140,28 +125,21 @@ export default {
         );
         // check the invitation does exist
         if (invitation === null)
-          throw new ApolloError(
-            "The invitation does not exist or was canceled",
-            "404"
-          );
+          throw new ApolloError("NotFoundOrCanceled", "404");
         if (invitation.status !== "PENDING")
-          throw new ApolloError(
-            "You cannot accept an invitation that was answered or canceled",
-            "404"
-          );
+          throw new ApolloError("AlreadyAcceptedOrCanceled", "404");
 
         const invitedUser: UserModel | null = await UserModel.findOne({
           where: { email: invitation.invitationEmail }
         });
-        if (invitedUser === null)
-          throw new ApolloError("The user does not exist", "404");
+        if (invitedUser === null) throw new ApolloError("UserNotFound", "404");
         // change the status of the invitation
 
         const userRole: RoleModel | null = await RoleModel.findOne({
           where: { slugName: "member" }
         });
         if (userRole == null) {
-          throw new ApolloError("Cannot find the role 'Member'", "500"); // TODO : translate
+          throw new ApolloError("RoleNotFound", "500"); // TODO : translate
         }
         // add the user to the company linked to the invitation
         await CompanyUserModel.create({
@@ -187,15 +165,9 @@ export default {
           { where: { id: invitationId } }
         );
         if (invitation === null)
-          throw new ApolloError(
-            "The invitation does not exist or was deleted",
-            "404"
-          );
+          throw new ApolloError("NotFoundOrCanceled", "404");
         if (invitation.status !== "PENDING")
-          throw new ApolloError(
-            "You cannot decline an invitation that was answered or canceled",
-            "404"
-          );
+          throw new ApolloError("AlreadyAcceptedOrCanceled", "404");
         CompanyUserInvitationModel.update(
           { status: "DECLINED" },
           { where: { id: invitationId } }

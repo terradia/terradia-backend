@@ -31,9 +31,9 @@ export default {
             include: [UserModel, CompanyModel, RoleModel]
           }
         );
-        if (!companyUser) throw new ApolloError("Can't find the user");
+        if (!companyUser) throw new ApolloError("UserNotFound");
         const role: RoleModel | null = await RoleModel.findByPk(roleId);
-        if (!role) throw new ApolloError("Can't find the role");
+        if (!role) throw new ApolloError("RoleNotFound");
         await companyUser.$add("roles", role);
         return companyUser.reload();
       }
@@ -50,9 +50,9 @@ export default {
             include: [UserModel, CompanyModel, RoleModel]
           }
         );
-        if (!companyUser) throw new ApolloError("Can't find the user");
+        if (!companyUser) throw new ApolloError("UserNotFound");
         const role: RoleModel | null = await RoleModel.findByPk(roleId);
-        if (!role) throw new ApolloError("Can't find the role");
+        if (!role) throw new ApolloError("RoleNotFound");
         await companyUser.$remove("roles", role);
         return companyUser.reload();
       }

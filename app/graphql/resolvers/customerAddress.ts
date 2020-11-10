@@ -31,7 +31,7 @@ export default {
           include: [{ model: CustomerAddressModel, as: "activeAddress" }]
         });
         if (!customerFetched) {
-          throw new ApolloError("Customer doesn't exist");
+          throw new ApolloError("CustomerNotFound");
         }
         return customerFetched.activeAddress;
       }
@@ -80,7 +80,7 @@ export default {
           await geocoder.geocode(address, function(err, res) {
             if (err)
               throw new ApolloError(
-                "Error while get geo data from address",
+                "OSMError",
                 "500"
               );
             if (res.length == 0) {
@@ -95,7 +95,7 @@ export default {
             };
           });
           if (point.coordinates.length == 0) {
-            throw new ApolloError("This address does not exist", "400");
+            throw new ApolloError("AddressNotFound", "400");
           }
           const addr: CustomerAddressModel = await CustomerAddressModel.create({
             address,

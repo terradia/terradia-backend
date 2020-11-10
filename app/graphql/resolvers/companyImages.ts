@@ -131,7 +131,7 @@ export default {
         const img: CompanyImageModel | null = await CompanyImageModel.findOne({
           where: { id: imageId }
         });
-        if (!img) throw new ApolloError("Image not found", "404");
+        if (!img) throw new ApolloError("ImageNotFound", "404");
         const result: [
           number,
           CompanyImageModel[]

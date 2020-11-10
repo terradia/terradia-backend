@@ -136,8 +136,7 @@ export const isValidSiren = async (
       return await res.json();
     })
     .catch(err => console.log(err));
-  if (json === null)
-    throw new ApolloError("Error while getting information from the INSEE API");
+  if (json === null) throw new ApolloError("InseeApiError");
   json.etablissements.sort((first: any, second: any) => {
     return parseInt(second.nic) - parseInt(first.nic);
   });
@@ -176,8 +175,8 @@ export default {
             include: [CompanyDeliveryDayHoursModel]
           }
         ],
-        offset: page * pageSize,
-        limit: pageSize
+        offset: page && pageSize ? page * pageSize : 0,
+        limit: pageSize ? pageSize : 0
       });
     },
     getCompany: async (
@@ -209,7 +208,7 @@ export default {
           }
         ]
       });
-      if (!company) throw new ApolloError("This company does not exist", "404");
+      if (!company) throw new ApolloError("CompanyNotFound", "404");
       return company;
     },
     getCompanyByName: async (
@@ -235,7 +234,7 @@ export default {
           include: [{ model: CustomerAddressModel, as: "activeAddress" }]
         });
         if (!customerFetched) {
-          throw new ApolloError("Customer doesn't exist");
+          throw new ApolloError("CustomerNotFound");
         }
         const location: Literal = Sequelize.literal(
           `ST_GeomFromText('POINT(${customerFetched.activeAddress.location.coordinates[0]} ${customerFetched.activeAddress.location.coordinates[1]})')`
@@ -307,7 +306,7 @@ export default {
           return companyInfo.company;
         });
       }
-      throw new ApolloError("User not found");
+      throw new ApolloError("UserNotFound");
     },
     getCompaniesByUser: async (
       _: any,
@@ -409,11 +408,7 @@ export default {
             provider: "openstreetmap"
           });
           await geocoder.geocode(args.address, function(err, res) {
-            if (err)
-              throw new ApolloError(
-                "Error while get geo data from address",
-                "500"
-              );
+            if (err) throw new ApolloError("OSMError", "500");
             //If coordinates are not found, avoid server crash
             if (res.length == 0) {
               return;
@@ -427,18 +422,14 @@ export default {
             };
           });
           if (point.coordinates.length == 0) {
-            throw new ApolloError("This address does not exist", "400");
+            throw new ApolloError("AddressNotFound", "400");
           }
           const ownerRole: RoleModel | null = await RoleModel.findOne({
             where: { slugName: "owner" }
           }).then(elem => elem);
-          if (ownerRole == null)
-            throw new ApolloError(
-              "There is no owner Role in the DB, cannot create Company. Try to seed the DB.",
-              "500"
-            );
+          if (ownerRole == null) throw new ApolloError("NoOwnerRole", "500");
           if (!root) {
-            new ApolloError("can not find company in the insee api");
+            new ApolloError("WrongSiren");
           }
           /*args.name =
             root.uniteLegale.periodesUniteLegale[0].denominationUniteLegale;
@@ -472,7 +463,7 @@ export default {
           }
         );
         if (nb == 0) {
-          throw new ApolloError("Can't find the requested company");
+          throw new ApolloError("CompanyNotFound");
         }
         return company[0];
       }
@@ -490,7 +481,7 @@ export default {
           where: { id: companyId }
         });
         if (nb === 0) {
-          throw new ApolloError("Can't find the requested company", "500");
+          throw new ApolloError("CompanyNotFound", "500");
         }
         return CompanyModel.findByPk(companyId, {
           include: [
@@ -515,11 +506,7 @@ export default {
         const company: CompanyModel | null = await CompanyModel.findOne({
           where: { id: companyId }
         });
-        if (!company)
-          throw new ApolloError(
-            "The company does not exists", // TODO : translate
-            "404"
-          );
+        if (!company) throw new ApolloError("CompanyNotFound", "404");
         const companyUser = await CompanyUserModel.findOne({
           where: {
             companyId,
@@ -528,14 +515,14 @@ export default {
         });
         if (companyUser !== null)
           throw new ApolloError(
-            "This user has already joined the company", // TODO : translate
+            "AlreadyPartOfCompany", // TODO : translate
             "403"
           );
         const userRole: RoleModel | null = await RoleModel.findOne({
           where: { slugName: "member" }
         });
         if (userRole == null) {
-          throw new ApolloError("Cannot find the role 'Member'", "500"); // TODO : translate
+          throw new ApolloError("RoleNotFound", "500"); // TODO : translate
         }
         await CompanyUserModel.create({
           companyId,
@@ -560,14 +547,14 @@ export default {
         });
         if (!company)
           throw new ApolloError(
-            "The company does not exists", // TODO : translate
+            "CompanyNotFound", // TODO : translate
             "404"
           );
         const companyUser: CompanyUserModel | null = await CompanyUserModel.findOne(
           { where: { companyId: companyId, userId: userId } }
         );
         if (companyUser === null) {
-          throw new ApolloError("This user is not in the company", "400");
+          throw new ApolloError("NotPartOfCompany", "400");
         }
         CompanyUserRoleModel.destroy({
           where: { companyUserId: companyUser.id }
@@ -587,7 +574,7 @@ export default {
           }
         );
         if (nb == 0) {
-          throw new ApolloError("Can't find the requested company");
+          throw new ApolloError("CompanyNotFound");
         }
         return company[0];
       }

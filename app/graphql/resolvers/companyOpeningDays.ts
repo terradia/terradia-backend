@@ -24,11 +24,7 @@ export default {
         const company: CompanyModel | null = await CompanyModel.findOne({
           where: { id: companyId }
         });
-        if (!company)
-          throw new ApolloError(
-            "The company does not exists", // TODO : translate
-            "404"
-          );
+        if (!company) throw new ApolloError("CompanyNotFound", "404");
         const days: string[] = [
           "monday",
           "tuesday",
@@ -39,10 +35,7 @@ export default {
           "sunday"
         ];
         if (days.findIndex(d => d === day) === -1)
-          throw new ApolloError(
-            "The day is invalid. It should be : 'monday', 'tuesday', 'wednesday', 'thursday', 'saturday', 'sunday'",
-            "400"
-          );
+          throw new ApolloError("InvalidDay", "400");
         const result: [
           CompanyOpeningDayModel,
           boolean
@@ -151,7 +144,7 @@ export default {
           }
         );
         if (!companyOpeningDay)
-          throw new ApolloError("Cannot find this resource", "404");
+          throw new ApolloError("DayNotFound", "404");
         await CompanyOpeningDayModel.destroy({
           where: { id: openingDayId }
         });
@@ -175,11 +168,11 @@ export default {
           { where: { id: hourId } }
         );
         if (tmp[0] === 0)
-          throw new ApolloError("Could not update the resource", "404");
+          throw new ApolloError("UpdateError", "404");
         const h: CompanyOpeningDayHoursModel | null = await CompanyOpeningDayHoursModel.findOne(
           { where: { id: hourId }, include: [CompanyOpeningDayModel] }
         );
-        if (!h) throw new ApolloError("This hours does not exist", "404");
+        if (!h) throw new ApolloError("HourNotFound", "404");
         return h;
       }
     ),
@@ -192,7 +185,7 @@ export default {
         const h: CompanyOpeningDayHoursModel | null = await CompanyOpeningDayHoursModel.findOne(
           { where: { id: hourId }, include: [CompanyOpeningDayModel] }
         );
-        if (!h) throw new ApolloError("Cannot find this resource", "404");
+        if (!h) throw new ApolloError("HourNotFound", "404");
         await CompanyOpeningDayHoursModel.destroy({
           where: { id: hourId }
         });

@@ -95,7 +95,7 @@ export default {
       let where: WhereOptions;
       if (name) where = { companyId, name };
       else if (categoryId) where = { companyId, id: categoryId };
-      else throw new ApolloError("precise at least one filter", "403");
+      else throw new ApolloError("NoFilter", "403");
       return CompanyProductsCategoryModel.findOne({
         where,
         include: [ProductModel]
@@ -120,7 +120,7 @@ export default {
         });
         console.log("productsCategory");
         if (!productsCategory[0])
-          throw new ApolloError("Error while creating the Category");
+          throw new ApolloError("NoCategoryCreated");
         return CompanyProductsCategoryModel.findOne({
           where: { id: productsCategory[0].id }
         });
@@ -139,7 +139,7 @@ export default {
           }
         );
         if (!category) {
-          throw new ApolloError("Cannot find this Category", "404");
+          throw new ApolloError("CategoryNotFound", "404");
         }
         const nonCategories = await ProductModel.findAll({
           where: {
@@ -183,7 +183,7 @@ export default {
           if (category) {
             if (category.companyId != product.companyId)
               throw new ApolloError(
-                "This product is not owned by this company.",
+                "WrongOwner",
                 "403"
               );
             ProductModel.update(
@@ -191,8 +191,8 @@ export default {
               { where: { id: productId } }
             );
             return product;
-          } else throw new ApolloError("Category not found", "404");
-        } else throw new ApolloError("Product not found", "404");
+          } else throw new ApolloError("CategoryNotFound", "404");
+        } else throw new ApolloError("ProductNotFound", "404");
       }
     ),
     removeProductFromCompanyCategory: combineResolvers(
@@ -213,7 +213,7 @@ export default {
           return product;
         } else
           throw new ApolloError(
-            "This product is not in any category of products",
+            "NonCatProduct",
             "404"
           );
       }
@@ -225,7 +225,7 @@ export default {
         args: { categoryId: string; name?: string }
       ): Promise<CompanyProductsCategoryModel> => {
         if (args.categoryId === undefined)
-          throw new ApolloError("You should select a category", "400");
+          throw new ApolloError("NoCategorySelected", "400");
         const companyProductsCategory: [
           number,
           CompanyProductsCategoryModel[]
