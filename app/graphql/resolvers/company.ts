@@ -136,14 +136,12 @@ interface GeocoderQuery {
 
 const checkGeocode = async (
   root: any,
-  { address, query }: { address: string; query?: GeocoderQuery }
+  { address }: { address: string }
 ): Promise<NodeGeocoder.Entry[]> => {
   const geocoder: Geocoder = NodeGeocoder({
     provider: "openstreetmap"
   });
-  const queryParam = query ? new URLSearchParams(query).toString() : undefined;
-  console.log(queryParam);
-  return await geocoder.geocode(queryParam || address).then(res => {
+  return await geocoder.geocode(address).then(res => {
     if (res.length === 0) {
       throw new ApolloError("No location found using provided address", "500");
     }

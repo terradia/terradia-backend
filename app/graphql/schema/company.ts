@@ -22,15 +22,6 @@ export default gql`
     month: String
   }
 
-  input GeocoderQueryInput {
-    street: String
-    city: String
-    county: String
-    state: String
-    country: String
-    postalcode: String
-  }
-
   type CompanyAddress {
     complementAdresseEtablissement: String
     numeroVoieEtablissement: String
@@ -166,7 +157,7 @@ export default gql`
     getCompanies: [Company]
     searchCompanies(query: String!): [Company]
     checkSiren(siren: String!): CompanyInfo
-    geocode(address: String!, query: GeocoderQueryInput): [CompanyGeo]
+    geocode(address: String!): [CompanyGeo]
   }
 
   extend type Mutation {
