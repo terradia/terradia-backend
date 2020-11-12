@@ -14,6 +14,7 @@ import { OrderHistoryIncludes } from "./order-history";
 import { WhereOptions } from "sequelize";
 import Stripe from "stripe";
 import UnitModel from "../../database/models/unit.model";
+import { receiveOrderEmail } from "../../services/mails/orders";
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY, {
   apiVersion: "2020-03-02"
@@ -173,7 +174,7 @@ export default {
       async (
         _: any,
         { id }: { id: string },
-        __: Context
+        { user }: Context
       ): Promise<OrderHistoryModel | null> => {
         const order = await OrderModel.findOne({
           where: { id },
@@ -217,9 +218,8 @@ export default {
         });
         // destroy Order
         OrderModel.destroy({ where: { id: order.id } });
-
         // TODO : send mail to the user
-
+        receiveOrderEmail(user.email, user.firstName, orderHistory.code, orderHistory.price, orderHistory.companyName);
         const orderHistoryResult = await OrderHistoryModel.findOne({
           where: { id: orderHistory.id },
           include: OrderHistoryIncludes
