@@ -11,7 +11,7 @@ import fetch from "node-fetch";
 import { Op, Sequelize } from "sequelize";
 import { Fn, Literal } from "sequelize/types/lib/utils";
 import CompanyUserRoleModel from "../../database/models/company-user-role.model";
-import { combineResolvers, pipeResolvers } from "graphql-resolvers";
+import { combineResolvers, pipeResolvers, skip } from "graphql-resolvers";
 import { isAuthenticated, isUserAndCustomer } from "./authorization";
 import CompanyImageModel from "../../database/models/company-image.model";
 import CompanyOpeningDayModel from "../../database/models/company-opening-day.model";
@@ -19,10 +19,8 @@ import CompanyOpeningDayHoursModel from "../../database/models/company-opening-d
 import CompanyTagModel from "../../database/models/company-tag.model";
 import CustomerAddressModel from "../../database/models/customer-address.model";
 import CustomerModel from "../../database/models/customer.model";
-import ProductCompanyImageModel from "../../database/models/product-company-images.model";
 import CompanyDeliveryDayModel from "../../database/models/company-delivery-day.model";
 import CompanyDeliveryDayHoursModel from "../../database/models/company-delivery-day-hours.model";
-import CompanyTagRelationsModel from "../../database/models/company-tag-relations.model";
 import client from "../../database/elastic/server";
 
 declare interface Point {
@@ -45,29 +43,6 @@ declare interface CreateCompanyProps {
   cover: { stream: Body; filename: string; mimetype: string; encoding: string };
   officialName?: string;
 }
-
-const checkSiren: (siren: string) => Promise<string> = async (
-  siren: string
-) => {
-  const json = await fetch(
-    process.env.INSEE_SIREN_URL + siren + "?masquerValeursNulles=true",
-    {
-      method: "GET",
-      headers: {
-        Authorization: "Bearer " + process.env.INSEE_API_TOKEN
-      }
-    }
-  ).then(async res => {
-    if (!res.ok) return null;
-    return await res.json();
-  });
-  if (json === null) return null;
-  const activityCode =
-    json.uniteLegale.periodesUniteLegale["0"].activitePrincipaleUniteLegale;
-  if (!activityCode.startsWith("01"))
-    throw new ApolloError("Company don't have a producer activity.", "400");
-  return json.uniteLegale.periodesUniteLegale["0"].denominationUniteLegale;
-};
 
 export const companyIncludes = [
   { model: CompanyImageModel, as: "logo" },
@@ -122,7 +97,6 @@ export const isValidSiren = async (
   _: any,
   { siren }: { siren: string }
 ): Promise<any> => {
-  console.log("isValidSiren");
   const json = await fetch(
     process.env.INSEE_SIREN_URL + siren + "&masquerValeursNulles=false",
     {
@@ -133,22 +107,51 @@ export const isValidSiren = async (
     }
   )
     .then(async res => {
-      /*if (!res.ok) {
-      throw new ApolloError("Can't find a comapny associated with this siren");
-    }*/
       return await res.json();
     })
     .catch(err => console.log(err));
-  if (json === null)
+  if (json === null || json === undefined)
     throw new ApolloError("Error while getting information from the INSEE API");
+  if (json.header.statut == 404) {
+    throw new ApolloError("Can not find company with siren: " + siren, "500");
+  }
   json.etablissements.sort((first: any, second: any) => {
     return parseInt(second.nic) - parseInt(first.nic);
   });
-  const activityCode =
+  /*const activityCode =
     json.etablissements[0].uniteLegale.activitePrincipaleUniteLegale;
-  /*if (!activityCode.startsWith("01"))
+  if (!activityCode.startsWith("01"))
     throw new ApolloError("Company don't have a producer activity.", "400");*/
   return json.etablissements[0];
+};
+
+interface GeocoderQuery {
+  street: string;
+  city: string;
+  county: string;
+  state: string;
+  country: string;
+  postalcode: string;
+  [x: string]: string;
+}
+
+const checkGeocode = async (
+  root: any,
+  { address }: { address: string }
+): Promise<NodeGeocoder.Entry[]> => {
+  const geocoder: Geocoder = NodeGeocoder({
+    provider: "openstreetmap"
+  });
+  return await geocoder.geocode(address).then(res => {
+    if (res.length === 0) {
+      throw new ApolloError("No location found using provided address", "500");
+    }
+    console.log(res);
+    const ret = res.filter(value => {
+      return value.streetNumber;
+    });
+    return ret || res;
+  });
 };
 
 export default {
@@ -157,7 +160,7 @@ export default {
       _: any,
       { page, pageSize }: { page: number; pageSize: number }
     ): Promise<CompanyModel[]> => {
-      const comp = await CompanyModel.findAll({
+      return CompanyModel.findAll({
         include: [
           { model: CompanyImageModel, as: "logo" },
           ProductModel,
@@ -182,7 +185,6 @@ export default {
         offset: page * pageSize,
         limit: pageSize
       });
-      return comp;
     },
     getCompany: async (
       _: any,
@@ -405,6 +407,18 @@ export default {
           return root;
         }
       )
+    ),
+    geocode: combineResolvers(
+      isAuthenticated,
+      pipeResolvers(
+        checkGeocode,
+        (
+          root: any,
+          args: { address: string; query?: NodeGeocoder.Query }
+        ): Promise<NodeGeocoder.Entry[] | null> => {
+          return root;
+        }
+      )
     )
   },
   Mutation: {
@@ -417,38 +431,11 @@ export default {
           args: CreateCompanyProps,
           { user }: Context
         ): Promise<CompanyModel> => {
-          //TODO Check if user is null for every function that use the user as context
-          let point: Point = {
-            type: "",
-            coordinates: []
-          };
-          const geocoder: Geocoder = NodeGeocoder({
-            provider: "openstreetmap"
-          });
-          await geocoder.geocode(args.address, function(err, res) {
-            if (err)
-              throw new ApolloError(
-                "Error while get geo data from address",
-                "500"
-              );
-            //If coordinates are not found, avoid server crash
-            if (res.length == 0) {
-              return;
-            }
-            point = {
-              type: "Point",
-              coordinates: [
-                parseFloat(String(res[0].longitude)),
-                parseFloat(String(res[0].latitude))
-              ]
-            };
-          });
-          if (point.coordinates.length == 0) {
-            throw new ApolloError("This address does not exist", "400");
-          }
+          console.log(root);
           const ownerRole: RoleModel | null = await RoleModel.findOne({
             where: { slugName: "owner" }
           }).then(elem => elem);
+          console.log(ownerRole);
           if (ownerRole == null)
             throw new ApolloError(
               "There is no owner Role in the DB, cannot create Company. Try to seed the DB.",
@@ -457,13 +444,17 @@ export default {
           if (!root) {
             new ApolloError("can not find company in the insee api");
           }
-          /*args.name =
-            root.uniteLegale.periodesUniteLegale[0].denominationUniteLegale;
-          args.officialName =
-            root.uniteLegale.periodesUniteLegale[0].denominationUniteLegale;*/
+          const geo = await checkGeocode(null, { address: args.address });
+          console.log(geo);
           const newCompany: CompanyModel = await CompanyModel.create({
             ...args,
-            geoPosition: point
+            geoPosition: {
+              type: "Point",
+              coordinates: [
+                parseFloat(String(geo.longitude)),
+                parseFloat(String(geo.latitude))
+              ]
+            }
           });
           await client.index({
             index: "compagnies",
@@ -473,7 +464,6 @@ export default {
             }
           });
           await CompanyUserModel.create({
-            // @ts-ignore
             companyId: newCompany.id,
             userId: user.id,
             role: ownerRole.id
