@@ -96,6 +96,12 @@ export const isValidSiren = async (
   _: any,
   { siren }: { siren: string }
 ): Promise<any> => {
+  const company = await CompanyModel.findOne({
+    where: { siren: siren }
+  });
+  if (company) {
+    throw new ApolloError("CompanyAlreadyExist")
+  }
   const json = await fetch(
     process.env.INSEE_SIREN_URL + siren + "&masquerValeursNulles=false",
     {
@@ -145,7 +151,6 @@ const checkGeocode = async (
     if (res.length === 0) {
       throw new ApolloError("No location found using provided address", "500");
     }
-    console.log(res);
     const ret = res.filter(value => {
       return value.streetNumber;
     });
