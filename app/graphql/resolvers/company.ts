@@ -344,7 +344,7 @@ export default {
       { user }: { user: UserModel }
     ): Promise<CompanyModel[]> => {
       const res = await client.search({
-        index: "product",
+        index: "companies",
         body: {
           query: {
             multi_match: {
@@ -457,10 +457,12 @@ export default {
             }
           });
           await client.index({
-            index: "compagnies",
+            index: "companies",
             id: newCompany.id,
             body: {
-              ...newCompany
+              name: newCompany.name,
+              address: newCompany.address,
+              products: []
             }
           });
           await CompanyUserModel.create({

@@ -152,6 +152,22 @@ export default {
             ...args,
             position: pos
           }).then(async product => {
+            await client.update({
+              index: "companies",
+              id: company.id,
+              body: {
+                script: {
+                  source: "ctx._source.products.add(params.product)",
+                  params: {
+                    product: {
+                      name: product.name,
+                      description: product.description,
+                      id: product.id
+                    }
+                  }
+                }
+              }
+            });
             ProductCompanyImageModel.create({
               productId: product.id,
               companyImageId: args.coverId
@@ -160,15 +176,7 @@ export default {
             });
             return product;
           });
-          await client.index({
-            index: "product",
-            id: product.id,
-            body: {
-              id: product.id,
-              name: product.name,
-              description: product.description
-            }
-          });
+
           return product.toJSON();
         } else throw new ApolloError("This company does not exist", "404");
       }
