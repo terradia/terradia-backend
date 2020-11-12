@@ -469,7 +469,7 @@ export default {
             index: "compagnies",
             id: newCompany.id,
             body: {
-              ...args
+              ...newCompany
             }
           });
           await CompanyUserModel.create({

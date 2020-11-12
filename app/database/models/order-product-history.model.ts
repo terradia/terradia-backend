@@ -1,8 +1,10 @@
 import {
-  AllowNull, BelongsTo,
+  AllowNull,
+  BelongsTo,
   Column,
   DataType,
-  Default, ForeignKey,
+  Default,
+  ForeignKey,
   IsUUID,
   Model,
   PrimaryKey,
@@ -17,7 +19,9 @@ import UnitModel from "./unit.model";
   tableName: "OrdersProductsHistory",
   timestamps: false
 })
-export default class OrderProductHistoryModel extends Model<OrderProductHistoryModel> {
+export default class OrderProductHistoryModel extends Model<
+  OrderProductHistoryModel
+> {
   @IsUUID(4)
   @PrimaryKey
   @Default(DataType.UUIDV4)
