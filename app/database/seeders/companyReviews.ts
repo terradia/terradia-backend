@@ -19,6 +19,7 @@ export const upCompaniesReviews: () => Promise<CompanyReview[]> = async () => {
 };
 
 export const downCompaniesReviews: () => Promise<number> = () => {
+    console.log("=== Downing CompanyReviews ===");
     return CompanyReviewModel.destroy({where: {}}).catch(err => {
         console.log(err);
     });

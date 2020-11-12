@@ -10,14 +10,9 @@ export default gql`
   extend type Mutation {
     addProductToCart(productId: ID!, quantity: Int!): CartProduct
     removeProductFromCart(cartProductId: ID, productId: ID, quantity: Int!): Int
+    validateCart: Order
   }
 
-  type CartProduct {
-    id: ID!
-    product: Product
-    quantity: Int!
-    cart: Cart!
-  }
   type Cart {
     id: ID!
     products: [CartProduct]
@@ -25,7 +20,14 @@ export default gql`
     customer: Customer!
     expirationDate: Date
     totalPrice: Float
+    numberProducts: Int!
     createdAt: Date
     updatedAt: Date
+  }
+  type CartProduct {
+    id: ID!
+    product: Product
+    quantity: Int!
+    cart: Cart!
   }
 `;

@@ -52,6 +52,9 @@ export default class CartModel extends Model<CartModel> {
   @Column(DataType.FLOAT)
   totalPrice!: number;
 
+  @Column(DataType.INTEGER)
+  numberProducts!: number;
+
   @Column
   public createdAt!: Date;
 

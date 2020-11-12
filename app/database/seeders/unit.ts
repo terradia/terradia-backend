@@ -35,13 +35,15 @@ const units = [
     notation: "cL",
     referenceUnitId: "029d29b4-7918-11ea-bc55-0242ac130003",
     multiplicationFactor: 100
-  },
+  }
 ];
 
 export const upUnits: any = async () => {
   return UnitModel.bulkCreate(units);
 };
-export const downUnits: any = () =>
-  UnitModel.destroy({ where: {} }).catch(err => {
+export const downUnits: any = () => {
+  console.log("=== Downing CustomerAddresses ===");
+  return UnitModel.destroy({ where: {} }).catch(err => {
     console.log(err);
   });
+};

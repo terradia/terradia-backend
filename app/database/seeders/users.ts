@@ -28,7 +28,6 @@ const admin: user = {
 const generateUsers = async (): Promise<user[]> => {
   const usersGenerated: user[] = [];
   usersGenerated.push(admin);
-  console.log("Generating users .... please wait");
   for (let i = 0; i < nb; i++) {
     const password = bcrypt.hashSync(faker.internet.password(), 15);
     usersGenerated.push({
@@ -66,6 +65,7 @@ export const upUsers: () => Promise<UserModel[]> = async () => {
 };
 
 export const downUsers: () => Promise<number> = () => {
+  console.log("=== Downing Users ===");
   return CompanyUserRoleModel.destroy({ where: {} })
     .catch(err => {
       console.log(err);

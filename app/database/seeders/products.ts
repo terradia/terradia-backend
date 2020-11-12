@@ -39,7 +39,7 @@ async function generateProducts(companyId: string): Promise<void> {
         numberOfMarks: Math.floor(Math.random() * 99) + 1,
         companyProductsCategoryId: categorySelected,
         position: category.products.length,
-        price: Math.random() * 100,
+        price: (Math.random() * 100).toFixed(2),
         quantityForUnit: Math.round(Math.random() * 3) + 1,
         unitId: "029d2554-7918-11ea-bc55-0242ac130003"
       };
@@ -56,6 +56,7 @@ export const upProducts: () => Promise<void> = async () => {
 };
 
 export const downProducts: () => Promise<number> = () => {
+  console.log("=== Downing Products ===");
   return ProductModel.destroy({ where: {} }).catch(err => {
     console.log(err);
   });

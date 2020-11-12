@@ -4,7 +4,7 @@ import { isAuthenticated } from "./authorization";
 import { ApolloError } from "apollo-server";
 import CompanyTagRelationsModel from "../../database/models/company-tag-relations.model";
 import CompanyModel from "../../database/models/company.model";
-import { toIncludeWhenGetCompany } from "./company";
+import { WhereOptions } from "sequelize";
 
 export default {
   Query: {
@@ -26,7 +26,9 @@ export default {
             "400"
           );
         } else {
-          const where = companyTagId ? { id: companyTagId } : { slugName };
+          const where: WhereOptions = companyTagId
+            ? { id: companyTagId }
+            : { slugName };
           return CompanyTagModel.findOne({
             where
           });
@@ -86,7 +88,7 @@ export default {
         });
         return CompanyModel.findOne({
           where: { id: companyId },
-          include: toIncludeWhenGetCompany
+          include: [CompanyTagModel]
         });
       }
     ),
@@ -117,7 +119,7 @@ export default {
           );
         return CompanyModel.findOne({
           where: { id: companyId },
-          include: toIncludeWhenGetCompany
+          include: [CompanyTagModel]
         });
       }
     )

@@ -34,6 +34,7 @@ export const upCompanyProductsCategories: () => Promise<CompanyProductsCategorie
 };
 
 export const downCompanyProductsCategories: () => Promise<number> | void = () => {
+  console.log("=== Downing CompanyProductCategories ===");
   return CompanyProductsCategoryModel.destroy({ where: {} }).catch(err => {
     console.log(err);
   });

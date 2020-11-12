@@ -20,6 +20,7 @@ import CompanyModel from "./company.model";
 import ProductReviewModel from "./product-review.model";
 import CartModel from "./cart.model";
 import CustomerAddressModel from "./customer-address.model";
+import OrderModel from "./order.model";
 
 // Customer :
 // Contains the information of the customer, relating to his orders, payements, reviews etc...
@@ -76,4 +77,7 @@ export default class CustomerModel extends Model<CustomerModel> {
 
   @HasOne(() => CartModel, "customerId")
   public cart!: CartModel;
+
+  @HasMany(() => OrderModel, "customerId")
+  public orders!: OrderModel;
 }
