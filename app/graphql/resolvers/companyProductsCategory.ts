@@ -40,6 +40,8 @@ export default {
       _: any,
       { companyId }: { companyId: string }
     ): Promise<CompanyProductsCategoryModel[]> => {
+      const company = await CompanyModel.findOne({ where: { id: companyId } });
+      if (!company) throw new ApolloError("Company not found", "404");
       const products = await ProductModel.findAll({
         where: { companyId },
         include: [
@@ -83,7 +85,8 @@ export default {
         {
           id: `nonCat${companyId}`,
           name: "NonCategories",
-          products: nonCategories
+          products: nonCategories,
+          company
         },
         {
           include: [

@@ -21,6 +21,7 @@ import CustomerAddressModel from "../../database/models/customer-address.model";
 import CustomerModel from "../../database/models/customer.model";
 import CompanyDeliveryDayModel from "../../database/models/company-delivery-day.model";
 import CompanyDeliveryDayHoursModel from "../../database/models/company-delivery-day-hours.model";
+import { archivedCompanieEmail, restoreCompanieEmail } from "../../services/mails/companies";
 import client from "../../database/elastic/server";
 
 declare interface Point {
@@ -97,6 +98,12 @@ export const isValidSiren = async (
   _: any,
   { siren }: { siren: string }
 ): Promise<any> => {
+  const company = await CompanyModel.findOne({
+    where: { siren: siren }
+  });
+  if (company) {
+    throw new ApolloError("CompanyAlreadyExist")
+  }
   const json = await fetch(
     process.env.INSEE_SIREN_URL + siren + "&masquerValeursNulles=false",
     {
@@ -146,7 +153,6 @@ const checkGeocode = async (
     if (res.length === 0) {
       throw new ApolloError("No location found using provided address", "500");
     }
-    console.log(res);
     const ret = res.filter(value => {
       return value.streetNumber;
     });
@@ -499,6 +505,12 @@ export default {
         );
         if (nb == 0) {
           throw new ApolloError("Can't find the requested company");
+        } else {
+          archivedCompanieEmail(
+            company[0].email,
+            company[0].name,
+            user.firstName
+          );
         }
         return company[0];
       }
@@ -614,6 +626,8 @@ export default {
         );
         if (nb == 0) {
           throw new ApolloError("Can't find the requested company");
+        } else {
+          restoreCompanieEmail(company[0].email, company[0].name, user.firstName, user.lastName);
         }
         return company[0];
       }

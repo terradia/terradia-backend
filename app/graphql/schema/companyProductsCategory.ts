@@ -32,7 +32,7 @@ export default gql`
   type CompanyProductsCategory {
     id: ID!
     name: String!
-    company: Company!
-    products: [Product]!
+    company: Company
+    products: [Product]
   }
 `;

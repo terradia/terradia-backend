@@ -11,6 +11,12 @@ import fetch from "node-fetch";
 import userController from "../../controllers/user";
 import CompanyUserInvitationModel from "../../database/models/company-user-invitation.model";
 import { companyUserInvitationIncludes } from "./companyUserInvitation";
+import {
+  forgotPasswordEmail,
+  passwordEditEmail,
+  reactivateUserAccountEmail,
+  archivedUserAccountEmail
+} from "../../services/mails/users";
 
 const createToken = async (
   user: UserModel,
@@ -64,12 +70,16 @@ export default {
       isAuthenticated,
       async (
         _: any,
-        { status }: { status?: "ALL" | "PENDING" | "ACCEPTED" | "DECLINED" | "CANCELED" },
+        {
+          status
+        }: {
+          status?: "ALL" | "PENDING" | "ACCEPTED" | "DECLINED" | "CANCELED";
+        },
         { user }: { user: UserModel }
       ): Promise<CompanyUserInvitationModel[]> => {
         // 'where' is any because of the sequelize query we do later on.
         const where: any = { invitationEmail: user.email };
-        if (status !==  "ALL") where["status"] = status;
+        if (status !== "ALL") where["status"] = status;
         return CompanyUserInvitationModel.findAll({
           where,
           include: companyUserInvitationIncludes
@@ -92,12 +102,16 @@ export default {
       if (!isValid) {
         throw new AuthenticationError("Invalid password.");
       }
-      const nb = await UserModel.update(
-        { archivedAt: null },
-        { where: { id: user.id } }
-      );
-      if (nb[0] == 0) {
-        throw new ApolloError("This account is already delete.");
+      if (user.archivedAt !== null) {
+        const nb = await UserModel.update(
+          { archivedAt: null },
+          { where: { id: user.id } }
+        );
+        if (nb[0] == 0) {
+          throw new ApolloError("This account is already deleted.");
+        } else {
+          reactivateUserAccountEmail(user.email, user.firstName);
+        }
       }
       return { token: createToken(user, secret), userId: user.id };
     },
@@ -123,7 +137,7 @@ export default {
       });
       if (emailAlreadyTaken) {
         throw new ApolloError(
-          "Il semblerais qu'il existe déjà un utilisateur avec cet email.",
+          "Il semblerait qu'il existe déjà un utilisateur avec cet email.",
           "403"
         );
       }
@@ -285,9 +299,9 @@ export default {
         { passwordForgot: randomCode },
         { where: { email } }
       );
-      // if (res[0]) {
-      //   createEmailAccountRecovery(email, randomCode, user.locale);
-      // }
+      if (res[0]) {
+        forgotPasswordEmail(email, user.firstName, randomCode.toString());
+      }
       return res[0];
     },
     signInWithgeneratedCode: async (
@@ -336,22 +350,27 @@ export default {
       if (!isValid) {
         throw new AuthenticationError("Invalid password.");
       }
+      passwordEditEmail(user.email, user.firstName);
       return true;
     },
     deleteUser: combineResolvers(
       isAuthenticated,
       async (_: any, { password }: { password: string }, { user }: Context) => {
-        const [nb, users] = await UserModel.update(
-          { archivedAt: Date.now() },
-          {
-            where: { id: user.id },
-            returning: true
+        if (user.archivedAt === null) {
+          const [nb, users] = await UserModel.update(
+            { archivedAt: Date.now() },
+            {
+              where: { id: user.id },
+              returning: true
+            }
+          );
+          if (nb == 0) {
+            throw new ApolloError("Can't archive this user account."); //TODO: translation
+          } else {
+            archivedUserAccountEmail(user.email, user.firstName, user.lastName);
           }
-        );
-        if (nb == 0) {
-          throw new ApolloError("Can't archive this user account.");
+          return users[0];
         }
-        return users[0];
       }
     )
   }
