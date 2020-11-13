@@ -22,6 +22,7 @@ import CustomerModel from "../../database/models/customer.model";
 import CompanyDeliveryDayModel from "../../database/models/company-delivery-day.model";
 import CompanyDeliveryDayHoursModel from "../../database/models/company-delivery-day-hours.model";
 import { archivedCompanieEmail, restoreCompanieEmail } from "../../services/mails/companies";
+import client from "../../database/elastic/server";
 
 declare interface Point {
   type: string;
@@ -348,6 +349,29 @@ export default {
       { query }: { query: string },
       { user }: { user: UserModel }
     ): Promise<CompanyModel[]> => {
+      const res = await client.search({
+        index: "companies",
+        body: {
+          query: {
+            nested: {
+              path: "products",
+              query: {
+                bool: {
+                  must: [
+                    { match: { "products.name": query } },
+                  ]
+                }
+              }
+            }
+            // multi_match: {
+            //   query: query,
+            //   fields: ["name", "products.description", "products.name"]
+            // }
+          }
+        }
+      });
+      const par = res.body.hits.hits.map(item => item._source);
+      // return par;
       const comp = await CompanyModel.findAll({
         //TODO: Search by tag
         //https://stackoverflow.com/questions/31258158/how-to-implement-search-feature-using-sequelizejs/37326395
@@ -448,7 +472,15 @@ export default {
               ]
             }
           });
-          console.log(newCompany);
+          // await client.index({
+          //   index: "companies",
+          //   id: newCompany.id,
+          //   body: {
+          //     name: newCompany.name,
+          //     address: newCompany.address,
+          //     products: []
+          //   }
+          // });
           await CompanyUserModel.create({
             companyId: newCompany.id,
             userId: user.id,

@@ -200,7 +200,8 @@ export default {
             numberProducts: order.numberProducts,
             decliningReason: order.decliningReason,
             companyId: order.companyId,
-            customerId: order.customerId
+            customerId: order.customerId,
+            stripePaymentIntent: order.stripePaymentIntent
           },
           {}
         );

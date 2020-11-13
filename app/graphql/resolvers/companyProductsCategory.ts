@@ -11,6 +11,31 @@ import ProductCompanyImageModel from "../../database/models/product-company-imag
 
 export default {
   Query: {
+    getCompanyProductsCategories: async (
+      _: any,
+      { companyId }: { companyId: string }
+    ): Promise<CompanyProductsCategoryModel[]> => {
+      const categories: CompanyProductsCategoryModel[] = await CompanyProductsCategoryModel.findAll(
+        {
+          where: { companyId },
+          include: [
+            {
+              model: ProductModel,
+              include: [
+                { model: CompanyImageModel, as: "images" },
+                UnitModel,
+                {
+                  model: ProductCompanyImageModel,
+                  as: "cover",
+                  include: [CompanyImageModel]
+                }
+              ]
+            }
+          ]
+        }
+      );
+      return categories;
+    },
     getAllCompanyProductsCategories: async (
       _: any,
       { companyId }: { companyId: string }
