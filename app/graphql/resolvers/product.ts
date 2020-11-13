@@ -42,6 +42,7 @@ export default {
           { model: CompanyImageModel, as: "images" },
           CategoryModel,
           CompanyModel,
+          UnitModel,
           {
             model: CompanyProductsCategoryModel,
             include: [CompanyModel]
@@ -301,7 +302,10 @@ export default {
             "Could not update any field in Database, are you sure the product you want to update exists ?",
             "400"
           );
-        return ProductModel.findOne({ where: { id: args.productId } });
+        return ProductModel.findOne({
+          where: { id: args.productId },
+          include: [UnitModel]
+        });
       }
     ),
     // returns the number of products deleted : 1 => your product was well deleted.
