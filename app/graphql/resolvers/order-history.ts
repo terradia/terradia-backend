@@ -102,9 +102,9 @@ export default {
           status?: string;
           createdAt?: any;
         } = {
-          companyId,
-          status
+          companyId
         };
+        if (status) whereCondition["status"] = status;
         if (fromDate && toDate) {
           whereCondition["createdAt"] = { [Op.between]: [fromDate, toDate] };
         } else if (fromDate && !toDate) {
