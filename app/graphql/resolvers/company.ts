@@ -347,10 +347,20 @@ export default {
         index: "companies",
         body: {
           query: {
-            multi_match: {
-              query: query,
-              fields: ["name", "description"]
+            nested: {
+              path: "products",
+              query: {
+                bool: {
+                  must: [
+                    { match: { "products.name": query } },
+                  ]
+                }
+              }
             }
+            // multi_match: {
+            //   query: query,
+            //   fields: ["name", "products.description", "products.name"]
+            // }
           }
         }
       });
@@ -456,15 +466,15 @@ export default {
               ]
             }
           });
-          await client.index({
-            index: "companies",
-            id: newCompany.id,
-            body: {
-              name: newCompany.name,
-              address: newCompany.address,
-              products: []
-            }
-          });
+          // await client.index({
+          //   index: "companies",
+          //   id: newCompany.id,
+          //   body: {
+          //     name: newCompany.name,
+          //     address: newCompany.address,
+          //     products: []
+          //   }
+          // });
           await CompanyUserModel.create({
             companyId: newCompany.id,
             userId: user.id,

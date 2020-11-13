@@ -152,22 +152,22 @@ export default {
             ...args,
             position: pos
           }).then(async product => {
-            await client.update({
-              index: "companies",
-              id: company.id,
-              body: {
-                script: {
-                  source: "ctx._source.products.add(params.product)",
-                  params: {
-                    product: {
-                      name: product.name,
-                      description: product.description,
-                      id: product.id
-                    }
-                  }
-                }
-              }
-            });
+            // await client.update({
+            //   index: "companies",
+            //   id: company.id,
+            //   body: {
+            //     script: {
+            //       source: "ctx._source.products.add(params.product)",
+            //       params: {
+            //         product: {
+            //           name: product.name,
+            //           description: product.description,
+            //           id: product.id
+            //         }
+            //       }
+            //     }
+            //   }
+            // });
             ProductCompanyImageModel.create({
               productId: product.id,
               companyImageId: args.coverId
