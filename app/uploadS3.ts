@@ -1,9 +1,11 @@
-import { S3 } from "aws-sdk";
+import { AWSError, S3 } from "aws-sdk";
 import CompanyImageModel from "./database/models/company-image.model";
 import * as path from "path";
 import CompanyModel from "./database/models/company.model";
 import ProductModel from "./database/models/product.model";
 import ProductCompanyImageModel from "./database/models/product-company-images.model";
+import { DeleteObjectOutput, ObjectIdentifierList } from "aws-sdk/clients/s3";
+import { PromiseResult } from "aws-sdk/lib/request";
 const md5 = require("md5");
 
 interface UploadS3 {
@@ -105,9 +107,35 @@ const uploadToS3SaveAsProductCover = async (
   );
 };
 
+const deleteAssetFromS3 = async (
+  filename: string
+): Promise<PromiseResult<DeleteObjectOutput, AWSError>> => {
+  return client
+    .deleteObject({
+      Bucket: process.env.__S3_BUCKET__ ? process.env.__S3_BUCKET__ : "",
+      Key: filename
+    })
+    .promise();
+};
+
+const deleteAssetsFromS3 = async (
+  filenames: ObjectIdentifierList
+): Promise<PromiseResult<DeleteObjectOutput, AWSError>> => {
+  return client
+    .deleteObjects({
+      Bucket: process.env.__S3_BUCKET__ ? process.env.__S3_BUCKET__ : "",
+      Delete: {
+        Objects: filenames
+      }
+    })
+    .promise();
+};
+
 export {
   uploadToS3SaveAsCompanyAvatarOrCover,
   uploadToS3SaveAsProductCover,
   uploadToS3,
-  uploadToS3AsCompany
+  uploadToS3AsCompany,
+  deleteAssetFromS3,
+  deleteAssetsFromS3
 };
