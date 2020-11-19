@@ -18,6 +18,7 @@ import {
 } from "../../uploadS3";
 import ProductCompanyImageModel from "../../database/models/product-company-images.model";
 import { CompanyImageData } from "./companyImages";
+import client from "../../database/elastic/server";
 
 interface ProductsPositionsData {
   productId: string;
@@ -151,7 +152,23 @@ export default {
           const product: ProductModel = await ProductModel.create({
             ...args,
             position: pos
-          }).then(product => {
+          }).then(async product => {
+            // await client.update({
+            //   index: "companies",
+            //   id: company.id,
+            //   body: {
+            //     script: {
+            //       source: "ctx._source.products.add(params.product)",
+            //       params: {
+            //         product: {
+            //           name: product.name,
+            //           description: product.description,
+            //           id: product.id
+            //         }
+            //       }
+            //     }
+            //   }
+            // });
             ProductCompanyImageModel.create({
               productId: product.id,
               companyImageId: args.coverId
@@ -160,6 +177,7 @@ export default {
             });
             return product;
           });
+
           return product.toJSON();
         } else throw new ApolloError("This company does not exist", "404");
       }
@@ -201,29 +219,65 @@ export default {
       ): Promise<boolean> => {
         for (const productPosition of productsPositions) {
           if (productPosition.type === "addCategory") {
-            ProductModel.update(
+            const product = await ProductModel.update(
               {
                 companyProductsCategoryId: productPosition.categoryId,
                 position: productPosition.position
               },
               {
+                returning: true,
                 where: {
                   id: productPosition.productId
                 }
               }
             );
+            if (product[1] && product[1][0]) {
+              const company = await CompanyModel.findByPk(
+                product[1][0].companyId
+              );
+              if (company) {
+                CompanyModel.update(
+                  {
+                    numberProducts: company.numberProducts + 1
+                  },
+                  {
+                    where: {
+                      id: company.id
+                    }
+                  }
+                );
+              }
+            }
           } else if (productPosition.type === "deleteCategory") {
-            ProductModel.update(
+            const product = await ProductModel.update(
               {
                 companyProductsCategoryId: null,
                 position: productPosition.position
               },
               {
+                returning: true,
                 where: {
                   id: productPosition.productId
                 }
               }
             );
+            if (product[1] && product[1][0]) {
+              const company = await CompanyModel.findByPk(
+                product[1][0].companyId
+              );
+              if (company) {
+                CompanyModel.update(
+                  {
+                    numberProducts: company.numberProducts + 1
+                  },
+                  {
+                    where: {
+                      id: company.id
+                    }
+                  }
+                );
+              }
+            }
           } else if (productPosition.type === "moveCategory") {
             ProductModel.update(
               {

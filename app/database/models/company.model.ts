@@ -149,6 +149,9 @@ export default class CompanyModel extends Model<CompanyModel> {
   @Column(DataType.DATE)
   public archivedAt!: Date;
 
+  @Column(DataType.INTEGER)
+  public numberProducts!: number;
+
   // @AfterFind
   // static afterFindHook(result: any): void {
   //   if(result.constructor === Array) {

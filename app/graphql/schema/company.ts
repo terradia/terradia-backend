@@ -194,6 +194,7 @@ export default gql`
     # Products related data
     products: [Product]
     productsCategories: [CompanyProductsCategory]
+    numberProducts: Int
 
     # Geolocalization
     address: String!

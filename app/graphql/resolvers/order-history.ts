@@ -9,14 +9,17 @@ import OrderHistoryModel from "../../database/models/order-history.model";
 import OrderProductHistoryModel from "../../database/models/order-product-history.model";
 import { Op } from "sequelize";
 import { WhereOptions } from "sequelize/types/lib/model";
-import sequelize from "../../database/models";
+import UnitModel from "../../database/models/unit.model";
 
 interface Context {
   user: UserModel;
 }
 
 export const OrderHistoryIncludes = [
-  { model: OrderProductHistoryModel, include: [ProductModel] },
+  {
+    model: OrderProductHistoryModel,
+    include: [ProductModel, UnitModel]
+  },
   CustomerModel,
   CompanyModel
 ];
@@ -66,11 +69,12 @@ export default {
         } else {
           whereCondition = { customerId: user.customer.id };
         }
-        return OrderHistoryModel.findAll({
+        const orders = await OrderHistoryModel.findAll({
           where: whereCondition as WhereOptions,
           include: OrderHistoryIncludes,
           order: [["createdAt", "DESC"]]
         });
+        return orders;
       }
     ),
     getCompanyOrderHistories: combineResolvers(
@@ -98,9 +102,9 @@ export default {
           status?: string;
           createdAt?: any;
         } = {
-          companyId,
-          status
+          companyId
         };
+        if (status) whereCondition["status"] = status;
         if (fromDate && toDate) {
           whereCondition["createdAt"] = { [Op.between]: [fromDate, toDate] };
         } else if (fromDate && !toDate) {

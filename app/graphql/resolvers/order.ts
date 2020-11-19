@@ -88,7 +88,8 @@ export default {
         },
         __: Context
       ): Promise<OrderModel[]> => {
-        const whereCondition = { companyId, status };
+        const whereCondition: WhereOptions = { companyId };
+        if (status) whereCondition["status"] = status;
         return OrderModel.findAll({
           where: whereCondition as WhereOptions,
           include: OrderIncludes,
@@ -200,7 +201,8 @@ export default {
             numberProducts: order.numberProducts,
             decliningReason: order.decliningReason,
             companyId: order.companyId,
-            customerId: order.customerId
+            customerId: order.customerId,
+            stripePaymentIntent: order.stripePaymentIntent
           },
           {}
         );
@@ -219,7 +221,13 @@ export default {
         // destroy Order
         OrderModel.destroy({ where: { id: order.id } });
         // TODO : send mail to the user
-        receiveOrderEmail(user.email, user.firstName, orderHistory.code, orderHistory.price, orderHistory.companyName);
+        receiveOrderEmail(
+          user.email,
+          user.firstName,
+          orderHistory.code,
+          orderHistory.price,
+          orderHistory.companyName
+        );
         const orderHistoryResult = await OrderHistoryModel.findOne({
           where: { id: orderHistory.id },
           include: OrderHistoryIncludes
