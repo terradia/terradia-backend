@@ -4,14 +4,12 @@ import {
   Column,
   DataType,
   Default,
-  ForeignKey,
+  ForeignKey, HasOne,
   IsUUID,
   Model,
   PrimaryKey,
   Table
 } from "sequelize-typescript";
-import CustomerModel from "./customer.model";
-import CompanyModel from "./company.model";
 import OrderHistoryModel from "./order-history.model";
 
 @Table({
@@ -35,12 +33,16 @@ export default class OrderHistoryReviewModel extends Model<
   public customerMark!: number;
 
   @ForeignKey(() => OrderHistoryModel)
-  @Column
+  @AllowNull(false)
+  @Column(DataType.UUID)
   public orderHistoryId!: string;
 
-  @BelongsTo(() => OrderHistoryModel)
+  @BelongsTo(() => OrderHistoryModel, "orderHistoryId")
   public orderHistory!: OrderHistoryModel;
 
   @Column
   public createdAt!: Date;
+
+  @Column
+  public updatedAt!: Date;
 }

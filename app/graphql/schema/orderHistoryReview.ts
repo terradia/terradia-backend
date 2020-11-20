@@ -13,7 +13,7 @@ export default gql`
     id: String!
     comment: String
     customerMark: Int!
-    customer: Customer
+    orderHistory: OrderHistory
     createdAt: Date
   }
 `;

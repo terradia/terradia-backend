@@ -19,10 +19,11 @@ interface Context {
 export const OrderHistoryIncludes = [
   {
     model: OrderProductHistoryModel,
-    include: [ProductModel, UnitModel, OrderHistoryReviewModel]
+    include: [ProductModel, UnitModel]
   },
   CustomerModel,
-  CompanyModel
+  CompanyModel,
+  OrderHistoryReviewModel
 ];
 
 export default {
@@ -126,13 +127,24 @@ export default {
           comment: string;
           customerMark: number;
           orderHistoryId: string;
-        }
+        },
+        { user }: { user: UserModel }
       ): Promise<OrderHistoryReviewModel | null> => {
         const orderHistory: OrderHistoryModel | null = await OrderHistoryModel.findOne(
           { where: { id: orderHistoryId } }
         );
         if (!orderHistory)
           throw new ApolloError("This OrderHistory does not exists", "404");
+        if (user.customer.id !== orderHistory.customerId)
+          throw new ApolloError(
+            "This is not you of your orderHistories",
+            "403"
+          );
+        const orderHistoryReviewModel: OrderHistoryReviewModel | null = await OrderHistoryReviewModel.findOne(
+          { where: { orderHistoryId } }
+        );
+        if (orderHistoryReviewModel !== null)
+          throw new ApolloError("You already rated this orderHistory", "403");
         return OrderHistoryReviewModel.create({
           orderHistoryId,
           comment,

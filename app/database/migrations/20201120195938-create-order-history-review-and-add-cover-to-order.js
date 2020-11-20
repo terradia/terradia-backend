@@ -33,6 +33,11 @@ exports.up = function(db) {
         notNull: true,
         type: new String("TIMESTAMPTZ"),
         defaultValue: new String("now()")
+      },
+      updatedAt: {
+        notNull: true,
+        type: new String("TIMESTAMPTZ"),
+        defaultValue: new String("now()")
       }
     })
     .then(() =>
@@ -44,9 +49,8 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-  return db
-    .removeColumn("OrdersHistory", "companyCover")
-    .then(() => db.dropTable("OrdersHistoryReviews"));
+  db.removeColumn("OrdersHistory", "companyCover");
+  return db.dropTable("OrdersHistoryReviews");
 };
 
 exports._meta = {

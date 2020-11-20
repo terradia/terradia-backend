@@ -42,7 +42,7 @@ export default class CartModel extends Model<CartModel> {
   @Column(DataType.UUID)
   customerId!: string;
 
-  @BelongsTo(() => CustomerModel, "customerId")
+  @BelongsTo(() => CustomerModel, "cartId")
   customer!: CustomerModel;
 
   @AllowNull(true)
