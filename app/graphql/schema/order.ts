@@ -68,6 +68,7 @@ export default gql`
     companyId: String
     companyName: String
     companyLogo: String
+    companyCover: String
     companyAddress: String
     products: [OrderProductHistory]
     createdAt: Date!

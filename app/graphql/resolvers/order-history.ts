@@ -10,6 +10,7 @@ import OrderProductHistoryModel from "../../database/models/order-product-histor
 import { Op } from "sequelize";
 import { WhereOptions } from "sequelize/types/lib/model";
 import UnitModel from "../../database/models/unit.model";
+import OrderHistoryReviewModel from "../../database/models/order-history-review.model";
 
 interface Context {
   user: UserModel;
@@ -18,20 +19,11 @@ interface Context {
 export const OrderHistoryIncludes = [
   {
     model: OrderProductHistoryModel,
-    include: [ProductModel, UnitModel]
+    include: [ProductModel, UnitModel, OrderHistoryReviewModel]
   },
   CustomerModel,
   CompanyModel
 ];
-
-// getCompanyOrderHistories(
-//   companyId: ID!
-// status: String
-// limit: Int = 10
-// offset: Int = 0
-// beginDate: Date
-// endDate: Date
-// ): [OrderHistory]
 
 export default {
   Query: {
@@ -121,5 +113,32 @@ export default {
       }
     )
   },
-  Mutation: {}
+  Mutation: {
+    createOrderHistoryReview: combineResolvers(
+      isUserAndCustomer,
+      async (
+        _: any,
+        {
+          comment,
+          customerMark,
+          orderHistoryId
+        }: {
+          comment: string;
+          customerMark: number;
+          orderHistoryId: string;
+        }
+      ): Promise<OrderHistoryReviewModel | null> => {
+        const orderHistory: OrderHistoryModel | null = await OrderHistoryModel.findOne(
+          { where: { id: orderHistoryId } }
+        );
+        if (!orderHistory)
+          throw new ApolloError("This OrderHistory does not exists", "404");
+        return OrderHistoryReviewModel.create({
+          orderHistoryId,
+          comment,
+          customerMark
+        });
+      }
+    )
+  }
 };

@@ -5,7 +5,7 @@ import {
   DataType,
   Default,
   ForeignKey,
-  HasMany,
+  HasMany, HasOne,
   IsUUID,
   Model,
   PrimaryKey,
@@ -55,6 +55,10 @@ export default class OrderHistoryModel extends Model<OrderHistoryModel> {
   @Column(DataType.STRING)
   public companyLogo!: string;
 
+  @AllowNull(true)
+  @Column(DataType.STRING)
+  public companyCover!: string;
+
   @AllowNull(false)
   @Column(DataType.STRING)
   public companyAddress!: string;
@@ -86,4 +90,7 @@ export default class OrderHistoryModel extends Model<OrderHistoryModel> {
 
   @Column
   public status!: "FINISHED" | "DECLINED" | "CANCELED";
+
+  @HasOne(() => OrderHistoryModel, "orderHistoryId")
+  public customerReview!: OrderHistoryModel;
 }
