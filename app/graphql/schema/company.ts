@@ -214,6 +214,9 @@ export default gql`
     # Opening Hours
     openingDays: [CompanyOpeningDay]
     deliveryDays: [CompanyDeliveryDay]
+
+    numberOrders: Int
+    numberOrderHistories: Int
   }
   type GeographicPoint {
     coordinates: [Float]

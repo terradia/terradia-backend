@@ -152,6 +152,14 @@ export default class CompanyModel extends Model<CompanyModel> {
   @Column(DataType.INTEGER)
   public numberProducts!: number;
 
+  @AllowNull(false)
+  @Column(DataType.INTEGER)
+  public numberOrders!: number;
+
+  @AllowNull(false)
+  @Column(DataType.INTEGER)
+  public numberOrderHistories!: number;
+
   // @AfterFind
   // static afterFindHook(result: any): void {
   //   if(result.constructor === Array) {
