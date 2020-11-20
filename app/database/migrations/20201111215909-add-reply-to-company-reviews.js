@@ -18,7 +18,7 @@ exports.up = function(db) {
   return db.addColumn("CompanyReviews", "reply", {
     type: "string",
     allowNull: true
-  });;
+  });
 };
 
 exports.down = function(db) {
