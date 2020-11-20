@@ -14,7 +14,7 @@ import { OrderHistoryIncludes } from "./order-history";
 import { WhereOptions } from "sequelize";
 import Stripe from "stripe";
 import UnitModel from "../../database/models/unit.model";
-import { receiveOrderEmail } from "../../services/mails/orders";
+import { receiveOrderCustomerEmail } from "../../services/mails/orders";
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY, {
   apiVersion: "2020-03-02"
@@ -221,7 +221,7 @@ export default {
         // destroy Order
         OrderModel.destroy({ where: { id: order.id } });
         // TODO : send mail to the user
-        receiveOrderEmail(
+        receiveOrderCustomerEmail(
           user.email,
           user.firstName,
           orderHistory.code,
