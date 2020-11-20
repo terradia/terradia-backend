@@ -17,8 +17,13 @@ export default gql`
       email: String!
       phone: String
       defineUserAsCustomer: Boolean
+      exponentPushToken: String
     ): SignupAnswer!
-    login(email: String!, password: String!): SigninAnswer!
+    login(
+      email: String!
+      password: String!
+      exponentPushToken: String
+    ): SigninAnswer!
     updateUser(
       email: String
       firstName: String
@@ -71,5 +76,7 @@ export default gql`
     customer: Customer
     createdAt: Date
     archivedAt: Date
+
+    expoPushToken: String
   }
 `;
