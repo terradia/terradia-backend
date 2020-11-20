@@ -5,12 +5,18 @@ import CompanyModel from "../../database/models/company.model";
 import { ApolloError } from "apollo-server";
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
+import { where } from "sequelize";
 
 interface reviewData {
   title: string;
   customerMark: number;
   description?: string;
   companyId: string;
+}
+
+interface ReplyData {
+  reviewId: string;
+  reply: string;
 }
 
 interface argumentsData {
@@ -108,6 +114,40 @@ export default {
             "403"
           );
         }
+      }
+    ),
+    addReplyToCompanyReview: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        { reply, reviewId }: ReplyData,
+        { user }: argumentsData
+      ): Promise<CompanyReviewModel | null> => {
+        const [nb, rows] = await CompanyReviewModel.update(
+          { reply: reply },
+          { where: { id: reviewId }, returning: true }
+        );
+        if (nb === 0 || rows === undefined) {
+          throw new ApolloError("ReviewNotFound");
+        }
+        return rows[0];
+      }
+    ),
+    deleteCompanyReply: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        { reviewId }: ReplyData,
+        { user }: argumentsData
+      ): Promise<CompanyReviewModel | null> => {
+        const [nb, rows] = await CompanyReviewModel.update(
+          { reply: null },
+          { where: { id: reviewId }, returning: true }
+        );
+        if (nb === 0) {
+          throw new ApolloError("ReviewNotFound");
+        }
+        return rows[0];
       }
     )
   }

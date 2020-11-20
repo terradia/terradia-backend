@@ -8,6 +8,8 @@ export default gql`
       description: String
       companyId: String!
     ): CompanyReview
+    addReplyToCompanyReview(reply: String!, reviewId: String!): CompanyReview
+    deleteCompanyReply(reviewId: String): CompanyReview
   }
   extend type Query {
     getCompanyReviews(id: ID!, limit: Int!, offset: Int!): [CompanyReview]
@@ -20,6 +22,7 @@ export default gql`
     customerMark: Int!
     customer: Customer
     company: Company
+    reply: String
     createdAt: Date
     updatedAt: Date
   }
