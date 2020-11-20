@@ -1,15 +1,14 @@
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
-import UserModel from "../../database/models/user.model";
-import { uploadToS3AsCompany } from "../../uploadS3";
+import {
+  deleteAssetFromS3,
+  deleteAssetsFromS3,
+  uploadToS3AsCompany
+} from "../../uploadS3";
 import ProductCompanyImageModel from "../../database/models/product-company-images.model";
 import { ApolloError } from "apollo-server-errors";
 import CompanyImageModel from "../../database/models/company-image.model";
 import ProductModel from "../../database/models/product.model";
-
-declare interface Context {
-  user: UserModel;
-}
 
 export declare interface CompanyImageData {
   stream: Body;
@@ -91,6 +90,9 @@ export default {
         const images = await CompanyImageModel.findAll({
           where: { id: imagesId }
         });
+        if (!images) {
+          throw new ApolloError("Images not found");
+        }
         await CompanyImageModel.destroy({
           where: { id: imagesId }
         });
@@ -98,6 +100,14 @@ export default {
         // destroy all of the items in the joinTable
         await ProductCompanyImageModel.destroy({
           where: { companyImageId: imagesId }
+        });
+        const toDelete = images.map(image => {
+          return {
+            Key: image.filename
+          };
+        });
+        deleteAssetsFromS3(toDelete).catch(() => {
+          throw new ApolloError("fail to delete image");
         });
         return images;
       }
@@ -111,13 +121,19 @@ export default {
         const image = await CompanyImageModel.findOne({
           where: { id: imageId }
         });
+        if (!image) {
+          throw new ApolloError("Image not found");
+        }
         await CompanyImageModel.destroy({
-          where: { id: imageId }
+          where: { id: image.id }
         });
         // TODO : remove the image from AmazonS3
         // destroy all of the items in the joinTable
         await ProductCompanyImageModel.destroy({
-          where: { companyImageId: imageId }
+          where: { companyImageId: image.id }
+        });
+        deleteAssetFromS3(image.filename).catch(() => {
+          throw new ApolloError("fail to delete image");
         });
         return image;
       }
