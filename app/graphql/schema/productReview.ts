@@ -2,12 +2,14 @@ import { gql } from "apollo-server";
 
 export default gql`
   extend type Mutation {
+    addReplyToProductReview(reply: String, reviewId: String!): ProductReview
     createProductReview(
       title: String
       customerMark: Int!
       description: String
       productId: String!
     ): ProductReview
+    deleteProductReply(reviewId: String!): ProductReview
   }
 
   extend type Query {
@@ -21,6 +23,7 @@ export default gql`
     customerMark: Int!
     customer: Customer
     product: Product
+    reply: String
     createdAt: Date
     updatedAt: Date
   }

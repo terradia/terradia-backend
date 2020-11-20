@@ -42,6 +42,9 @@ export default class ProductReviewModel extends Model<ProductReviewModel> {
   @BelongsTo(() => ProductModel)
   public product!: ProductModel;
 
+  @Column(DataType.STRING)
+  public reply!: string;
+
   @Column
   public createdAt!: Date;
 
