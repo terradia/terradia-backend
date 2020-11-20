@@ -79,6 +79,7 @@ export default gql`
     status: OrderHistoryStatus
     orderCreationDate: Date!
     stripePaymentIntent: String
+    review: OrderHistoryReview
   }
 
   type OrderProductHistory {
