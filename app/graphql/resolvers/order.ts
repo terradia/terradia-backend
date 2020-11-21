@@ -15,6 +15,11 @@ import { WhereOptions } from "sequelize";
 import Stripe from "stripe";
 import UnitModel from "../../database/models/unit.model";
 import { receiveOrderEmail } from "../../services/mails/orders";
+import { ExpoPushMessage } from "expo-server-sdk";
+import {
+  createMobileNotifications,
+  TerradiaPushMessage
+} from "../../services/notifications";
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY, {
   apiVersion: "2020-03-02"
@@ -206,7 +211,9 @@ export default {
           {
             code: order.code,
             companyName: order.company.name,
-            companyLogo: order.company.logo.filename,
+            companyLogo: order.company.logo
+              ? order.company.logo.filename
+              : null,
             companyAddress: order.company.address,
             status: historyStatus,
             price: order.price,
@@ -250,7 +257,7 @@ export default {
           user.email,
           user.firstName,
           orderHistory.code,
-          orderHistory.price,
+          orderHistory.price.toString(),
           orderHistory.companyName
         );
         const orderHistoryResult = await OrderHistoryModel.findOne({
@@ -295,6 +302,24 @@ export default {
           where: { id: order.id },
           include: OrderIncludes
         });
+        const customer = await CustomerModel.findByPk(order.customerId);
+        if (customer) {
+          const user = await UserModel.findByPk(customer.userId);
+          if (user && user.exponentPushToken) {
+            const notification: TerradiaPushMessage = {
+              sound: "default",
+              title: "Order accepted",
+              body: "Your order #" + order.code + " has been accepted",
+              data: {
+                route: "Orders",
+                snack: "Your order #" + order.code + " has been accepted",
+                routeParam: "request"
+              }
+            };
+            createMobileNotifications([user.exponentPushToken], notification);
+          }
+        }
+
         if (!orderResult) throw new ApolloError("error", "404");
         return orderResult;
       }
@@ -376,6 +401,25 @@ export default {
           where: { id: orderHistory.id },
           include: OrderHistoryIncludes
         });
+
+        const customer = await CustomerModel.findByPk(order.customerId);
+        if (customer) {
+          const user = await UserModel.findByPk(customer.userId);
+          if (user && user.exponentPushToken) {
+            const notification: TerradiaPushMessage = {
+              sound: "default",
+              title: "Order declined",
+              body: "Your order #" + order.code + " has been declined",
+              data: {
+                route: "Orders",
+                snack: "Your order #" + order.code + " has been declined",
+                routeParam: "request"
+              }
+            };
+            createMobileNotifications([user.exponentPushToken], notification);
+          }
+        }
+
         if (!orderHistoryResult) throw new ApolloError("Error", "404");
         return orderHistoryResult;
       }
