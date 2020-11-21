@@ -160,6 +160,18 @@ export default {
         // destroy Order
         OrderModel.destroy({ where: { id: order.id } });
 
+        const company: CompanyModel | null = await CompanyModel.findOne({
+          where: { id: order.companyId }
+        });
+        if (!company) throw new ApolloError("FATAL ERROR", "404");
+        CompanyModel.update(
+          {
+            numberOrderHistories: company.numberOrderHistories + 1,
+            numberOrders: company.numberOrders - 1
+          },
+          { where: { id: order.companyId } }
+        );
+
         // TODO : send mail to the user
 
         const orderHistoryResult = await OrderHistoryModel.findOne({
@@ -220,6 +232,19 @@ export default {
         });
         // destroy Order
         OrderModel.destroy({ where: { id: order.id } });
+
+        const company: CompanyModel | null = await CompanyModel.findOne({
+          where: { id: order.companyId }
+        });
+        if (!company) throw new ApolloError("FATAL ERROR", "404");
+        CompanyModel.update(
+          {
+            numberOrderHistories: company.numberOrderHistories + 1,
+            numberOrders: company.numberOrders - 1
+          },
+          { where: { id: order.companyId } }
+        );
+
         // TODO : send mail to the user
         receiveOrderEmail(
           user.email,
@@ -332,6 +357,18 @@ export default {
         });
         // destroy Order
         OrderModel.destroy({ where: { id: order.id } });
+
+        const company: CompanyModel | null = await CompanyModel.findOne({
+          where: { id: order.companyId }
+        });
+        if (!company) throw new ApolloError("FATAL ERROR", "404");
+        CompanyModel.update(
+          {
+            numberOrderHistories: company.numberOrderHistories + 1,
+            numberOrders: company.numberOrders - 1
+          },
+          { where: { id: order.companyId } }
+        );
 
         // TODO : send mail to the user
 

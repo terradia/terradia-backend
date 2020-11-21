@@ -5,7 +5,7 @@ import {
   DataType,
   Default,
   ForeignKey,
-  HasMany,
+  HasMany, HasOne,
   IsUUID,
   Model,
   PrimaryKey,
@@ -15,6 +15,7 @@ import CustomerModel from "./customer.model";
 import CompanyModel from "./company.model";
 import OrderProductModel from "./order-product.model";
 import OrderProductHistoryModel from "./order-product-history.model";
+import OrderHistoryReviewModel from "./order-history-review.model";
 
 @Table({
   tableName: "OrdersHistory",
@@ -55,6 +56,10 @@ export default class OrderHistoryModel extends Model<OrderHistoryModel> {
   @Column(DataType.STRING)
   public companyLogo!: string;
 
+  @AllowNull(true)
+  @Column(DataType.STRING)
+  public companyCover!: string;
+
   @AllowNull(false)
   @Column(DataType.STRING)
   public companyAddress!: string;
@@ -81,9 +86,17 @@ export default class OrderHistoryModel extends Model<OrderHistoryModel> {
   @Column
   public decliningReason!: string;
 
-  @Column(DataType.STRING)
-  public stripePaymentIntent!: string;
+  // @Column(DataType.STRING)
+  // public stripePaymentIntent!: string;
 
   @Column
   public status!: "FINISHED" | "DECLINED" | "CANCELED";
+
+  // @ForeignKey(() => OrderHistoryReviewModel)
+  // @AllowNull(true)
+  // @Column(DataType.UUID)
+  // public orderHistoryReviewId!: string | null;
+
+  @HasOne(() => OrderHistoryReviewModel, "orderHistoryId")
+  public customerReview!: OrderHistoryReviewModel;
 }
