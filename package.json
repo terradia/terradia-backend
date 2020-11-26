@@ -14,7 +14,8 @@
     "migrate:down": "db-migrate down -c 1 --config app/database/database.json -m app/database/migrations",
     "migrate:down:all": "db-migrate down -c 999 --config app/database/database.json -m app/database/migrations",
     "seed:up": "cross-env NODE_ENV=development DEBUG=init:* ts-node ./app/database/seeders/up.ts -T",
-    "seed:down": "cross-env DEBUG=init:* ts-node ./app/database/seeders/down.ts -T"
+    "seed:down": "cross-env DEBUG=init:* ts-node ./app/database/seeders/down.ts -T",
+    "mapping": "cross-env DEBUG=app:* ts-node-dev --files --project tsconfig.json -r dotenv/config --transpileOnly app/database/elastic/mapping/index.ts"
   },
   "repository": {
     "type": "git",

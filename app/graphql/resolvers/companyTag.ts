@@ -5,6 +5,7 @@ import { ApolloError } from "apollo-server";
 import CompanyTagRelationsModel from "../../database/models/company-tag-relations.model";
 import CompanyModel from "../../database/models/company.model";
 import { WhereOptions } from "sequelize";
+import client from "../../database/elastic/server";
 
 export default {
   Query: {
@@ -86,10 +87,26 @@ export default {
         await CompanyTagRelationsModel.findOrCreate({
           where: { tagId: companyTagId, companyId }
         });
-        return CompanyModel.findOne({
+        const companyFetched = await CompanyModel.findOne({
           where: { id: companyId },
           include: [CompanyTagModel]
         });
+        if (!companyFetched)
+          throw new ApolloError("The company does not exists.", "404");
+
+        await client.update({
+          index: "companies",
+          id: companyFetched.id,
+          _source: "company",
+          body: {
+            doc: {
+              company: {
+                tags: companyFetched.tags.map(item => item.translationKey)
+              }
+            }
+          }
+        });
+        return companyFetched;
       }
     ),
     deleteTagFromCompany: combineResolvers(
@@ -117,10 +134,27 @@ export default {
             "This tag is not attributed to this company",
             "404"
           );
-        return CompanyModel.findOne({
+        const companyFetched = await CompanyModel.findOne({
           where: { id: companyId },
           include: [CompanyTagModel]
         });
+
+        if (!companyFetched)
+          throw new ApolloError("The company does not exists.", "404");
+
+        await client.update({
+          index: "companies",
+          id: companyFetched.id,
+          _source: "company",
+          body: {
+            doc: {
+              company: {
+                tags: companyFetched.tags.map(item => item.translationKey)
+              }
+            }
+          }
+        });
+        return companyFetched;
       }
     )
   }

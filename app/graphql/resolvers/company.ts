@@ -43,6 +43,8 @@ declare interface CreateCompanyProps {
   phone: string;
   address: string;
   siren: string;
+  logoId: string;
+  coverId: string;
   logo: { stream: Body; filename: string; mimetype: string; encoding: string };
   cover: { stream: Body; filename: string; mimetype: string; encoding: string };
   officialName?: string;
@@ -356,25 +358,30 @@ export default {
       { query }: { query: string },
       { user }: { user: UserModel }
     ): Promise<CompanyModel[]> => {
-      const res = await client.search({
-        index: "companies",
-        body: {
-          query: {
-            nested: {
-              path: "products",
-              query: {
-                bool: {
-                  must: [{ match: { "products.name": query } }]
+      const res = await client
+        .search({
+          index: "companies",
+          body: {
+            query: {
+              has_child: {
+                type: "product",
+                inner_hits: {},
+                query: {
+                  match: {
+                    "product.name": query
+                  }
                 }
+                // multi_match: {
+                //   query: query,
+                //   fields: ["name", "products.description", "products.name"]
+                // }
               }
             }
-            // multi_match: {
-            //   query: query,
-            //   fields: ["name", "products.description", "products.name"]
-            // }
           }
-        }
-      });
+        })
+        .catch(err => {
+          console.log(err);
+        });
       const par = res.body.hits.hits.map(item => item._source);
       // return par;
       const comp = await CompanyModel.findAll({
@@ -469,6 +476,8 @@ export default {
           console.log(geo);
           const newCompany: CompanyModel = await CompanyModel.create({
             ...args,
+            numberOrders: 0,
+            numberOrderHistories: 0,
             geoPosition: {
               type: "Point",
               coordinates: [
@@ -477,15 +486,19 @@ export default {
               ]
             }
           });
-          // await client.index({
-          //   index: "companies",
-          //   id: newCompany.id,
-          //   body: {
-          //     name: newCompany.name,
-          //     address: newCompany.address,
-          //     products: []
-          //   }
-          // });
+          await client.index({
+            index: "companies",
+            id: newCompany.id,
+            body: {
+              company: {
+                address: newCompany.address,
+                name: newCompany.name
+              },
+              company_relations: {
+                name: "company"
+              }
+            }
+          });
           await CompanyUserModel.create({
             companyId: newCompany.id,
             userId: user.id,
@@ -535,7 +548,7 @@ export default {
         if (nb === 0) {
           throw new ApolloError("Can't find the requested company", "500");
         }
-        return CompanyModel.findByPk(companyId, {
+        const fetchedCompany = await CompanyModel.findByPk(companyId, {
           include: [
             {
               model: CompanyImageModel,
@@ -547,6 +560,46 @@ export default {
             }
           ]
         });
+        if (newValues.logoId && fetchedCompany) {
+          await client.update({
+            index: "companies",
+            id: fetchedCompany.id,
+            body: {
+              doc: {
+                company: {
+                  logo: fetchedCompany?.logo?.filename
+                }
+              }
+            }
+          });
+        }
+        if (newValues.coverId && fetchedCompany) {
+          await client.update({
+            index: "companies",
+            id: fetchedCompany.id,
+            body: {
+              doc: {
+                company: {
+                  cover: fetchedCompany.cover?.filename
+                }
+              }
+            }
+          });
+        }
+        if (newValues.description && fetchedCompany) {
+          await client.update({
+            index: "companies",
+            id: fetchedCompany.id,
+            body: {
+              doc: {
+                company: {
+                  description: newValues.description
+                }
+              }
+            }
+          });
+        }
+        return fetchedCompany;
       }
     ),
     joinCompany: combineResolvers(
