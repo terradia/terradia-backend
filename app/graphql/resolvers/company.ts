@@ -27,6 +27,11 @@ import {
 } from "../../services/mails/companies";
 import client from "../../database/elastic/server";
 
+import Stripe from "stripe";
+const stripe = new Stripe(process.env.STRIPE_API_KEY || "", {
+  apiVersion: "2020-03-02"
+});
+
 declare interface Point {
   type: string;
   coordinates: number[];
@@ -46,6 +51,7 @@ declare interface CreateCompanyProps {
   logo: { stream: Body; filename: string; mimetype: string; encoding: string };
   cover: { stream: Body; filename: string; mimetype: string; encoding: string };
   officialName?: string;
+  tokenAccount: string;
 }
 
 export const companyIncludes = [
@@ -452,6 +458,8 @@ export default {
           args: CreateCompanyProps,
           { user }: Context
         ): Promise<CompanyModel> => {
+          const tokenAccount = args.tokenAccount;
+          delete args.tokenAccount;
           console.log(root);
           const ownerRole: RoleModel | null = await RoleModel.findOne({
             where: { slugName: "owner" }
@@ -469,6 +477,8 @@ export default {
           console.log(geo);
           const newCompany: CompanyModel = await CompanyModel.create({
             ...args,
+            numberOrders: 0,
+            numberOrderHistories: 0,
             geoPosition: {
               type: "Point",
               coordinates: [
@@ -486,6 +496,17 @@ export default {
           //     products: []
           //   }
           // });
+
+          try {
+            const account = await stripe.accounts.create({
+              country: "FR",
+              type: "custom",
+              account_token: tokenAccount
+            });
+          } catch (e) {
+            console.error(e);
+          }
+
           await CompanyUserModel.create({
             companyId: newCompany.id,
             userId: user.id,

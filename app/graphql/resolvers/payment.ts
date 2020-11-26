@@ -10,7 +10,7 @@ import CompanyModel from "../../database/models/company.model";
 import CartProductModel from "../../database/models/cart-product.model";
 import ProductModel from "../../database/models/product.model";
 
-const stripe = new Stripe(process.env.STRIPE_API_KEY, {
+const stripe = new Stripe(process.env.STRIPE_API_KEY || "", {
   apiVersion: "2020-03-02"
 });
 

@@ -168,6 +168,7 @@ export default gql`
       phone: String!
       address: String!
       siren: String!
+      tokenAccount: String!
     ): Company!
     deleteCompany(companyId: String!): Company!
     updateCompany(companyId: ID!, newValues: CompanyUpdateInput): Company!
