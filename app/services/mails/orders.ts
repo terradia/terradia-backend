@@ -69,7 +69,7 @@ const acceptedOrderCustomerEmail = (
   sendMail(acceptedOrderCustomer);
 };
 
-const refusedOrderCustomerEmail = (
+const declinedOrderCustomerEmail = (
   to: string,
   firstName: string,
   orderCode: string,
@@ -96,5 +96,5 @@ export {
   receiveOrderCustomerEmail,
   receiveOrderCompanyEmail,
   acceptedOrderCustomerEmail,
-  refusedOrderCustomerEmail
+  declinedOrderCustomerEmail
 };

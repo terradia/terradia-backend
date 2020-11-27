@@ -14,7 +14,12 @@ import { OrderHistoryIncludes } from "./order-history";
 import { WhereOptions } from "sequelize";
 import Stripe from "stripe";
 import UnitModel from "../../database/models/unit.model";
-import { receiveOrderCustomerEmail } from "../../services/mails/orders";
+import {
+  acceptedOrderCustomerEmail,
+  receiveOrderCustomerEmail,
+  declinedOrderCustomerEmail,
+  receiveOrderCompanyEmail
+} from "../../services/mails/orders";
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY, {
   apiVersion: "2020-03-02"
@@ -28,7 +33,10 @@ export const OrderIncludes = [
     model: OrderProductModel,
     include: [{ model: ProductModel, include: [UnitModel] }]
   },
-  CustomerModel,
+  {
+    model: CustomerModel,
+    include: UserModel
+  },
   { model: CompanyModel, include: [{ model: CompanyImageModel, as: "logo" }] }
 ];
 
@@ -228,6 +236,12 @@ export default {
           orderHistory.price,
           orderHistory.companyName
         );
+        receiveOrderCompanyEmail(
+          orderHistory.company.email,
+          orderHistory.companyName,
+          orderHistory.code,
+          orderHistory.price
+        );
         const orderHistoryResult = await OrderHistoryModel.findOne({
           where: { id: orderHistory.id },
           include: OrderHistoryIncludes
@@ -260,8 +274,13 @@ export default {
         );
         if (!paymentIntent)
           throw new ApolloError("The payment has been refused", "404");
-        // TODO : send mail to the user
-
+        acceptedOrderCustomerEmail(
+          order.customer.user.email,
+          order.customer.user.firstName,
+          order.code,
+          order.company.name,
+          order.price
+        );
         await OrderModel.update(
           { status: "AVAILABLE" },
           { where: { id }, returning: true }
@@ -298,7 +317,7 @@ export default {
         );
         if (!paymentIntent)
           throw new ApolloError("Cannot cancel the payment", "404");
-        // TODO : send mail to the user
+
         const historyStatus = "DECLINED";
 
         // transform Order in OrderHistory
@@ -333,7 +352,13 @@ export default {
         // destroy Order
         OrderModel.destroy({ where: { id: order.id } });
 
-        // TODO : send mail to the user
+        declinedOrderCustomerEmail(
+          order.customer.user.email,
+          order.customer.user.firstName,
+          order.code,
+          order.price,
+          order.company.name
+        );
 
         const orderHistoryResult = await OrderHistoryModel.findOne({
           where: { id: orderHistory.id },
