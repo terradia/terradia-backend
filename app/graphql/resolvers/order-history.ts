@@ -10,6 +10,7 @@ import OrderProductHistoryModel from "../../database/models/order-product-histor
 import { Op } from "sequelize";
 import { WhereOptions } from "sequelize/types/lib/model";
 import UnitModel from "../../database/models/unit.model";
+import OrderHistoryReviewModel from "../../database/models/order-history-review.model";
 
 interface Context {
   user: UserModel;
@@ -21,17 +22,9 @@ export const OrderHistoryIncludes = [
     include: [ProductModel, UnitModel]
   },
   CustomerModel,
-  CompanyModel
+  CompanyModel,
+  OrderHistoryReviewModel
 ];
-
-// getCompanyOrderHistories(
-//   companyId: ID!
-// status: String
-// limit: Int = 10
-// offset: Int = 0
-// beginDate: Date
-// endDate: Date
-// ): [OrderHistory]
 
 export default {
   Query: {
@@ -121,5 +114,43 @@ export default {
       }
     )
   },
-  Mutation: {}
+  Mutation: {
+    createOrderHistoryReview: combineResolvers(
+      isUserAndCustomer,
+      async (
+        _: any,
+        {
+          comment,
+          customerMark,
+          orderHistoryId
+        }: {
+          comment: string;
+          customerMark: number;
+          orderHistoryId: string;
+        },
+        { user }: { user: UserModel }
+      ): Promise<OrderHistoryReviewModel | null> => {
+        const orderHistory: OrderHistoryModel | null = await OrderHistoryModel.findOne(
+          { where: { id: orderHistoryId } }
+        );
+        if (!orderHistory)
+          throw new ApolloError("This OrderHistory does not exists", "404");
+        if (user.customer.id !== orderHistory.customerId)
+          throw new ApolloError(
+            "This is not you of your orderHistories",
+            "403"
+          );
+        const orderHistoryReviewModel: OrderHistoryReviewModel | null = await OrderHistoryReviewModel.findOne(
+          { where: { orderHistoryId } }
+        );
+        if (orderHistoryReviewModel !== null)
+          throw new ApolloError("You already rated this orderHistory", "403");
+        return OrderHistoryReviewModel.create({
+          orderHistoryId,
+          comment,
+          customerMark
+        });
+      }
+    )
+  }
 };

@@ -92,6 +92,7 @@
     "sequelize-cli": "^5.5.0",
     "sequelize-typescript": "^1.1.0",
     "stripe": "^8.76.0",
-    "typescript": "^3.8.3"
+    "typescript": "^3.8.3",
+    "expo-server-sdk": "^3.6.0"
   }
 }

@@ -327,6 +327,16 @@ export default {
         });
         // Destroy the cart of the user
         CartModel.destroy({ where: { id: cart.id } });
+
+        const company: CompanyModel | null = await CompanyModel.findOne({
+          where: { id: order.companyId }
+        });
+        if (!company) throw new ApolloError("FATAL ERROR", "404");
+        CompanyModel.update(
+          { numberOrders: company.numberOrders + 1 },
+          { where: { id: order.companyId } }
+        );
+
         // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
         // @ts-ignore
         return OrderModel.findOne({

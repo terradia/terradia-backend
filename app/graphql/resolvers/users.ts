@@ -90,7 +90,11 @@ export default {
   Mutation: {
     login: async (
       _: any,
-      { email, password }: { email: string; password: string },
+      {
+        email,
+        password,
+        exponentPushToken
+      }: { email: string; password: string; exponentPushToken: string },
       { secret }: { secret: string }
     ): Promise<{ userId: string; token: Promise<string> }> => {
       const user = await UserModel.findByLogin(email);
@@ -114,6 +118,14 @@ export default {
         }
       }
       newConnectionEmail(user.email, user.firstName, user.lastName);
+      await UserModel.update(
+        { exponentPushToken },
+        {
+          where: {
+            email
+          }
+        }
+      );
       return { token: createToken(user, secret), userId: user.id };
     },
     register: async (
@@ -129,6 +141,7 @@ export default {
         password: string;
         phone: string;
         defineUserAsCustomer: boolean;
+        exponentPushToken: string;
       },
       { secret }: { secret: string }
     ): Promise<{ userId: string; token: Promise<string>; message: string }> => {

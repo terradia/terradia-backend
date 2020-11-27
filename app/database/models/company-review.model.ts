@@ -1,8 +1,13 @@
 import {
+  AllowNull,
   BelongsTo,
-  Column, DataType, Default,
-  ForeignKey, IsUUID,
-  Model, PrimaryKey,
+  Column,
+  DataType,
+  Default,
+  ForeignKey,
+  IsUUID,
+  Model,
+  PrimaryKey,
   Table
 } from "sequelize-typescript";
 import CustomerModel from "./customer.model";
@@ -41,6 +46,9 @@ export default class CompanyReviewModel extends Model<CompanyReviewModel> {
 
   @BelongsTo(() => CompanyModel)
   public company!: CompanyModel;
+
+  @Column(DataType.STRING)
+  public reply!: string;
 
   @Column
   public createdAt!: Date;
