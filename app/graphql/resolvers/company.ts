@@ -498,10 +498,15 @@ export default {
           // });
 
           try {
+            // @ts-ignore
             const account = await stripe.accounts.create({
               country: "FR",
               type: "custom",
-              account_token: tokenAccount
+              account_token: tokenAccount,
+              business_profile: { url: "https://producteurs.terradia.eu" },
+              capabilities: {
+                transfers: { requested: true }
+              }
             });
           } catch (e) {
             console.error(e);
