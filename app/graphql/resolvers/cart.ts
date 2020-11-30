@@ -15,8 +15,9 @@ import OrderModel from "../../database/models/order.model";
 import OrderProductModel from "../../database/models/order-product.model";
 import { OrderIncludes } from "./order";
 import UnitModel from "../../database/models/unit.model";
-import { where } from "sequelize";
 import Stripe from "stripe";
+import CompanyImageModel from "../../database/models/company-image.model";
+import ProductCompanyImageModel from "../../database/models/product-company-images.model";
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY, {
   apiVersion: "2020-03-02"
@@ -34,8 +35,7 @@ export default {
   Query: {
     getCart: combineResolvers(
       isUserAndCustomer,
-      (_: any, __: any, { user }: Context): Promise<CartModel | null> => {
-        // TODO : Check if the products are available
+      async (_: any, __: any, { user }: Context): Promise<CartModel | null> => {
         const customer: CustomerModel = user.customer;
         if (!customer) {
           throw new ApolloError("this user is not a customer", "400");
@@ -51,13 +51,21 @@ export default {
             CompanyModel,
             {
               model: CartProductModel,
+              separate: true,
+              order: [["createdAt", "DESC"]],
               include: [
                 {
                   model: ProductModel,
-                  include: [UnitModel]
+                  include: [
+                    UnitModel,
+                    {
+                      model: ProductCompanyImageModel,
+                      as: "cover",
+                      include: [CompanyImageModel]
+                    }
+                  ]
                 }
-              ],
-              order: ["updatedAt"]
+              ]
             }
           ]
         });
@@ -193,11 +201,7 @@ export default {
       isUserAndCustomer,
       async (
         _: any,
-        {
-          cartProductId,
-          productId,
-          quantity
-        }: { cartProductId: string; productId: string; quantity: number },
+        { productId, quantity }: { productId: string; quantity: number },
         { user }: Context
       ): Promise<number> => {
         const customer: CustomerModel | null = user.customer;
@@ -206,11 +210,7 @@ export default {
             "This user is not a customer",
             "RESOURCE_NOT_FOUND"
           );
-        if (!cartProductId && !productId)
-          throw new ApolloError(
-            "You should precise at least a cartProduct of a productId",
-            "400"
-          );
+        if (!productId) throw new ApolloError("product is required", "400");
         if (quantity < 0)
           throw new ApolloError(
             "You should remove products, not add them ;)",
@@ -228,9 +228,7 @@ export default {
 
         let product: CartProductModel | null;
         product = await CartProductModel.findOne({
-          where: productId
-            ? { productId: productId, cartId: cart.id }
-            : { id: cartProductId, cartId: cart.id },
+          where: { productId: productId, cartId: cart.id },
           include: [ProductModel]
         });
         if (!product)
