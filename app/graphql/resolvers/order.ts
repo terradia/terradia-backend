@@ -308,7 +308,7 @@ export default {
         );
         if (!paymentIntent)
           throw new ApolloError("The payment has been refused", "404");
-        if (user.mailsNotifications) {
+        if (order.customer.user.mailsNotifications) {
           acceptedOrderCustomerEmail(
             order.customer.user.email,
             order.customer.user.firstName,
