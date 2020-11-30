@@ -49,6 +49,7 @@ export default gql`
     ): SigninAnswer!
     deleteUser(password: String): User!
     passwordValidation(password: String!): Boolean
+    updateMailsNotifications: User!
   }
   type SignupAnswer {
     token: String!
@@ -76,6 +77,7 @@ export default gql`
     customer: Customer
     createdAt: Date
     archivedAt: Date
+    mailsNotifications: Boolean
 
     expoPushToken: String
   }

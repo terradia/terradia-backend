@@ -6,7 +6,10 @@ import { ApolloError } from "apollo-server-errors";
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
 import { uploadToS3 } from "../../uploadS3";
-import {createEmailRegister, newConnectionEmail} from "../../services/mails/users";
+import {
+  createEmailRegister,
+  newConnectionEmail
+} from "../../services/mails/users";
 import fetch from "node-fetch";
 import userController from "../../controllers/user";
 import CompanyUserInvitationModel from "../../database/models/company-user-invitation.model";
@@ -382,6 +385,21 @@ export default {
             throw new ApolloError("Can't archive this user account."); //TODO: translation
           } else {
             archivedUserAccountEmail(user.email, user.firstName, user.lastName);
+          }
+          return users[0];
+        }
+      }
+    ),
+    updateMailsNotifications: combineResolvers(
+      isAuthenticated,
+      async (_: any, __: any, { user }: Context) => {
+        if (user.mailsNotifications) {
+          const [nb, users] = await UserModel.update(
+            { mailsNotifications: !user.mailsNotifications },
+            { where: { id: user.id }, returning: true }
+          );
+          if (nb == 0) {
+            throw new ApolloError("Can't update notifications preferences.");
           }
           return users[0];
         }
