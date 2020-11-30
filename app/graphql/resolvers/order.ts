@@ -261,13 +261,15 @@ export default {
         );
 
         // TODO : send mail to the user
-        receiveOrderCustomerEmail(
-          user.email,
-          user.firstName,
-          orderHistory.code,
-          orderHistory.price.toString(),
-          orderHistory.companyName
-        );
+        if (user.mailsNotifications) {
+          receiveOrderCustomerEmail(
+            user.email,
+            user.firstName,
+            orderHistory.code,
+            orderHistory.price.toString(),
+            orderHistory.companyName
+          );
+        }
         receiveOrderCompanyEmail(
           orderHistory.company.email,
           orderHistory.companyName,
@@ -306,13 +308,15 @@ export default {
         );
         if (!paymentIntent)
           throw new ApolloError("The payment has been refused", "404");
-        acceptedOrderCustomerEmail(
-          order.customer.user.email,
-          order.customer.user.firstName,
-          order.code,
-          order.company.name,
-          order.price
-        );
+        if (user.mailsNotifications) {
+          acceptedOrderCustomerEmail(
+            order.customer.user.email,
+            order.customer.user.firstName,
+            order.code,
+            order.company.name,
+            order.price
+          );
+        }
         await OrderModel.update(
           { status: "AVAILABLE" },
           { where: { id }, returning: true }
@@ -413,14 +417,15 @@ export default {
           },
           { where: { id: order.companyId } }
         );
-
-        declinedOrderCustomerEmail(
-          order.customer.user.email,
-          order.customer.user.firstName,
-          order.code,
-          order.price,
-          order.company.name
-        );
+        if (order.customer.user.mailsNotifications) {
+          declinedOrderCustomerEmail(
+            order.customer.user.email,
+            order.customer.user.firstName,
+            order.code,
+            order.price,
+            order.company.name
+          );
+        }
 
         const orderHistoryResult = await OrderHistoryModel.findOne({
           where: { id: orderHistory.id },

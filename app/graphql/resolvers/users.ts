@@ -117,10 +117,11 @@ export default {
         if (nb[0] == 0) {
           throw new ApolloError("This account is already deleted.");
         } else {
-          reactivateUserAccountEmail(user.email, user.firstName);
+          reactivateUserAccountEmail(user.email, user.firstName); // Important mail - no check for mails notifications
         }
       }
-      newConnectionEmail(user.email, user.firstName, user.lastName);
+      if (user.mailsNotifications)
+        newConnectionEmail(user.email, user.firstName, user.lastName);
       await UserModel.update(
         { exponentPushToken },
         {
@@ -367,7 +368,8 @@ export default {
       if (!isValid) {
         throw new AuthenticationError("Invalid password.");
       }
-      passwordEditEmail(user.email, user.firstName);
+      if (user.mailsNotifications)
+        passwordEditEmail(user.email, user.firstName);
       return true;
     },
     deleteUser: combineResolvers(
@@ -384,7 +386,9 @@ export default {
           if (nb == 0) {
             throw new ApolloError("Can't archive this user account."); //TODO: translation
           } else {
-            archivedUserAccountEmail(user.email, user.firstName, user.lastName);
+            //TODO: implement alert & logout
+            if (user.mailsNotifications)
+              archivedUserAccountEmail(user.email, user.firstName, user.lastName);
           }
           return users[0];
         }
