@@ -362,36 +362,17 @@ export default {
       { query }: { query: string },
       { user }: { user: UserModel }
     ): Promise<CompanyModel[]> => {
-      const res = await client.search({
-        index: "companies",
-        body: {
-          query: {
-            nested: {
-              path: "products",
-              query: {
-                bool: {
-                  must: [{ match: { "products.name": query } }]
-                }
-              }
-            }
-            // multi_match: {
-            //   query: query,
-            //   fields: ["name", "products.description", "products.name"]
-            // }
-          }
-        }
-      });
-      const par = res.body.hits.hits.map(item => item._source);
-      // return par;
       const comp = await CompanyModel.findAll({
-        //TODO: Search by tag
         //https://stackoverflow.com/questions/31258158/how-to-implement-search-feature-using-sequelizejs/37326395
         where: {
           [Op.or]: [
-            { name: { [Op.iLike]: "%" + query + "%" } }
+            { name: { [Op.iLike]: "%" + query + "%" } },
             // { 'name': { [Op.iLike]: "%" + query + "%" } },
             // { "$CompanyTags.slugName$": { [Op.iLike]: "%" + query + "%" } }
-            // { "$CompanyTagModel.slugName$": query }
+            { "$tags.slugName$": { [Op.iLike]: "%" + query + "%" } },
+            { "$products.name$": { [Op.iLike]: "%" + query + "%" } },
+            { "$products.description$": { [Op.iLike]: "%" + query + "%" } }
+            // { "tags.slugName$": query }
           ]
         },
         include: [
