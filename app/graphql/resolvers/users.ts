@@ -388,7 +388,11 @@ export default {
           } else {
             //TODO: implement alert & logout
             if (user.mailsNotifications)
-              archivedUserAccountEmail(user.email, user.firstName, user.lastName);
+              archivedUserAccountEmail(
+                user.email,
+                user.firstName,
+                user.lastName
+              );
           }
           return users[0];
         }
@@ -397,16 +401,14 @@ export default {
     updateMailsNotifications: combineResolvers(
       isAuthenticated,
       async (_: any, __: any, { user }: Context) => {
-        if (user.mailsNotifications) {
-          const [nb, users] = await UserModel.update(
-            { mailsNotifications: !user.mailsNotifications },
-            { where: { id: user.id }, returning: true }
-          );
-          if (nb == 0) {
-            throw new ApolloError("Can't update notifications preferences.");
-          }
-          return users[0];
+        const [nb, users] = await UserModel.update(
+          { mailsNotifications: !user.mailsNotifications },
+          { where: { id: user.id }, returning: true }
+        );
+        if (nb === 0) {
+          throw new ApolloError("Can't update notifications preferences.");
         }
+        return users[0];
       }
     )
   }
