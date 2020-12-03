@@ -8,15 +8,6 @@
     "database": { "ENV": "DB_NAME" },
     "schema": "public"
   },
-  "deletion": {
-    "driver": "pg",
-    "user": { "ENV": "DB_USER" },
-    "password": { "ENV": "DB_PASSWORD" },
-    "host": { "ENV": "DB_HOST" },
-    "port": { "ENV": "DB_PORT" },
-    "database": { "ENV": "DB_NAME" },
-    "schema": "public"
-  },
   "dev": {
     "driver": "pg",
     "user": { "ENV": "DB_USER" },
@@ -28,11 +19,11 @@
   },
   "prod": {
     "driver": "pg",
-    "user": { "ENV": "DB_USER" },
-    "password": { "ENV": "DB_PASSWORD" },
-    "host": { "ENV": "DB_HOST" },
-    "port": { "ENV": "DB_PORT" },
-    "database": { "ENV": "DB_NAME" }
+    "user": { "ENV": "DB_PROD_USER" },
+    "password": { "ENV": "DB_PROD_PASSWORD" },
+    "host": { "ENV": "DB_PROD_HOST" },
+    "port": { "ENV": "DB_PROD_PORT" },
+    "database": { "ENV": "DB_PROD_NAME" }
   },
   "deletion": {
     "driver": "pg",
