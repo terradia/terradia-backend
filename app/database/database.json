@@ -1,30 +1,30 @@
 {
   "creation": {
     "driver": "pg",
-    "user": "postgres",
-    "password": "postgres",
-    "host": "localhost",
-    "database": "postgres",
-    "schema": "public",
-    "port": { "ENV": "DB_PORT" }
+    "user": { "ENV": "DB_USER" },
+    "password": { "ENV": "DB_PASSWORD" },
+    "host": { "ENV": "DB_HOST" },
+    "port": { "ENV": "DB_PORT" },
+    "database": { "ENV": "DB_NAME" },
+    "schema": "public"
   },
   "deletion": {
     "driver": "pg",
-    "user": "postgres",
-    "password": "postgres",
-    "host": "localhost",
-    "database": "postgres",
-    "schema": "public",
-    "port": { "ENV": "DB_PORT" }
+    "user": { "ENV": "DB_USER" },
+    "password": { "ENV": "DB_PASSWORD" },
+    "host": { "ENV": "DB_HOST" },
+    "port": { "ENV": "DB_PORT" },
+    "database": { "ENV": "DB_NAME" },
+    "schema": "public"
   },
   "dev": {
     "driver": "pg",
-    "user": "postgres",
-    "password": "postgres",
-    "host": "localhost",
-    "database": "terradia_db",
-    "schema": "public",
-    "port": { "ENV": "DB_PORT" }
+    "user": { "ENV": "DB_USER" },
+    "password": { "ENV": "DB_PASSWORD" },
+    "host": { "ENV": "DB_HOST" },
+    "port": { "ENV": "DB_PORT" },
+    "database": { "ENV": "DB_NAME" },
+    "schema": "public"
   },
   "prod": {
     "driver": "pg",
@@ -36,11 +36,11 @@
   },
   "deletion": {
     "driver": "pg",
-    "user": "postgres",
-    "password": "postgres",
-    "host": "localhost",
-    "database": "postgres",
-    "schema": "public",
-    "port": "5432"
+    "user": { "ENV": "DB_USER" },
+    "password": { "ENV": "DB_PASSWORD" },
+    "host": { "ENV": "DB_HOST" },
+    "port": { "ENV": "DB_PORT" },
+    "database": { "ENV": "DB_NAME" },
+    "schema": "public"
   }
 }
