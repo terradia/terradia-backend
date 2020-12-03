@@ -287,6 +287,13 @@ export default {
         const paymentIntent = await stripe.paymentIntents.confirm(
           order.stripePaymentIntent
         );
+        const price = order.price * 0.9 * 100;
+        const transfer = await stripe.transfers.create({
+          amount: parseInt(price.toFixed(0)),
+          currency: "eur",
+          destination: order.company.stripeAccount,
+          transfer_group: "Company" + order.company.id
+        });
         if (!paymentIntent)
           throw new ApolloError("The payment has been refused", "404");
         await OrderModel.update(
@@ -298,15 +305,15 @@ export default {
           include: OrderIncludes
         });
 
-        if (order.customer.user.mailsNotifications) {
-          acceptedOrderCustomerEmail(
-            order.customer.user.email,
-            order.customer.user.firstName,
-            "#" + order.code.toUpperCase(),
-            order.company.name,
-            order.price.toString()
-          );
-        }
+        // if (order.customer.user.mailsNotifications) {
+        //   acceptedOrderCustomerEmail(
+        //     order.customer.user.email,
+        //     order.customer.user.firstName,
+        //     "#" + order.code.toUpperCase(),
+        //     order.company.name,
+        //     order.price.toString()
+        //   );
+        // }
 
         if (order.customer.user && order.customer.user.exponentPushToken) {
           const notification: TerradiaPushMessage = {

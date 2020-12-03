@@ -160,6 +160,9 @@ export default class CompanyModel extends Model<CompanyModel> {
   @Column(DataType.INTEGER)
   public numberOrderHistories!: number;
 
+  @Column(DataType.STRING)
+  public stripeAccount!: string;
+
   // @AfterFind
   // static afterFindHook(result: any): void {
   //   if(result.constructor === Array) {

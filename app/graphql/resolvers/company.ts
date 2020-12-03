@@ -28,6 +28,7 @@ import {
 import client from "../../database/elastic/server";
 
 import Stripe from "stripe";
+import company from "../schema/company";
 const stripe = new Stripe(process.env.STRIPE_API_KEY || "", {
   apiVersion: "2020-03-02"
 });
@@ -427,7 +428,17 @@ export default {
           return root;
         }
       )
-    )
+    ),
+    isStripeAccountValidated: async (
+      _: any,
+      { companyId }: { companyId: string },
+      __: any
+    ): Promise<boolean> => {
+      const company = await CompanyModel.findByPk(companyId);
+      if (!company) throw new ApolloError("Company not found");
+      const account = await stripe.accounts.retrieve(company.stripeAccount);
+      return account.payouts_enabled;
+    }
   },
   Mutation: {
     createCompany: combineResolvers(
@@ -489,6 +500,16 @@ export default {
                 transfers: { requested: true }
               }
             });
+            await CompanyModel.update(
+              {
+                stripeAccount: account.id
+              },
+              {
+                where: {
+                  id: newCompany.id
+                }
+              }
+            );
           } catch (e) {
             console.error(e);
           }
@@ -647,6 +668,21 @@ export default {
           );
         }
         return company[0];
+      }
+    ),
+    updateCompanyExternalAccount: combineResolvers(
+      isAuthenticated,
+      async (_: any, { token, companyId }, { user }: Context) => {
+        const company = await CompanyModel.findByPk(companyId);
+        if (!company) throw new ApolloError("Can't find the requested company");
+        try {
+          const account = await stripe.accounts.update(company?.stripeAccount, {
+            external_account: token
+          });
+          return true;
+        } catch (e) {
+          throw new ApolloError(e);
+        }
       }
     )
   }
