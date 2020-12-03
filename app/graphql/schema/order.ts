@@ -18,8 +18,8 @@ export default gql`
     getCompanyOrderHistories(
       companyId: ID!
       status: String
-      limit: Int = 10
-      offset: Int = 0
+      limit: Int
+      offset: Int
       fromDate: Date
       toDate: Date
     ): [OrderHistory]
