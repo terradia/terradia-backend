@@ -120,8 +120,8 @@ export default {
           reactivateUserAccountEmail(user.email, user.firstName); // Important mail - no check for mails notifications
         }
       }
-      if (user.mailsNotifications)
-        newConnectionEmail(user.email, user.firstName, user.lastName);
+      // if (user.mailsNotifications)
+      //   newConnectionEmail(user.email, user.firstName, user.lastName);
       await UserModel.update(
         { exponentPushToken },
         {
