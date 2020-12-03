@@ -429,15 +429,15 @@ export default {
         }
       )
     ),
-    isStripeAccountValidated: async (
+    getCompanyStripeAccount: async (
       _: any,
       { companyId }: { companyId: string },
       __: any
-    ): Promise<boolean> => {
+    ): Promise<any> => {
       const company = await CompanyModel.findByPk(companyId);
       if (!company) throw new ApolloError("Company not found");
       const account = await stripe.accounts.retrieve(company.stripeAccount);
-      return account.payouts_enabled;
+      return account;
     }
   },
   Mutation: {
