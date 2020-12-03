@@ -18,8 +18,12 @@ import UnitModel from "../../database/models/unit.model";
 import Stripe from "stripe";
 import CompanyImageModel from "../../database/models/company-image.model";
 import ProductCompanyImageModel from "../../database/models/product-company-images.model";
+import {
+  receiveOrderCompanyEmail,
+  receiveOrderCustomerEmail
+} from "../../services/mails/orders";
 
-const stripe = new Stripe(process.env.STRIPE_API_KEY, {
+const stripe = new Stripe(process.env.STRIPE_API_KEY || "", {
   apiVersion: "2020-03-02"
 });
 declare interface UserCompanyRoleProps {
@@ -226,8 +230,7 @@ export default {
             "RESOURCE_NOT_FOUND"
           );
 
-        let product: CartProductModel | null;
-        product = await CartProductModel.findOne({
+        const product = await CartProductModel.findOne({
           where: { productId: productId, cartId: cart.id },
           include: [ProductModel]
         });
@@ -298,6 +301,7 @@ export default {
         // Create an order from the cart
         if (!paymentIntent)
           throw new ApolloError("The payment has been refused", "404");
+        let newOrderCode = "";
         const order = await OrderModel.create({
           companyId: cart.companyId,
           customerId: cart.customerId,
@@ -306,9 +310,10 @@ export default {
           status: "PENDING",
           stripePaymentIntent: paymentIntent.id
         }).then(order => {
+          newOrderCode = order.id.substr(0, 6);
           OrderModel.update(
             {
-              code: order.id.substr(0, 6)
+              code: newOrderCode
             },
             { where: { id: order.id } }
           );
@@ -333,6 +338,22 @@ export default {
         CompanyModel.update(
           { numberOrders: company.numberOrders + 1 },
           { where: { id: order.companyId } }
+        );
+
+        if (user.mailsNotifications) {
+          receiveOrderCustomerEmail(
+            user.email,
+            user.firstName,
+            "#" + newOrderCode.toUpperCase(),
+            order.price.toString(),
+            company.name
+          );
+        }
+        receiveOrderCompanyEmail(
+          company.email,
+          company.name,
+          "#" + newOrderCode.toUpperCase(),
+          order.price.toString()
         );
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-ignore

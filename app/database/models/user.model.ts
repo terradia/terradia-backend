@@ -78,6 +78,10 @@ export default class UserModel extends Model<UserModel> {
   @Column(DataType.DATE)
   public archivedAt!: Date;
 
+  @Default(true)
+  @Column(DataType.BOOLEAN)
+  public mailsNotifications!: boolean;
+
   // All companies for each user
   @HasMany(() => CompanyUserModel)
   public companies!: CompanyUserModel[];

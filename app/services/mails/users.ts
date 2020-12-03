@@ -119,11 +119,27 @@ const archivedUserAccountEmail = (to: string, firstName: string, lastName: strin
   sendMail(archivedUserAccount);
 };
 
+const newConnectionEmail = (to: string, firstName: string, lastName: string): void => {
+  const newConnection = {
+    to,
+    from: FROM,
+    subject: "Nouvelle connexion détectée sur votre compte Terradia",
+    templateId: "d-fc30e6c8be774977956899ec97bde5c1",
+    dynamic_template_data: {
+      subject: "Nouvelle connexion détectée sur votre compte Terradia",
+      user_name: firstName,
+      last_name: lastName
+    }
+  };
+  sendMail(newConnection);
+};
+
 export {
   createEmailRegister,
   createEmailInvitation,
   forgotPasswordEmail,
   passwordEditEmail,
   reactivateUserAccountEmail,
-  archivedUserAccountEmail
+  archivedUserAccountEmail,
+  newConnectionEmail
 };

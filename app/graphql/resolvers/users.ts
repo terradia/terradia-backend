@@ -6,7 +6,10 @@ import { ApolloError } from "apollo-server-errors";
 import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated } from "./authorization";
 import { uploadToS3 } from "../../uploadS3";
-import { createEmailRegister } from "../../services/mails/users";
+import {
+  createEmailRegister,
+  newConnectionEmail
+} from "../../services/mails/users";
 import fetch from "node-fetch";
 import userController from "../../controllers/user";
 import CompanyUserInvitationModel from "../../database/models/company-user-invitation.model";
@@ -114,9 +117,11 @@ export default {
         if (nb[0] == 0) {
           throw new ApolloError("This account is already deleted.");
         } else {
-          reactivateUserAccountEmail(user.email, user.firstName);
+          reactivateUserAccountEmail(user.email, user.firstName); // Important mail - no check for mails notifications
         }
       }
+      // if (user.mailsNotifications)
+      //   newConnectionEmail(user.email, user.firstName, user.lastName);
       await UserModel.update(
         { exponentPushToken },
         {
@@ -363,7 +368,8 @@ export default {
       if (!isValid) {
         throw new AuthenticationError("Invalid password.");
       }
-      passwordEditEmail(user.email, user.firstName);
+      if (user.mailsNotifications)
+        passwordEditEmail(user.email, user.firstName);
       return true;
     },
     deleteUser: combineResolvers(
@@ -380,10 +386,29 @@ export default {
           if (nb == 0) {
             throw new ApolloError("Can't archive this user account."); //TODO: translation
           } else {
-            archivedUserAccountEmail(user.email, user.firstName, user.lastName);
+            //TODO: implement alert & logout
+            if (user.mailsNotifications)
+              archivedUserAccountEmail(
+                user.email,
+                user.firstName,
+                user.lastName
+              );
           }
           return users[0];
         }
+      }
+    ),
+    updateMailsNotifications: combineResolvers(
+      isAuthenticated,
+      async (_: any, __: any, { user }: Context) => {
+        const [nb, users] = await UserModel.update(
+          { mailsNotifications: !user.mailsNotifications },
+          { where: { id: user.id }, returning: true }
+        );
+        if (nb === 0) {
+          throw new ApolloError("Can't update notifications preferences.");
+        }
+        return users[0];
       }
     )
   }
