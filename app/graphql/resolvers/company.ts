@@ -669,6 +669,21 @@ export default {
         }
         return company[0];
       }
+    ),
+    updateCompanyExternalAccount: combineResolvers(
+      isAuthenticated,
+      async (_: any, { token, companyId }, { user }: Context) => {
+        const company = await CompanyModel.findByPk(companyId);
+        if (!company) throw new ApolloError("Can't find the requested company");
+        try {
+          const account = await stripe.accounts.update(company?.stripeAccount, {
+            external_account: token
+          });
+          return true;
+        } catch (e) {
+          throw new ApolloError(e);
+        }
+      }
     )
   }
 };

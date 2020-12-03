@@ -292,7 +292,7 @@ export default {
           amount: parseInt(price.toFixed(0)),
           currency: "eur",
           destination: order.company.stripeAccount,
-          transfer_group: "ORDER_95"
+          transfer_group: "Company" + order.company.id
         });
         if (!paymentIntent)
           throw new ApolloError("The payment has been refused", "404");
