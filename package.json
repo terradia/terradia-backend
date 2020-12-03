@@ -11,6 +11,8 @@
     "db-drop": "db-migrate db:drop terradia_db --config app/database/database.json -e deletion",
     "migration:create": "db-migrate create --migrations-dir app/database/migrations --config app/database/database.json",
     "migrate:up": "db-migrate up --config app/database/database.json --migrations-dir app/database/migrations -v",
+    "migrate:prod:up": "db-migrate up --config app/database/database.json --migrations-dir app/database/migrations -e prod -v",
+    "migrate:prod:down": "db-migrate down -c 1 --config app/database/database.json -m app/database/migrations -e prod",
     "migrate:down": "db-migrate down -c 1 --config app/database/database.json -m app/database/migrations",
     "migrate:down:all": "db-migrate down -c 999 --config app/database/database.json -m app/database/migrations",
     "seed:up": "cross-env NODE_ENV=development DEBUG=init:* ts-node ./app/database/seeders/up.ts -T",
