@@ -14,14 +14,16 @@ import { OrderHistoryIncludes } from "./order-history";
 import { WhereOptions } from "sequelize";
 import Stripe from "stripe";
 import UnitModel from "../../database/models/unit.model";
-import { receiveOrderEmail } from "../../services/mails/orders";
-import { ExpoPushMessage } from "expo-server-sdk";
+import {
+  acceptedOrderCustomerEmail,
+  declinedOrderCustomerEmail
+} from "../../services/mails/orders";
 import {
   createMobileNotifications,
   TerradiaPushMessage
 } from "../../services/notifications";
 
-const stripe = new Stripe(process.env.STRIPE_API_KEY, {
+const stripe = new Stripe(process.env.STRIPE_API_KEY || "", {
   apiVersion: "2020-03-02"
 });
 interface Context {
@@ -33,7 +35,10 @@ export const OrderIncludes = [
     model: OrderProductModel,
     include: [{ model: ProductModel, include: [UnitModel] }]
   },
-  CustomerModel,
+  {
+    model: CustomerModel,
+    include: [UserModel]
+  },
   { model: CompanyModel, include: [{ model: CompanyImageModel, as: "logo" }] }
 ];
 
@@ -252,14 +257,6 @@ export default {
           { where: { id: order.companyId } }
         );
 
-        // TODO : send mail to the user
-        receiveOrderEmail(
-          user.email,
-          user.firstName,
-          orderHistory.code,
-          orderHistory.price.toString(),
-          orderHistory.companyName
-        );
         const orderHistoryResult = await OrderHistoryModel.findOne({
           where: { id: orderHistory.id },
           include: OrderHistoryIncludes
@@ -290,10 +287,15 @@ export default {
         const paymentIntent = await stripe.paymentIntents.confirm(
           order.stripePaymentIntent
         );
+        const price = order.price * 0.9 * 100;
+        const transfer = await stripe.transfers.create({
+          amount: parseInt(price.toFixed(0)),
+          currency: "eur",
+          destination: order.company.stripeAccount,
+          transfer_group: "Company" + order.company.id
+        });
         if (!paymentIntent)
           throw new ApolloError("The payment has been refused", "404");
-        // TODO : send mail to the user
-
         await OrderModel.update(
           { status: "AVAILABLE" },
           { where: { id }, returning: true }
@@ -302,22 +304,35 @@ export default {
           where: { id: order.id },
           include: OrderIncludes
         });
-        const customer = await CustomerModel.findByPk(order.customerId);
-        if (customer) {
-          const user = await UserModel.findByPk(customer.userId);
-          if (user && user.exponentPushToken) {
-            const notification: TerradiaPushMessage = {
-              sound: "default",
-              title: "Order accepted",
-              body: "Your order #" + order.code + " has been accepted",
-              data: {
-                route: "Orders",
-                snack: "Your order #" + order.code + " has been accepted",
-                routeParam: "request"
-              }
-            };
-            createMobileNotifications([user.exponentPushToken], notification);
-          }
+
+        // if (order.customer.user.mailsNotifications) {
+        //   acceptedOrderCustomerEmail(
+        //     order.customer.user.email,
+        //     order.customer.user.firstName,
+        //     "#" + order.code.toUpperCase(),
+        //     order.company.name,
+        //     order.price.toString()
+        //   );
+        // }
+
+        if (order.customer.user && order.customer.user.exponentPushToken) {
+          const notification: TerradiaPushMessage = {
+            sound: "default",
+            title: "Commande acceptée",
+            body:
+              "Votre commande #" +
+              order.code.toUpperCase() +
+              " a été acceptée 🍱🎉",
+            data: {
+              route: "Orders",
+              snack: "Your order #" + order.code + " has been accepted",
+              routeParam: "request"
+            }
+          };
+          createMobileNotifications(
+            [order.customer.user.exponentPushToken],
+            notification
+          );
         }
 
         if (!orderResult) throw new ApolloError("error", "404");
@@ -348,7 +363,7 @@ export default {
         );
         if (!paymentIntent)
           throw new ApolloError("Cannot cancel the payment", "404");
-        // TODO : send mail to the user
+
         const historyStatus = "DECLINED";
 
         // transform Order in OrderHistory
@@ -394,30 +409,37 @@ export default {
           },
           { where: { id: order.companyId } }
         );
-
-        // TODO : send mail to the user
+        if (order.customer.user.mailsNotifications) {
+          declinedOrderCustomerEmail(
+            order.customer.user.email,
+            order.customer.user.firstName,
+            "#" + order.code.toUpperCase(),
+            order.price.toString(),
+            order.company.name
+          );
+        }
 
         const orderHistoryResult = await OrderHistoryModel.findOne({
           where: { id: orderHistory.id },
           include: OrderHistoryIncludes
         });
 
-        const customer = await CustomerModel.findByPk(order.customerId);
-        if (customer) {
-          const user = await UserModel.findByPk(customer.userId);
-          if (user && user.exponentPushToken) {
-            const notification: TerradiaPushMessage = {
-              sound: "default",
-              title: "Order declined",
-              body: "Your order #" + order.code + " has been declined",
-              data: {
-                route: "Orders",
-                snack: "Your order #" + order.code + " has been declined",
-                routeParam: "request"
-              }
-            };
-            createMobileNotifications([user.exponentPushToken], notification);
-          }
+        if (order.customer.user && order.customer.user.exponentPushToken) {
+          const notification: TerradiaPushMessage = {
+            sound: "default",
+            title: "Commande refusée",
+            body:
+              "Votre commande #" + order.code.toUpperCase() + " a été refusée",
+            data: {
+              route: "Orders",
+              snack: "Your order #" + order.code + " has been declined",
+              routeParam: "request"
+            }
+          };
+          createMobileNotifications(
+            [order.customer.user.exponentPushToken],
+            notification
+          );
         }
 
         if (!orderHistoryResult) throw new ApolloError("Error", "404");

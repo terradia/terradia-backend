@@ -158,6 +158,7 @@ export default gql`
     searchCompanies(query: String!): [Company]
     checkSiren(siren: String!): CompanyInfo
     geocode(address: String!): [CompanyGeo]
+    getCompanyStripeAccount(companyId: ID!): StripeCompany
   }
 
   extend type Mutation {
@@ -168,12 +169,33 @@ export default gql`
       phone: String!
       address: String!
       siren: String!
+      tokenAccount: String!
     ): Company!
     deleteCompany(companyId: String!): Company!
     updateCompany(companyId: ID!, newValues: CompanyUpdateInput): Company!
     joinCompany(companyId: String!, userId: String!): Company!
     leaveCompany(companyId: String!, userId: String!): Company!
     restoreCompany(companyId: String!): Company!
+    updateCompanyExternalAccount(token: String!, companyId: String!): Boolean
+  }
+
+  type StripeExternalAccountData {
+    id: String!
+    bank_name: String
+    last4: String
+    country: String
+    currency: String
+    account_holder_name: String
+  }
+
+  type StripeExternalAccount {
+    data: [StripeExternalAccountData]
+  }
+
+  type StripeCompany {
+    id: String!
+    payouts_enabled: Boolean
+    external_accounts: StripeExternalAccount
   }
 
   type Company {

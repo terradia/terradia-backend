@@ -27,6 +27,12 @@ import {
 } from "../../services/mails/companies";
 import client from "../../database/elastic/server";
 
+import Stripe from "stripe";
+import company from "../schema/company";
+const stripe = new Stripe(process.env.STRIPE_API_KEY || "", {
+  apiVersion: "2020-03-02"
+});
+
 declare interface Point {
   type: string;
   coordinates: number[];
@@ -46,6 +52,7 @@ declare interface CreateCompanyProps {
   logo: { stream: Body; filename: string; mimetype: string; encoding: string };
   cover: { stream: Body; filename: string; mimetype: string; encoding: string };
   officialName?: string;
+  tokenAccount: string;
 }
 
 export const companyIncludes = [
@@ -356,36 +363,17 @@ export default {
       { query }: { query: string },
       { user }: { user: UserModel }
     ): Promise<CompanyModel[]> => {
-      const res = await client.search({
-        index: "companies",
-        body: {
-          query: {
-            nested: {
-              path: "products",
-              query: {
-                bool: {
-                  must: [{ match: { "products.name": query } }]
-                }
-              }
-            }
-            // multi_match: {
-            //   query: query,
-            //   fields: ["name", "products.description", "products.name"]
-            // }
-          }
-        }
-      });
-      const par = res.body.hits.hits.map(item => item._source);
-      // return par;
       const comp = await CompanyModel.findAll({
-        //TODO: Search by tag
         //https://stackoverflow.com/questions/31258158/how-to-implement-search-feature-using-sequelizejs/37326395
         where: {
           [Op.or]: [
-            { name: { [Op.iLike]: "%" + query + "%" } }
+            { name: { [Op.iLike]: "%" + query + "%" } },
             // { 'name': { [Op.iLike]: "%" + query + "%" } },
             // { "$CompanyTags.slugName$": { [Op.iLike]: "%" + query + "%" } }
-            // { "$CompanyTagModel.slugName$": query }
+            { "$tags.slugName$": { [Op.iLike]: "%" + query + "%" } },
+            { "$products.name$": { [Op.iLike]: "%" + query + "%" } },
+            { "$products.description$": { [Op.iLike]: "%" + query + "%" } }
+            // { "tags.slugName$": query }
           ]
         },
         include: [
@@ -440,7 +428,17 @@ export default {
           return root;
         }
       )
-    )
+    ),
+    getCompanyStripeAccount: async (
+      _: any,
+      { companyId }: { companyId: string },
+      __: any
+    ): Promise<any> => {
+      const company = await CompanyModel.findByPk(companyId);
+      if (!company) throw new ApolloError("Company not found");
+      const account = await stripe.accounts.retrieve(company.stripeAccount);
+      return account;
+    }
   },
   Mutation: {
     createCompany: combineResolvers(
@@ -452,6 +450,8 @@ export default {
           args: CreateCompanyProps,
           { user }: Context
         ): Promise<CompanyModel> => {
+          const tokenAccount = args.tokenAccount;
+          delete args.tokenAccount;
           console.log(root);
           const ownerRole: RoleModel | null = await RoleModel.findOne({
             where: { slugName: "owner" }
@@ -469,6 +469,8 @@ export default {
           console.log(geo);
           const newCompany: CompanyModel = await CompanyModel.create({
             ...args,
+            numberOrders: 0,
+            numberOrderHistories: 0,
             geoPosition: {
               type: "Point",
               coordinates: [
@@ -486,6 +488,32 @@ export default {
           //     products: []
           //   }
           // });
+
+          try {
+            // @ts-ignore
+            const account = await stripe.accounts.create({
+              country: "FR",
+              type: "custom",
+              account_token: tokenAccount,
+              business_profile: { url: "https://producteurs.terradia.eu" },
+              capabilities: {
+                transfers: { requested: true }
+              }
+            });
+            await CompanyModel.update(
+              {
+                stripeAccount: account.id
+              },
+              {
+                where: {
+                  id: newCompany.id
+                }
+              }
+            );
+          } catch (e) {
+            console.error(e);
+          }
+
           await CompanyUserModel.create({
             companyId: newCompany.id,
             userId: user.id,
@@ -640,6 +668,21 @@ export default {
           );
         }
         return company[0];
+      }
+    ),
+    updateCompanyExternalAccount: combineResolvers(
+      isAuthenticated,
+      async (_: any, { token, companyId }, { user }: Context) => {
+        const company = await CompanyModel.findByPk(companyId);
+        if (!company) throw new ApolloError("Can't find the requested company");
+        try {
+          const account = await stripe.accounts.update(company?.stripeAccount, {
+            external_account: token
+          });
+          return true;
+        } catch (e) {
+          throw new ApolloError(e);
+        }
       }
     )
   }

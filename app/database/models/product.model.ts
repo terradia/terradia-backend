@@ -51,7 +51,7 @@ export default class ProductModel extends Model<ProductModel> {
   coverId!: string;
 
   @BelongsTo(() => ProductCompanyImageModel, "coverId")
-  public cover!: string;
+  public cover!: ProductCompanyImageModel;
 
   @BelongsToMany(
     () => CompanyImageModel,

@@ -15,10 +15,15 @@ import OrderModel from "../../database/models/order.model";
 import OrderProductModel from "../../database/models/order-product.model";
 import { OrderIncludes } from "./order";
 import UnitModel from "../../database/models/unit.model";
-import { where } from "sequelize";
 import Stripe from "stripe";
+import CompanyImageModel from "../../database/models/company-image.model";
+import ProductCompanyImageModel from "../../database/models/product-company-images.model";
+import {
+  receiveOrderCompanyEmail,
+  receiveOrderCustomerEmail
+} from "../../services/mails/orders";
 
-const stripe = new Stripe(process.env.STRIPE_API_KEY, {
+const stripe = new Stripe(process.env.STRIPE_API_KEY || "", {
   apiVersion: "2020-03-02"
 });
 declare interface UserCompanyRoleProps {
@@ -34,8 +39,7 @@ export default {
   Query: {
     getCart: combineResolvers(
       isUserAndCustomer,
-      (_: any, __: any, { user }: Context): Promise<CartModel | null> => {
-        // TODO : Check if the products are available
+      async (_: any, __: any, { user }: Context): Promise<CartModel | null> => {
         const customer: CustomerModel = user.customer;
         if (!customer) {
           throw new ApolloError("this user is not a customer", "400");
@@ -51,13 +55,21 @@ export default {
             CompanyModel,
             {
               model: CartProductModel,
+              separate: true,
+              order: [["createdAt", "DESC"]],
               include: [
                 {
                   model: ProductModel,
-                  include: [UnitModel]
+                  include: [
+                    UnitModel,
+                    {
+                      model: ProductCompanyImageModel,
+                      as: "cover",
+                      include: [CompanyImageModel]
+                    }
+                  ]
                 }
-              ],
-              order: ["updatedAt"]
+              ]
             }
           ]
         });
@@ -193,11 +205,7 @@ export default {
       isUserAndCustomer,
       async (
         _: any,
-        {
-          cartProductId,
-          productId,
-          quantity
-        }: { cartProductId: string; productId: string; quantity: number },
+        { productId, quantity }: { productId: string; quantity: number },
         { user }: Context
       ): Promise<number> => {
         const customer: CustomerModel | null = user.customer;
@@ -206,11 +214,7 @@ export default {
             "This user is not a customer",
             "RESOURCE_NOT_FOUND"
           );
-        if (!cartProductId && !productId)
-          throw new ApolloError(
-            "You should precise at least a cartProduct of a productId",
-            "400"
-          );
+        if (!productId) throw new ApolloError("product is required", "400");
         if (quantity < 0)
           throw new ApolloError(
             "You should remove products, not add them ;)",
@@ -226,11 +230,8 @@ export default {
             "RESOURCE_NOT_FOUND"
           );
 
-        let product: CartProductModel | null;
-        product = await CartProductModel.findOne({
-          where: productId
-            ? { productId: productId, cartId: cart.id }
-            : { id: cartProductId, cartId: cart.id },
+        const product = await CartProductModel.findOne({
+          where: { productId: productId, cartId: cart.id },
           include: [ProductModel]
         });
         if (!product)
@@ -300,6 +301,7 @@ export default {
         // Create an order from the cart
         if (!paymentIntent)
           throw new ApolloError("The payment has been refused", "404");
+        let newOrderCode = "";
         const order = await OrderModel.create({
           companyId: cart.companyId,
           customerId: cart.customerId,
@@ -308,9 +310,10 @@ export default {
           status: "PENDING",
           stripePaymentIntent: paymentIntent.id
         }).then(order => {
+          newOrderCode = order.id.substr(0, 6);
           OrderModel.update(
             {
-              code: order.id.substr(0, 6)
+              code: newOrderCode
             },
             { where: { id: order.id } }
           );
@@ -335,6 +338,22 @@ export default {
         CompanyModel.update(
           { numberOrders: company.numberOrders + 1 },
           { where: { id: order.companyId } }
+        );
+
+        if (user.mailsNotifications) {
+          receiveOrderCustomerEmail(
+            user.email,
+            user.firstName,
+            "#" + newOrderCode.toUpperCase(),
+            order.price.toString(),
+            company.name
+          );
+        }
+        receiveOrderCompanyEmail(
+          company.email,
+          company.name,
+          "#" + newOrderCode.toUpperCase(),
+          order.price.toString()
         );
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-ignore

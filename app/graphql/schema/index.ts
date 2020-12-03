@@ -19,9 +19,9 @@ import companyDeliveryDaysSchema from "./companyDeliveryDays";
 import companyImagesSchema from "./companyImages";
 import paymentSchema from "./payment";
 import companyUserInvitationSchema from "./companyUserInvitation";
-import orderSchema from "./order"
-import companyProductAdvise from "./companyProductAdvise"
-import orderHistoryReviewSchema from "./OrderHistoryReview"
+import orderSchema from "./order";
+import companyProductAdvise from "./companyProductAdvise";
+import orderHistoryReviewSchema from "./orderHistoryReview";
 
 const linkSchema = gql`
   scalar Date

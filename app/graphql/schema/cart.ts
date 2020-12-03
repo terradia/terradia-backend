@@ -9,7 +9,7 @@ export default gql`
 
   extend type Mutation {
     addProductToCart(productId: ID!, quantity: Int!): CartProduct
-    removeProductFromCart(cartProductId: ID, productId: ID, quantity: Int!): Int
+    removeProductFromCart(productId: ID!, quantity: Int!): Int
     validateCart: Order
   }
 

@@ -14,7 +14,7 @@ import CartModel from "./cart.model";
 
 @Table({
   tableName: "CartProducts",
-  timestamps: false
+  timestamps: true
 })
 export default class CartProductModel extends Model<CartProductModel> {
   @IsUUID(4)
@@ -42,4 +42,10 @@ export default class CartProductModel extends Model<CartProductModel> {
 
   @BelongsTo(() => CartModel)
   cart!: CartModel;
+
+  @Column
+  public createdAt!: Date;
+
+  @Column
+  public updatedAt!: Date;
 }

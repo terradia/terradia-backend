@@ -71,7 +71,7 @@ export default {
       }
     ),
     getCompanyOrderHistories: combineResolvers(
-      isUserAndCustomer,
+      isAuthenticated,
       async (
         _: any,
         {
