@@ -158,6 +158,7 @@ export default gql`
     searchCompanies(query: String!): [Company]
     checkSiren(siren: String!): CompanyInfo
     geocode(address: String!): [CompanyGeo]
+    isStripeAccountValidated(companyId: ID!): Boolean
   }
 
   extend type Mutation {
