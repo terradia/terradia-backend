@@ -234,6 +234,58 @@ export default {
       if (!company) throw new ApolloError("This company does not exist", "404");
       return company;
     },
+    getCompanyAndDistance: combineResolvers(
+      isAuthenticated,
+      async (
+        _: any,
+        { companyId }: { companyId: string },
+        { user: { customer } }: Context
+      ): Promise<CompanyModel | null> => {
+        const customerFetched = await CustomerModel.findByPk(customer.id, {
+          include: [{ model: CustomerAddressModel, as: "activeAddress" }]
+        });
+        if (!customerFetched) {
+          throw new ApolloError("Customer doesn't exist");
+        }
+        const location: Literal = Sequelize.literal(
+          `ST_GeomFromText('POINT(${customerFetched.activeAddress.location.coordinates[0]} ${customerFetched.activeAddress.location.coordinates[1]})')`
+        );
+        const distance: Fn = Sequelize.fn(
+          "ST_DistanceSphere",
+          Sequelize.col("geoPosition"),
+          location
+        );
+        const company = await CompanyModel.findByPk(companyId, {
+          attributes: { include: [[distance, "distance"]] },
+          include: [
+            {
+              model: CompanyImageModel,
+              as: "logo"
+            },
+            {
+              model: CompanyImageModel,
+              as: "cover"
+            },
+            CompanyTagModel,
+            {
+              model: CompanyUserModel,
+              include: [RoleModel, UserModel]
+            },
+            {
+              model: CompanyOpeningDayModel,
+              include: [CompanyOpeningDayHoursModel]
+            },
+            {
+              model: CompanyDeliveryDayModel,
+              include: [CompanyDeliveryDayHoursModel]
+            }
+          ]
+        });
+        if (!company)
+          throw new ApolloError("This company does not exist", "404");
+        return company;
+      }
+    ),
     getCompanyByName: async (
       _: any,
       { name }: { name: string }

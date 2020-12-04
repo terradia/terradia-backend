@@ -145,6 +145,7 @@ export default gql`
   extend type Query {
     getAllCompanies(page: Int, pageSize: Int): [Company]
     getCompany(companyId: ID!): Company
+    getCompanyAndDistance(companyId: ID!): Company
     getCompanyByName(name: String!): Company
     getCompaniesByDistance(
       page: Int
