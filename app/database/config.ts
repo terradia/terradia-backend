@@ -23,9 +23,9 @@ declare interface connexions {
 
 const config: connexions = {
   development: {
-    username: "postgres",
-    password: "postgres",
-    database: "terradia_db",
+    username: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
     host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT ? process.env.DB_PORT : "5432"),
     dialect: "postgres",
