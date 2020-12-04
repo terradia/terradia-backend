@@ -438,6 +438,8 @@ export default {
             model: CompanyProductsCategoryModel,
             include: [ProductModel]
           },
+          { model: CompanyImageModel, as: "logo" },
+          { model: CompanyImageModel, as: "cover" },
           CompanyReviewModel,
           CompanyProductsCategoryModel,
           CompanyTagModel
