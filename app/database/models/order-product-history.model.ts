@@ -57,7 +57,7 @@ export default class OrderProductHistoryModel extends Model<
   public price!: number;
 
   @ForeignKey(() => UnitModel)
-  @AllowNull(false)
+  @AllowNull(true)
   @Column(DataType.UUID)
   public unitId!: string;
 

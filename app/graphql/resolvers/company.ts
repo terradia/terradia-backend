@@ -25,10 +25,8 @@ import {
   archivedCompanieEmail,
   restoreCompanieEmail
 } from "../../services/mails/companies";
-import client from "../../database/elastic/server";
 
 import Stripe from "stripe";
-import company from "../schema/company";
 const stripe = new Stripe(process.env.STRIPE_API_KEY || "", {
   apiVersion: "2020-03-02"
 });
@@ -550,9 +548,7 @@ export default {
               type: "custom",
               account_token: tokenAccount,
               business_profile: { url: "https://producteurs.terradia.eu" },
-              capabilities: {
-                transfers: { requested: true }
-              }
+              requested_capabilities: ["transfers", "legacy_payments"]
             });
             await CompanyModel.update(
               {

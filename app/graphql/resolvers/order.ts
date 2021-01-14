@@ -231,17 +231,17 @@ export default {
           {}
         );
         // Create all the OrderProductHistory with all data
-        order.products.map(async (orderProduct: OrderProductModel) => {
+        for (const orderProduct of order.products) {
           await OrderProductHistoryModel.create({
             orderHistoryId: orderHistory.id,
             productId: orderProduct.product.id,
             name: orderProduct.product.name,
             quantity: orderProduct.quantity,
             price: orderProduct.price,
-            unitId: orderProduct.product.unitId,
+            unitId: orderProduct.product?.unitId,
             quantityForUnit: orderProduct.product.quantityForUnit
           });
-        });
+        }
         // destroy Order
         OrderModel.destroy({ where: { id: order.id } });
 

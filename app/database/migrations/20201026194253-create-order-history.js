@@ -107,7 +107,7 @@ exports.up = function(db) {
         },
         unitId: {
           type: "uuid",
-          allowNull: false
+          allowNull: true
         },
         quantityForUnit: {
           type: "integer",

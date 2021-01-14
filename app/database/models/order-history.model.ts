@@ -86,9 +86,6 @@ export default class OrderHistoryModel extends Model<OrderHistoryModel> {
   @Column
   public decliningReason!: string;
 
-  // @Column(DataType.STRING)
-  // public stripePaymentIntent!: string;
-
   @Column
   public status!: "FINISHED" | "DECLINED" | "CANCELED";
 
@@ -99,4 +96,7 @@ export default class OrderHistoryModel extends Model<OrderHistoryModel> {
 
   @HasOne(() => OrderHistoryReviewModel, "orderHistoryId")
   public customerReview!: OrderHistoryReviewModel;
+
+  @Column(DataType.STRING)
+  public stripePaymentIntent!: string;
 }
