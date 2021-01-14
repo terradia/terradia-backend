@@ -561,7 +561,7 @@ export default {
               type: "custom",
               account_token: tokenAccount,
               business_profile: { url: "https://producteurs.terradia.eu" },
-              requested_capabilities: ["transfers", "legacy_payments"]
+              requested_capabilities: ["transfers", "card_payments"]
             });
             await CompanyModel.update(
               {
