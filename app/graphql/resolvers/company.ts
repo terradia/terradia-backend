@@ -539,9 +539,13 @@ export default {
             geoPosition: {
               type: "Point",
               coordinates: [
-                parseFloat(String(geo.longitude)),
-                parseFloat(String(geo.latitude))
+                Math.random() * (7.332832 - 7.363075) + 7.363075,
+                Math.random() * (48.878577 - 48.420203) + 48.420203
               ]
+              // coordinates: [
+              //   parseFloat(String(geo.longitude)),
+              //   parseFloat(String(geo.latitude))
+              // ]
             }
           });
           // await client.index({
