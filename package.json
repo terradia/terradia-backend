@@ -86,7 +86,7 @@
     "helmet": "latest",
     "jsonwebtoken": "^8.5.1",
     "md5": "^2.2.1",
-    "node-geocoder": "^3.25.0",
+    "node-geocoder": "^3.27.0",
     "pg": "^7.11.0",
     "prettier": "^1.19.1",
     "reflect-metadata": "^0.1.13",
