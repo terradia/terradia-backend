@@ -11,10 +11,6 @@ import {
   PrimaryKey,
   Table
 } from "sequelize-typescript";
-import CompanyUserRoleModel from "./company-user-role.model";
-import CompanyUserModel from "./company-user.model";
-import UserPermissionsModel from "./userPermissions.model";
-import CompanyProductsCategoryModel from "./company-products-category.model";
 import ProductModel from "./product.model";
 
 @Table({

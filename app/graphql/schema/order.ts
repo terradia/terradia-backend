@@ -55,10 +55,7 @@ export default gql`
 
   enum OrderStatus {
     PENDING
-    ACCEPTED
     AVAILABLE
-    DECLINED
-    CANCELED
   }
 
   type OrderHistory {

@@ -157,13 +157,16 @@ const checkGeocode = async (
   const geocoder: Geocoder = NodeGeocoder({
     provider: "openstreetmap"
   });
+  console.log(address);
   return await geocoder.geocode(address).then(res => {
+    console.log(res);
     if (res.length === 0) {
       throw new ApolloError("No location found using provided address", "500");
     }
     const ret = res.filter(value => {
       return value.streetNumber;
     });
+    console.log(ret)
     return ret || res;
   });
 };
