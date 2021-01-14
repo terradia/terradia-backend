@@ -39,7 +39,13 @@ export const OrderIncludes = [
     model: CustomerModel,
     include: [UserModel]
   },
-  { model: CompanyModel, include: [{ model: CompanyImageModel, as: "logo" }] }
+  {
+    model: CompanyModel,
+    include: [
+      { model: CompanyImageModel, as: "logo" },
+      { model: CompanyImageModel, as: "cover" }
+    ]
+  }
 ];
 
 export default {
