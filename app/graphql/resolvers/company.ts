@@ -565,7 +565,8 @@ export default {
             });
             await CompanyModel.update(
               {
-                stripeAccount: account.id
+                // stripeAccount: account.id
+                stripeAccount: "acct_1Hrh4nHvqXwpCoF6"
               },
               {
                 where: {

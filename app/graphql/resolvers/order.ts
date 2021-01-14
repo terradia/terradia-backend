@@ -225,6 +225,7 @@ export default {
             companyLogo: order.company.logo
               ? order.company.logo.filename
               : null,
+            companyCover: order.company?.cover,
             companyAddress: order.company.address,
             status: historyStatus,
             price: order.price,
