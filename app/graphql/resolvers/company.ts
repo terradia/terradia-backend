@@ -155,7 +155,8 @@ const checkGeocode = async (
   { address }: { address: string }
 ): Promise<NodeGeocoder.Entry[]> => {
   const geocoder: Geocoder = NodeGeocoder({
-    provider: "openstreetmap"
+    provider: "google",
+    apiKey: process.env.GOOGLE_MAP_API_KEY
   });
   console.log(address);
   return await geocoder
