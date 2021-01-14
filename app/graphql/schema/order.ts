@@ -86,7 +86,7 @@ export default gql`
     name: String
     quantity: Int
     price: Float!
-    unit: Unit!
+    unit: Unit
     quantityForUnit: Int
   }
 
