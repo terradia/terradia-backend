@@ -71,7 +71,7 @@
     "@sendgrid/mail": "^7.1.1",
     "apollo-server": "^2.16.1",
     "apollo-server-express": "^2.16.1",
-    "aws-sdk": "^2.656.0",
+    "aws-sdk": "^2.814.0",
     "bcrypt": "^3.0.8",
     "bcrypt-nodejs": "^0.0.3",
     "bcryptjs": "^2.4.3",
