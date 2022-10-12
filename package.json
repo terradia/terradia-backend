@@ -69,7 +69,7 @@
   "dependencies": {
     "@elastic/elasticsearch": "^7.9.1",
     "@sendgrid/mail": "^7.1.1",
-    "apollo-server": "^2.16.1",
+    "apollo-server": "^2.25.4",
     "apollo-server-express": "^2.16.1",
     "aws-sdk": "^2.656.0",
     "bcrypt": "^3.0.8",
